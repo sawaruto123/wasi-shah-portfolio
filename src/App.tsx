@@ -169,7 +169,7 @@ export default function App() {
         e.preventDefault();
         const next = idx + (e.deltaY > 0 ? 1 : -1);
         if (next >= 0 && next < ROOM_COUNT) {
-          travelLockRef.current = Date.now() + 400;
+          travelLockRef.current = Date.now() + 600;
           scrollToRoom(next);
         }
         return;
@@ -185,7 +185,7 @@ export default function App() {
       e.preventDefault();
       const next = idx + (e.deltaY > 0 ? 1 : -1);
       if (next >= 0 && next < ROOM_COUNT) {
-        travelLockRef.current = Date.now() + 400;
+        travelLockRef.current = Date.now() + 600;
         scrollToRoom(next);
       }
     };
@@ -216,7 +216,11 @@ export default function App() {
         if (dy > 0 && el.scrollTop > 2) return;
       }
       const next = idx + (dy < 0 ? 1 : -1);
-      if (next >= 0 && next < ROOM_COUNT) scrollToRoom(next);
+      if (Date.now() < travelLockRef.current) return;
+      if (next >= 0 && next < ROOM_COUNT) {
+        travelLockRef.current = Date.now() + 600;
+        scrollToRoom(next);
+      }
     };
     window.addEventListener('touchstart', onTouchStart, { passive: true });
     window.addEventListener('touchend', onTouchEnd, { passive: true });
