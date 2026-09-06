@@ -1,0 +1,256 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-chinese: 'Noto Sans TC', sans-serif;
+
+  --color-ink: #11263F;
+  --color-ink-muted: #4A5A70;
+  --color-surface-pure: #FFFDF8;
+  --color-surface-warm: #F1F6FF;
+  --color-surface-container: #E6EFFC;
+  --color-surface-container-high: #D7E6FB;
+  --color-primary: #2E7CF6;
+  --color-primary-dark: #1E5BC4;
+  --color-primary-light: #EAF4FF;
+  --color-accent-lime: #ccff00;
+  --color-accent-lime-dark: #506600;
+  --color-accent-orange: #FFB15E;
+  --color-accent-pink: #FF9DB2;
+  --color-accent-yellow: #FFD166;
+  --color-accent-sky: #6CC8FF;
+  --color-border-crisp: #E7EFFB;
+}
+
+:root {
+  --mx: 0;
+  --my: 0;
+  --light-angle: 135deg;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: #F6FAFF;
+  background-image: radial-gradient(ellipse 120% 80% at 50% -10%, #dff0ff 0%, #F6FAFF 55%, #ffffff 100%);
+  background-attachment: fixed;
+  color: #11263F;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  scroll-behavior: smooth;
+}
+
+::selection {
+  background: #0047ff;
+  color: #ffffff;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0047ff;
+}
+
+.hairline-grid {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.035) 1px, transparent 1px);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.spatial-card {
+  background-color: rgba(255, 255, 255, 0.82);
+  background-image: radial-gradient(560px circle at calc(var(--mx, 0) * 50% + 50%) calc(var(--my, 0) * 50% + 50%), rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 55%);
+  box-shadow: 0 18px 44px rgba(17, 38, 63, 0.10), 0 3px 10px rgba(17, 38, 63, 0.05);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+}
+.spatial-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(46, 124, 246, 0.4);
+  box-shadow: 0 0 0 1px rgba(46, 124, 246, 0.2), 0 0 26px rgba(108, 200, 255, 0.35), 0 24px 50px rgba(17, 38, 63, 0.16);
+}
+
+/* 滑鼠驅動的 3D 傾斜層 */
+.tilt-3d {
+  transform: perspective(1600px) rotateY(calc(var(--mx, 0) * 7deg)) rotateX(calc(var(--my, 0) * -5.5deg));
+  transition: transform 160ms ease-out;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* 全螢幕環境光（從光源方向掃過、漸淡） */
+.light-wash {
+  background: linear-gradient(var(--light-angle, 135deg), rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 45%, rgba(15, 35, 80, 0.1) 100%);
+  mix-blend-mode: soft-light;
+}
+
+/* 漂浮動畫（幾何生物 / chips / 面板） */
+@keyframes floatDrift {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-14px) rotate(6deg); }
+}
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.float-shape {
+  position: absolute;
+  opacity: 0.2;
+  pointer-events: none;
+  color: #6CC8FF;
+  animation: floatDrift 8s ease-in-out infinite;
+}
+.float-chip {
+  animation: floatY 5s ease-in-out infinite;
+}
+.float-slow {
+  animation: floatY 9s ease-in-out infinite;
+}
+
+/* 載入進度條 */
+@keyframes progressSlide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+.animate-progress {
+  animation: progressSlide 1.2s ease-in-out infinite;
+}
+
+/* 房間內部滾動（隱藏捲軸，由滾輪飛越控制） */
+.room-scroll {
+  scrollbar-width: none;
+}
+.room-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* 飛越光效：速度線 + 藍移殘影 */
+@keyframes warpFlash {
+  0% { opacity: 0; }
+  30% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes warpSweep {
+  0% { transform: translateX(-100%); opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
+}
+.warp-flash {
+  background: radial-gradient(ellipse at 50% 50%, rgba(0, 71, 255, 0.25) 0%, rgba(0, 71, 255, 0.04) 70%);
+  animation: warpFlash 0.5s ease-out forwards;
+  overflow: hidden;
+}
+.warp-flash::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.55) 0 3px, transparent 3px 34px);
+  animation: warpSweep 0.5s ease-out forwards;
+}
+.warp-flash::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(0, 71, 255, 0.4) 50%, transparent 100%);
+  animation: warpSweep 0.6s ease-out forwards;
+}
+
+/* 房間進場：真實故障（RGB 三色分離 + 抖動 + 掃描塊） */
+@keyframes glitchPop {
+  0% { opacity: 0; transform: translateY(var(--from-y, 60px)) scale(var(--from-scale, 0.93)); filter: none; }
+  5% { opacity: 1; }
+  8% { transform: translateY(46px) translateX(-9px) skewX(-4deg) scale(0.97); filter: drop-shadow(-6px 0 rgba(255, 0, 60, 0.7)) drop-shadow(6px 0 rgba(0, 255, 220, 0.7)) drop-shadow(0 -4px rgba(120, 80, 255, 0.5)); }
+  13% { transform: translateY(30px) translateX(8px) skewX(3deg); filter: drop-shadow(5px 0 rgba(255, 0, 60, 0.55)) drop-shadow(-5px 0 rgba(0, 255, 220, 0.55)); }
+  17% { transform: translateY(22px) translateX(-6px) skewX(-2deg); filter: drop-shadow(-4px 0 rgba(255, 0, 60, 0.4)) drop-shadow(4px 0 rgba(0, 255, 220, 0.4)); }
+  22% { transform: translateY(13px) translateX(5px) skewX(2deg); filter: drop-shadow(3px 0 rgba(255, 0, 60, 0.3)) drop-shadow(-3px 0 rgba(0, 255, 220, 0.3)); }
+  30% { transform: translateY(6px) translateX(0) skewX(0); filter: none; }
+  45% { transform: translateY(0) scale(1); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: none; }
+}
+.room-enter .spatial-card {
+  --from-y: 60px;
+  --from-scale: 0.93;
+  position: relative;
+  animation: glitchPop 0.95s ease-out backwards;
+}
+.room-enter .spatial-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: repeating-linear-gradient(0deg, transparent 0 6px, rgba(255, 0, 80, 0.3) 6px 8px, transparent 8px 14px, rgba(0, 190, 255, 0.26) 14px 16px, transparent 16px 22px, rgba(120, 80, 255, 0.22) 22px 24px);
+  mix-blend-mode: multiply;
+  animation: glitchBlocks 0.6s steps(2) both;
+  pointer-events: none;
+}
+@keyframes glitchBlocks {
+  0% { opacity: 0; }
+  15% { opacity: 1; transform: translateX(-4px); }
+  30% { opacity: 0.2; transform: translateX(3px); }
+  45% { opacity: 0.85; transform: translateX(-2px); }
+  60% { opacity: 0.3; transform: translateX(2px); }
+  100% { opacity: 0; transform: translateX(0); }
+}
+
+/* 彈窗進場 */
+@keyframes modalEnter {
+  0% { opacity: 0; transform: translateY(26px) scale(0.92); filter: drop-shadow(-4px 0 rgba(255, 0, 60, 0.4)) drop-shadow(4px 0 rgba(0, 255, 220, 0.4)); }
+  35% { opacity: 1; filter: none; }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.modal-enter {
+  animation: modalEnter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  box-shadow: 0 0 0 1px rgba(0, 71, 255, 0.2), 0 0 44px rgba(0, 71, 255, 0.28), 0 32px 64px rgba(10, 20, 50, 0.32);
+}
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fadeIn 0.25s ease-out both;
+}
+.room-enter .spatial-card:nth-child(even) {
+  --from-y: 110px;
+  --from-scale: 0.86;
+}
+.room-enter .spatial-card:nth-child(2) { animation-delay: 0.16s; }
+.room-enter .spatial-card:nth-child(3) { animation-delay: 0.32s; }
+.room-enter .spatial-card:nth-child(4) { animation-delay: 0.48s; }
+.room-enter .spatial-card:nth-child(5) { animation-delay: 0.64s; }
+.room-enter .spatial-card:nth-child(6) { animation-delay: 0.8s; }
+.room-enter .spatial-card:nth-child(7) { animation-delay: 0.96s; }
+.room-enter .spatial-card:nth-child(8) { animation-delay: 1.12s; }
+
+/* 底片顆粒（約 5% 不透明度） */
+.film-grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  animation: grainShift 0.7s steps(3) infinite;
+}
+@keyframes grainShift {
+  0% { transform: translate(0, 0); }
+  33% { transform: translate(-1.5%, 1%); }
+  66% { transform: translate(1%, -1.5%); }
+  100% { transform: translate(0, 0); }
+}
+
