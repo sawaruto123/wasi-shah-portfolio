@@ -7,6 +7,37 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 
+/** 程序化吸積盤紋理：白熱內圈 → 橙紅外圈 + 渦流噪點 */
+function makeAccretionTexture(): THREE.Texture {
+  const size = 512;
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext('2d')!;
+  const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  g.addColorStop(0, 'rgba(255,255,255,1)');
+  g.addColorStop(0.33, 'rgba(255,235,190,0.95)');
+  g.addColorStop(0.5, 'rgba(255,165,80,0.7)');
+  g.addColorStop(0.72, 'rgba(185,75,25,0.28)');
+  g.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, size, size);
+  for (let i = 0; i < 900; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const r = (size / 2) * (0.25 + Math.random() * 0.7);
+    const x = size / 2 + Math.cos(a) * r;
+    const y = size / 2 + Math.sin(a) * r;
+    const warm = 190 + Math.floor(Math.random() * 65);
+    ctx.strokeStyle = `rgba(255,${warm},${60 + Math.floor(Math.random() * 70)},${0.08 + Math.random() * 0.3})`;
+    ctx.lineWidth = 1 + Math.random() * 2.5;
+    ctx.beginPath();
+    ctx.arc(x, y, 3 + Math.random() * 22, a, a + 0.35 + Math.random() * 1.6);
+    ctx.stroke();
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
 interface SpatialCanvasProps {
   onScrollProgress?: (progress: number) => void;
   lightAngle?: number;
@@ -178,13 +209,13 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
 
     const planet = new THREE.Mesh(
       new THREE.SphereGeometry(0.4, 32, 32),
-      new THREE.MeshStandardMaterial({ color: 0xff5ca8, roughness: 0.35, metalness: 0.3, emissive: 0xff5ca8, emissiveIntensity: 0.5 })
+      new THREE.MeshStandardMaterial({ color: 0x3d5a80, roughness: 0.5, metalness: 0.2, emissive: 0x2e4a6a, emissiveIntensity: 0.3 })
     );
     planet.position.set(-11, -1.5, -6);
     scene.add(planet);
     const planetRing = new THREE.Mesh(
       new THREE.TorusGeometry(0.62, 0.03, 16, 48),
-      new THREE.MeshStandardMaterial({ color: 0xd6ff33, roughness: 0.35, metalness: 0.3, emissive: 0xd6ff33, emissiveIntensity: 0.7 })
+      new THREE.MeshStandardMaterial({ color: 0x4cc8ff, roughness: 0.35, metalness: 0.3, emissive: 0x4cc8ff, emissiveIntensity: 0.7 })
     );
     planetRing.rotation.x = Math.PI / 2.6;
     planet.add(planetRing);
@@ -198,7 +229,7 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
       new THREE.ConeGeometry(0.16, 0.28, 4),
       new THREE.DodecahedronGeometry(0.15, 0),
     ];
-    const creatureColors = [0x2e7cf6, 0xff8a1e, 0xff5ca8, 0x2e7cf6, 0xffc41e, 0xff5ca8];
+    const creatureColors = [0x3a7bd5, 0x4cc8ff, 0x2e7cf6, 0x6aa8ff, 0x4cc8ff, 0x3a7bd5];
     const creatures: { mesh: THREE.Mesh; baseY: number; phase: number; rot: number }[] = [];
     creatureGeos.forEach((geo, i) => {
       const mat = new THREE.MeshStandardMaterial({
@@ -240,12 +271,35 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     room1Group.position.set(0, 0, 0);
     corridorGroup.add(room1Group);
 
-    // OZ 網際網路行星（半透明 + 節點連線星座）
-    const ozPlanet = new THREE.Mesh(
-      new THREE.SphereGeometry(1.6, 32, 32),
-      new THREE.MeshStandardMaterial({ color: P.planetColor, transparent: true, opacity: P.planetOpacity, roughness: 0.25, metalness: 0.15, emissive: P.planetEmissive, emissiveIntensity: P.planetEmissiveI })
+    // 黑洞（Interstellar 風格：事件視界 + 吸積盤 + 光子環 + 透鏡光環）
+    const horizon = new THREE.Mesh(
+      new THREE.SphereGeometry(1.0, 64, 64),
+      new THREE.MeshBasicMaterial({ color: 0x000000 })
     );
-    room1Group.add(ozPlanet);
+    room1Group.add(horizon);
+
+    const accretionTex = makeAccretionTexture();
+    const diskHolder = new THREE.Group();
+    diskHolder.rotation.x = -Math.PI / 2 + 0.32; // 稍微傾斜，露出盤面
+    const accretionDisk = new THREE.Mesh(
+      new THREE.RingGeometry(1.12, 3.4, 128),
+      new THREE.MeshBasicMaterial({ map: accretionTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
+    );
+    diskHolder.add(accretionDisk);
+    room1Group.add(diskHolder);
+
+    const photonRing = new THREE.Mesh(
+      new THREE.TorusGeometry(1.1, 0.02, 16, 160),
+      new THREE.MeshBasicMaterial({ color: 0xffffff, blending: THREE.AdditiveBlending })
+    );
+    photonRing.rotation.x = -Math.PI / 2 + 0.32;
+    room1Group.add(photonRing);
+
+    const lensedHalo = new THREE.Mesh(
+      new THREE.TorusGeometry(1.5, 0.02, 16, 160),
+      new THREE.MeshBasicMaterial({ color: 0xffd9a0, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending })
+    );
+    room1Group.add(lensedHalo);
 
     const nodeGroup = new THREE.Group();
     const nodeCount = 24;
@@ -277,19 +331,7 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     }
     room1Group.add(nodeGroup);
 
-    // Inner Luminous Core
-    const innerGeo = new THREE.OctahedronGeometry(1.3, 0);
-    const innerMat = new THREE.MeshPhongMaterial({
-      color: 0x0a0a0c,
-      emissive: P.coreEmissive,
-      specular: 0xccff00,
-      shininess: 100,
-      transparent: true,
-      opacity: 0.95,
-      emissiveIntensity: P.coreEmissiveI,
-    });
-    const innerMesh = new THREE.Mesh(innerGeo, innerMat);
-    room1Group.add(innerMesh);
+    // (內核已被黑洞取代)
 
     // Dual Kinetic Gyro Rings
     const ringGeo1 = new THREE.TorusGeometry(3.0, 0.04, 16, 100);
@@ -299,14 +341,14 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     room1Group.add(ring1);
 
     const ringGeo2 = new THREE.TorusGeometry(3.3, 0.032, 16, 100);
-    const ringMat2 = new THREE.MeshBasicMaterial({ color: P.ringOrange });
+    const ringMat2 = new THREE.MeshBasicMaterial({ color: 0xffaa44 });
     const ring2 = new THREE.Mesh(ringGeo2, ringMat2);
     ring2.rotation.y = Math.PI / 4;
     room1Group.add(ring2);
 
     // 夏日大作戰（OZ）風格的暖色環
     const ringGeo3 = new THREE.TorusGeometry(3.6, 0.028, 16, 100);
-    const ringMat3 = new THREE.MeshBasicMaterial({ color: P.ringPink });
+    const ringMat3 = new THREE.MeshBasicMaterial({ color: 0x8a6cff });
     const ring3 = new THREE.Mesh(ringGeo3, ringMat3);
     ring3.rotation.z = Math.PI / 2.4;
     room1Group.add(ring3);
@@ -345,7 +387,7 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     const cubeGeo = new THREE.BoxGeometry(1.2, 1.2, 1.2);
     const cubeMats = [
       new THREE.MeshStandardMaterial({ color: P.ringBlue, wireframe: true, emissive: P.ringBlue, emissiveIntensity: 0.4 }),
-      new THREE.MeshStandardMaterial({ color: 0xd6ff33, wireframe: true, emissive: 0xd6ff33, emissiveIntensity: 0.4 }),
+      new THREE.MeshStandardMaterial({ color: 0x4cc8ff, wireframe: true, emissive: 0x4cc8ff, emissiveIntensity: 0.4 }),
     ];
     for (let i = 0; i < 8; i++) {
       const angle = (i / 8) * Math.PI * 2;
@@ -385,7 +427,7 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     corridorGroup.add(room5Group);
 
     const beaconGeo = new THREE.SphereGeometry(1.2, 16, 16);
-    const beaconMat = new THREE.MeshStandardMaterial({ color: 0xffb15e, wireframe: true, emissive: 0xffb15e, emissiveIntensity: 0.9 });
+    const beaconMat = new THREE.MeshStandardMaterial({ color: 0xffaa44, wireframe: true, emissive: 0xffaa44, emissiveIntensity: 1.0 });
     const beaconMesh = new THREE.Mesh(beaconGeo, beaconMat);
     room5Group.add(beaconMesh);
 
@@ -415,6 +457,20 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     const particles = new THREE.Points(particleGeo, particleMat);
     scene.add(particles);
 
+    // 亮星層（深空星野）
+    const starCount = 280;
+    const starGeo = new THREE.BufferGeometry();
+    const starPos = new Float32Array(starCount * 3);
+    for (let i = 0; i < starCount * 3; i += 3) {
+      starPos[i] = (Math.random() - 0.5) * 32;
+      starPos[i + 1] = (Math.random() - 0.5) * 22;
+      starPos[i + 2] = -Math.random() * 72;
+    }
+    starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+    const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.09, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false });
+    const stars = new THREE.Points(starGeo, starMat);
+    scene.add(stars);
+
     // --- 流星（Shooting stars）---
     const comets: Array<{ mesh: THREE.Mesh; vel: THREE.Vector3 }> = [];
     for (let i = 0; i < 4; i++) {
@@ -432,7 +488,7 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
 
     // --- 可互動物件（滑鼠 hover 放大）---
     const interactive: Array<{ mesh: THREE.Mesh; baseScale: number }> = [];
-    [ozPlanet, ring1, ring2, ring3, portalMesh, sun, planet, ...creatures.map((c) => c.mesh)].forEach((m) => {
+    [horizon, accretionDisk, photonRing, lensedHalo, ring1, ring2, ring3, portalMesh, sun, planet, ...creatures.map((c) => c.mesh)].forEach((m) => {
       interactive.push({ mesh: m, baseScale: m.scale.x });
     });
     cubesGroup.children.forEach((m) => {
@@ -562,10 +618,10 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
       room1Group.rotation.x = Math.sin(elapsed * 0.8) * 0.15;
       ring1.rotation.z += 0.015;
       ring2.rotation.x += 0.012;
-      const pulse = 1.0 + Math.sin(elapsed * 2.5) * 0.08;
-      innerMesh.scale.set(pulse, pulse, pulse);
+      accretionDisk.rotation.z += 0.02;
+      lensedHalo.rotation.z += 0.004;
 
-      ozPlanet.rotation.y += 0.002;
+      horizon.rotation.y += 0.001;
       nodeGroup.rotation.y += 0.003;
       nodeGroup.rotation.x = Math.sin(elapsed * 0.4) * 0.1;
 
