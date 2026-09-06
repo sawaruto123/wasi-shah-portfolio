@@ -3,31 +3,38 @@ import { Moon, Sun } from 'lucide-react';
 
 const STORAGE_KEY = 'ws-theme';
 
-function isDark(): boolean {
-  if (typeof document === 'undefined') return false;
-  return document.documentElement.classList.contains('dark');
+// 模組層級的單一來源：所有 useTheme() 共用同一份 state，
+// 避免切換只在局部生效（尤其是 3D 世界顏色沒跟著換）。
+let currentDark: boolean =
+  typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+
+const listeners = new Set<(dark: boolean) => void>();
+
+function applyDark(next: boolean) {
+  currentDark = next;
+  if (typeof document !== 'undefined') {
+    document.documentElement.classList.toggle('dark', next);
+  }
+  try {
+    localStorage.setItem(STORAGE_KEY, next ? 'dark' : 'light');
+  } catch {
+    /* ignore */
+  }
+  listeners.forEach((l) => l(next));
 }
 
 export function useTheme() {
-  const [dark, setDark] = useState<boolean>(isDark);
+  const [dark, setDark] = useState<boolean>(currentDark);
 
-  // Sync with the class set by the inline script in index.html (and any external changes)
   useEffect(() => {
-    setDark(isDark());
+    const listener = (v: boolean) => setDark(v);
+    listeners.add(listener);
+    return () => {
+      listeners.delete(listener);
+    };
   }, []);
 
-  const toggle = useCallback(() => {
-    setDark((prev) => {
-      const next = !prev;
-      document.documentElement.classList.toggle('dark', next);
-      try {
-        localStorage.setItem(STORAGE_KEY, next ? 'dark' : 'light');
-      } catch {
-        /* ignore */
-      }
-      return next;
-    });
-  }, []);
+  const toggle = useCallback(() => applyDark(!currentDark), []);
 
   return { dark, toggle };
 }
