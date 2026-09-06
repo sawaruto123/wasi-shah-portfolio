@@ -264,16 +264,16 @@ html, body {
 html.dark { color-scheme: dark; }
 
 html.dark {
-  --color-ink: #EAF2FB;
-  --color-ink-muted: #9FB2C8;
-  --color-surface-pure: #0B1420;
-  --color-surface-warm: #0F1C2E;
-  --color-surface-container: #162941;
-  --color-surface-container-high: #1D3450;
-  --color-primary: #4C9FFF;
-  --color-primary-dark: #8AB8FF;
-  --color-primary-light: #0E2A4A;
-  --color-border-crisp: #1E3554;
+  --color-ink: #F4F8FF;
+  --color-ink-muted: #B8C8DD;
+  --color-surface-pure: #0F1C2E;
+  --color-surface-warm: #13233A;
+  --color-surface-container: #1B304E;
+  --color-surface-container-high: #234061;
+  --color-primary: #55A6FF;
+  --color-primary-dark: #93C2FF;
+  --color-primary-light: #12314F;
+  --color-border-crisp: #2C4C74;
   --color-accent-lime: #D6FF33;
   --color-accent-orange: #FFC07A;
   --color-accent-pink: #FFB3C8;
@@ -282,28 +282,28 @@ html.dark {
 }
 
 html.dark, html.dark body {
-  background-color: #060B12;
-  background-image: radial-gradient(ellipse 120% 80% at 50% -10%, #0A1B33 0%, #060B12 55%, #02050A 100%);
-  color: #EAF2FB;
+  background-color: #04070D;
+  background-image: radial-gradient(ellipse 120% 80% at 50% -10%, #081627 0%, #04070D 55%, #01030A 100%);
+  color: #F4F8FF;
 }
 
 /* 主按鈕（bg-ink + text-white）→ 暗色模式改用亮面深字 */
 html.dark .bg-ink {
-  background-color: #EAF2FB;
-  color: #0B1420;
+  background-color: #F4F8FF;
+  color: #081120;
 }
 
-/* 半透明白色面板/chips → 半透明深色 */
-html.dark .bg-white { background-color: #0B1420; }
-html.dark .bg-white\/60 { background-color: rgb(11 20 32 / 0.6); }
-html.dark .bg-white\/70 { background-color: rgb(11 20 32 / 0.7); }
-html.dark .bg-white\/80 { background-color: rgb(11 20 32 / 0.8); }
-html.dark .bg-white\/85 { background-color: rgb(11 20 32 / 0.85); }
-html.dark .bg-white\/90 { background-color: rgb(11 20 32 / 0.9); }
-html.dark .bg-white\/95 { background-color: rgb(11 20 32 / 0.95); }
+/* 半透明白色面板/chips → 半透明深色（與卡片同色系） */
+html.dark .bg-white { background-color: #0F1C2E; }
+html.dark .bg-white\/60 { background-color: rgb(15 28 46 / 0.6); }
+html.dark .bg-white\/70 { background-color: rgb(15 28 46 / 0.7); }
+html.dark .bg-white\/80 { background-color: rgb(15 28 46 / 0.8); }
+html.dark .bg-white\/85 { background-color: rgb(15 28 46 / 0.85); }
+html.dark .bg-white\/90 { background-color: rgb(15 28 46 / 0.9); }
+html.dark .bg-white\/95 { background-color: rgb(15 28 46 / 0.95); }
 
 html.dark .glass-card {
-  background: rgba(11, 20, 32, 0.78);
+  background: rgba(15, 28, 46, 0.82);
 }
 
 html.dark .hairline-grid {
@@ -312,22 +312,29 @@ html.dark .hairline-grid {
     linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
 }
 
+/* 暗色環境光：只用頂部藍光提亮，不再壓暗底部 */
 html.dark .light-wash {
-  background: linear-gradient(var(--light-angle, 135deg), rgba(76, 159, 255, 0.14) 0%, rgba(0, 0, 0, 0) 45%, rgba(0, 0, 0, 0.4) 100%);
+  background: linear-gradient(var(--light-angle, 135deg), rgba(95, 176, 255, 0.10) 0%, rgba(0, 0, 0, 0) 55%);
+  mix-blend-mode: screen;
 }
 
 html.dark .spatial-card {
-  background-color: rgba(11, 20, 32, 0.85);
-  background-image: radial-gradient(560px circle at calc(var(--mx, 0) * 50% + 50%) calc(var(--my, 0) * 50% + 50%), rgba(76, 159, 255, 0.10), rgba(0, 0, 0, 0) 55%);
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.45), 0 3px 10px rgba(0, 0, 0, 0.35);
+  background-color: rgba(15, 28, 46, 0.9);
+  background-image: radial-gradient(560px circle at calc(var(--mx, 0) * 50% + 50%) calc(var(--my, 0) * 50% + 50%), rgba(85, 166, 255, 0.12), rgba(0, 0, 0, 0) 55%);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55), 0 3px 10px rgba(0, 0, 0, 0.4);
 }
 html.dark .spatial-card:hover {
-  border-color: rgba(76, 159, 255, 0.55);
-  box-shadow: 0 0 0 1px rgba(76, 159, 255, 0.35), 0 0 30px rgba(76, 159, 255, 0.4), 0 24px 50px rgba(0, 0, 0, 0.55);
+  border-color: rgba(85, 166, 255, 0.65);
+  box-shadow: 0 0 0 1px rgba(85, 166, 255, 0.4), 0 0 30px rgba(85, 166, 255, 0.45), 0 24px 50px rgba(0, 0, 0, 0.65);
 }
 
 html.dark .float-shape {
   color: #7FD4FF;
-  opacity: 0.28;
+  opacity: 0.3;
 }
+
+/* 交互狀態的對比修正 */
+html.dark .focus\:bg-white:focus { background-color: #1B304E; }
+html.dark .hover\:bg-ink:hover { background-color: #55A6FF; }
+html.dark .film-grain { opacity: 0.03; }
 

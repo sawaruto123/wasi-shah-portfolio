@@ -18,18 +18,18 @@ export const NavigationHUD: React.FC<NavigationHUDProps> = ({
   const { settings } = useContent();
   return (
     <header className="fixed top-3 inset-x-0 z-50 px-3 sm:px-6 lg:px-10 max-w-[1780px] mx-auto">
-      <div className="h-16 rounded-2xl glass-card border border-black/10 shadow-[0_4px_30px_rgba(0,0,0,0.05)] px-4 sm:px-6 flex items-center justify-between gap-4">
+      <div className="h-16 rounded-2xl glass-card border border-black/10 shadow-[0_4px_30px_rgba(0,0,0,0.05)] px-3 sm:px-6 flex items-center justify-between gap-3">
         {/* Brand Wordmark & Monogram */}
         <button
           onClick={() => onNavigate('room-nexus')}
-          className="flex items-center gap-3 shrink-0 group text-left cursor-pointer bg-transparent border-none p-0"
+          className="flex items-center gap-2.5 shrink-0 group text-left cursor-pointer bg-transparent border-none p-0"
         >
           <div className="w-9 h-9 rounded-xl bg-ink text-white flex items-center justify-center font-mono font-bold text-xs tracking-wider group-hover:bg-primary transition-colors">
             WS
           </div>
-          <div className="flex items-baseline gap-1.5 font-display text-sm md:text-base font-black tracking-tight text-ink">
-            <span className="group-hover:text-primary transition-colors">{settings.profile.name}</span>
-            <span className="text-ink-muted font-mono text-xs">/</span>
+          <div className="flex items-baseline gap-1.5 font-display text-sm md:text-base font-black tracking-tight text-ink whitespace-nowrap">
+            <span className="group-hover:text-primary transition-colors hidden sm:inline">{settings.profile.name}</span>
+            <span className="text-ink-muted font-mono text-xs hidden sm:inline">/</span>
             <span className="font-chinese text-ink font-bold text-xs tracking-widest">{settings.profile.name_cn}</span>
           </div>
         </button>
@@ -102,7 +102,7 @@ export const NavigationHUD: React.FC<NavigationHUDProps> = ({
           <ThemeToggle />
           <button
             onClick={() => onNavigate('room-dispatch')}
-            className="group inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white font-mono text-xs font-bold uppercase tracking-wider shadow-[0_4px_16px_rgba(0,71,255,0.3)] hover:bg-ink hover:shadow-none hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border-none"
+            className="group inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 rounded-xl bg-primary text-white font-mono text-xs font-bold uppercase tracking-wider whitespace-nowrap shadow-[0_4px_16px_rgba(0,71,255,0.3)] hover:bg-ink hover:shadow-none hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border-none"
           >
             <span>Connect</span>
             <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
