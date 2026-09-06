@@ -77,19 +77,19 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
           fillI: 0.9,
           back: 0xff9db2,
           backI: 1.5,
-          exposure: 1.25,
-          bloomStrength: 0.55,
-          bloomThreshold: 0.72,
+          exposure: 1.15,
+          bloomStrength: 0.3,
+          bloomThreshold: 1.0,
           coreEmissive: 0x2e7cf6,
-          coreEmissiveI: 1.2,
+          coreEmissiveI: 1.3,
           ringBlue: 0x1e5bc4,
           ringOrange: 0xff9a2e,
           ringPink: 0xff5ca8,
           particle: 0x2e7cf6,
-          particleOpacity: 0.75,
-          creatureOpacity: 0.7,
+          particleOpacity: 0.9,
+          creatureOpacity: 0.75,
           cloudOpacity: 0.05,
-          planetOpacity: 0.55,
+          planetOpacity: 0.7,
           planetEmissive: 0x2e7cf6,
           planetEmissiveI: 0.6,
         };
@@ -256,7 +256,7 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
       const x = r * Math.sin(phi) * Math.cos(theta);
       const y = r * Math.sin(phi) * Math.sin(theta);
       const z = r * Math.cos(phi);
-      const dot = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffb15e }));
+      const dot = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffb15e }));
       dot.position.set(x, y, z);
       nodeGroup.add(dot);
       nodeDots.push(dot);
@@ -288,20 +288,20 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     room1Group.add(innerMesh);
 
     // Dual Kinetic Gyro Rings
-    const ringGeo1 = new THREE.TorusGeometry(3.0, 0.025, 16, 100);
+    const ringGeo1 = new THREE.TorusGeometry(3.0, 0.04, 16, 100);
     const ringMat1 = new THREE.MeshBasicMaterial({ color: P.ringBlue });
     const ring1 = new THREE.Mesh(ringGeo1, ringMat1);
     ring1.rotation.x = Math.PI / 3;
     room1Group.add(ring1);
 
-    const ringGeo2 = new THREE.TorusGeometry(3.3, 0.02, 16, 100);
+    const ringGeo2 = new THREE.TorusGeometry(3.3, 0.032, 16, 100);
     const ringMat2 = new THREE.MeshBasicMaterial({ color: P.ringOrange });
     const ring2 = new THREE.Mesh(ringGeo2, ringMat2);
     ring2.rotation.y = Math.PI / 4;
     room1Group.add(ring2);
 
     // 夏日大作戰（OZ）風格的暖色環
-    const ringGeo3 = new THREE.TorusGeometry(3.6, 0.018, 16, 100);
+    const ringGeo3 = new THREE.TorusGeometry(3.6, 0.028, 16, 100);
     const ringMat3 = new THREE.MeshBasicMaterial({ color: P.ringPink });
     const ring3 = new THREE.Mesh(ringGeo3, ringMat3);
     ring3.rotation.z = Math.PI / 2.4;
@@ -402,7 +402,7 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePos, 3));
     const particleMat = new THREE.PointsMaterial({
       color: P.particle,
-      size: 0.05,
+      size: 0.07,
       transparent: true,
       opacity: P.particleOpacity,
       blending: dark ? THREE.AdditiveBlending : THREE.NormalBlending,
