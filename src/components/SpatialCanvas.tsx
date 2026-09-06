@@ -68,30 +68,30 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
           bg: 0xf6faff,
           fog: 0xeaf2fb,
           gridCenter: 0x2e7cf6,
-          gridGrid: 0xc4d8f2,
+          gridGrid: 0x8fb4e8,
           ambient: 0xffffff,
-          ambientI: 0.72,
+          ambientI: 0.6,
           key: 0xbfd9ff,
-          keyI: 2.4,
+          keyI: 2.5,
           fill: 0xffdfc4,
           fillI: 0.9,
           back: 0xff9db2,
           backI: 1.5,
-          exposure: 1.22,
-          bloomStrength: 0.52,
-          bloomThreshold: 0.74,
+          exposure: 1.25,
+          bloomStrength: 0.55,
+          bloomThreshold: 0.72,
           coreEmissive: 0x2e7cf6,
-          coreEmissiveI: 1.1,
-          ringBlue: 0x2e7cf6,
-          ringOrange: 0xffb15e,
-          ringPink: 0xff9db2,
-          particle: 0x4cc8ff,
-          particleOpacity: 0.5,
-          creatureOpacity: 0.5,
-          cloudOpacity: 0.07,
-          planetOpacity: 0.34,
+          coreEmissiveI: 1.2,
+          ringBlue: 0x1e5bc4,
+          ringOrange: 0xff9a2e,
+          ringPink: 0xff5ca8,
+          particle: 0x2e7cf6,
+          particleOpacity: 0.75,
+          creatureOpacity: 0.7,
+          cloudOpacity: 0.05,
+          planetOpacity: 0.55,
           planetEmissive: 0x2e7cf6,
-          planetEmissiveI: 0.55,
+          planetEmissiveI: 0.6,
         };
 
     const scene = new THREE.Scene();
@@ -262,7 +262,7 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
       nodeDots.push(dot);
       nodePoints.push(new THREE.Vector3(x, y, z));
     }
-    const lineMat = new THREE.LineBasicMaterial({ color: 0x6cc8ff, transparent: true, opacity: 0.55 });
+    const lineMat = new THREE.LineBasicMaterial({ color: P.ringBlue, transparent: true, opacity: 0.75 });
     for (let i = 0; i < nodePoints.length; i++) {
       for (let j = i + 1; j < nodePoints.length; j++) {
         if (nodePoints[i].distanceTo(nodePoints[j]) < 1.05) {
@@ -405,7 +405,7 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
       size: 0.05,
       transparent: true,
       opacity: P.particleOpacity,
-      blending: THREE.AdditiveBlending,
+      blending: dark ? THREE.AdditiveBlending : THREE.NormalBlending,
       depthWrite: false,
     });
     const particles = new THREE.Points(particleGeo, particleMat);
