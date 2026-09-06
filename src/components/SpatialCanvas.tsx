@@ -29,6 +29,7 @@ const SKY_FRAG = /* glsl */ `
 precision highp float;
 uniform vec3 uCamPos;
 uniform vec3 uSkyBase;
+uniform float uNebulaI;
 varying vec3 vWorldPos;
 
 vec3 nebula(vec3 rd) {
@@ -36,7 +37,7 @@ vec3 nebula(vec3 rd) {
   float t2 = 0.5 + 0.5 * sin(rd.z * 3.0 - rd.x * 2.0 + 1.7);
   float t3 = 0.5 + 0.5 * sin(rd.y * 4.0 + rd.z * 3.0 + 3.1);
   vec3 base = uSkyBase;
-  vec3 tint = vec3(0.06, 0.10, 0.20) * t1 + vec3(0.14, 0.06, 0.20) * t2 + vec3(0.03, 0.12, 0.20) * t3;
+  vec3 tint = (vec3(0.06, 0.10, 0.20) * t1 + vec3(0.14, 0.06, 0.20) * t2 + vec3(0.03, 0.12, 0.20) * t3) * uNebulaI;
   return base + tint;
 }
 
@@ -165,7 +166,7 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     const dark = darkMode;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(dark ? 0x020409 : 0x0a1626);
+    scene.background = new THREE.Color(dark ? 0x000001 : 0x020611);
 
     const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 500);
     camera.position.set(14, 2.5, 0);
@@ -179,7 +180,7 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = dark ? 1.0 : 1.0;
+    renderer.toneMappingExposure = dark ? 0.7 : 1.0;
     container.appendChild(renderer.domElement);
 
     // 環境光（行星反射用）
@@ -202,13 +203,14 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     scene.add(ambientLight);
 
     // ── 天空球（星雲 + 透鏡） ──
-    const skyBase = dark ? new THREE.Color(0.015, 0.025, 0.05) : new THREE.Color(0.30, 0.42, 0.55);
+    const skyBase = dark ? new THREE.Color(0.0015, 0.003, 0.006) : new THREE.Color(0.01, 0.02, 0.04);
     const skyMat = new THREE.ShaderMaterial({
       vertexShader: SKY_VERT,
       fragmentShader: SKY_FRAG,
       uniforms: {
         uCamPos: { value: camera.position.clone() },
         uSkyBase: { value: skyBase },
+        uNebulaI: { value: dark ? 0.06 : 0.3 },
       },
       side: THREE.BackSide,
       depthWrite: false,
@@ -320,7 +322,7 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
       color: 0xffffff,
       size: 0.14,
       transparent: true,
-      opacity: 0.9,
+      opacity: dark ? 0.45 : 0.9,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });

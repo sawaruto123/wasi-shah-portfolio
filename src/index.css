@@ -97,8 +97,8 @@ html, body {
 
 /* 全螢幕環境光（從光源方向掃過、漸淡） */
 .light-wash {
-  background: linear-gradient(var(--light-angle, 135deg), rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 40%, rgba(15, 35, 80, 0.06) 100%);
-  mix-blend-mode: soft-light;
+  background: linear-gradient(var(--light-angle, 135deg), rgba(110, 170, 255, 0.10) 0%, rgba(0, 0, 0, 0) 50%);
+  mix-blend-mode: screen;
 }
 
 /* 漂浮動畫（幾何生物 / chips / 面板） */
