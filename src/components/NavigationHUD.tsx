@@ -24,8 +24,17 @@ export const NavigationHUD: React.FC<NavigationHUDProps> = ({
           onClick={() => onNavigate('room-nexus')}
           className="flex items-center gap-2.5 shrink-0 group text-left cursor-pointer bg-transparent border-none p-0"
         >
-          <div className="w-9 h-9 rounded-xl bg-ink text-white flex items-center justify-center font-mono font-bold text-xs tracking-wider group-hover:bg-primary transition-colors">
-            {settings.profile.logo_text}
+          <div className="w-9 h-9 rounded-xl overflow-hidden bg-ink text-white flex items-center justify-center font-mono font-bold text-xs tracking-wider group-hover:bg-primary transition-colors">
+            {settings.profile.logo_image ? (
+              <img
+                src={settings.profile.logo_image}
+                alt="Logo"
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              settings.profile.logo_text
+            )}
           </div>
           <div className="flex items-baseline gap-1.5 font-display text-sm md:text-base font-black tracking-tight text-ink whitespace-nowrap">
             <span className="group-hover:text-primary transition-colors hidden sm:inline">{settings.profile.name}</span>

@@ -97,6 +97,9 @@ export const SettingsManager: React.FC = () => {
         <Field label="Portrait image" className="mt-4">
           <ImageField value={settings.profile.portrait} onChange={(url) => patchNested('profile', { portrait: url })} />
         </Field>
+        <Field label="Logo image (optional — auto-cropped to square)" className="mt-4">
+          <ImageField value={settings.profile.logo_image} onChange={(url) => patchNested('profile', { logo_image: url })} />
+        </Field>
         <Field label="Role line (footer)" className="mt-4">
           <TextInput value={settings.profile.role_line} onChange={(e) => patchNested('profile', { role_line: e.target.value })} />
         </Field>

@@ -74,6 +74,7 @@ export interface ProfileInfo {
   portrait: string;
   role_line: string;
   logo_text: string;
+  logo_image: string;
 }
 
 export interface ContactInfo {
