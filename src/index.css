@@ -142,36 +142,41 @@ html, body {
   display: none;
 }
 
-/* 飛越光效：速度線 + 藍移殘影 */
-@keyframes warpFlash {
+/* 飛越光效：輻射速度線（warp rush）＋ 藍移殘影 */
+@keyframes warpFade {
   0% { opacity: 0; }
   30% { opacity: 1; }
   100% { opacity: 0; }
 }
-@keyframes warpSweep {
-  0% { transform: translateX(-100%); opacity: 0; }
-  15% { opacity: 1; }
-  85% { opacity: 1; }
-  100% { transform: translateX(100%); opacity: 0; }
+@keyframes warpRush {
+  0% { transform: translate(-50%, -50%) scale(0.3) rotate(0deg); opacity: 0; }
+  22% { opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(2.4) rotate(35deg); opacity: 0; }
 }
 .warp-flash {
-  background: radial-gradient(ellipse at 50% 50%, rgba(0, 71, 255, 0.25) 0%, rgba(0, 71, 255, 0.04) 70%);
-  animation: warpFlash 0.5s ease-out forwards;
+  background: radial-gradient(ellipse at 50% 50%, rgba(0, 71, 255, 0.2) 0%, rgba(0, 71, 255, 0) 72%);
+  animation: warpFade 0.6s ease-out forwards;
   overflow: hidden;
 }
 .warp-flash::before {
   content: '';
   position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.55) 0 3px, transparent 3px 34px);
-  animation: warpSweep 0.5s ease-out forwards;
+  left: 50%;
+  top: 50%;
+  width: 240vmax;
+  height: 240vmax;
+  transform: translate(-50%, -50%) scale(0.3);
+  background: repeating-conic-gradient(from 0deg, rgba(255, 255, 255, 0.65) 0deg 2deg, transparent 2deg 12deg);
+  -webkit-mask-image: radial-gradient(circle, transparent 0%, black 52%);
+  mask-image: radial-gradient(circle, transparent 0%, black 52%);
+  animation: warpRush 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 .warp-flash::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(0, 71, 255, 0.4) 50%, transparent 100%);
-  animation: warpSweep 0.6s ease-out forwards;
+  background: linear-gradient(90deg, transparent 0%, rgba(0, 71, 255, 0.3) 50%, transparent 100%);
+  animation: warpFade 0.5s ease-out forwards;
 }
 
 /* 房間進場：真實故障（RGB 三色分離 + 抖動 + 掃描塊） */
