@@ -4,6 +4,7 @@ import { DEFAULT_SETTINGS } from '../data';
 import { buildSettings } from '../lib/content';
 import type { SiteSettings, SocialLink, ExperienceItem, LanguageItem } from '../types';
 import { Field, TextInput, TextArea, Button, ImageField } from './fields';
+import { CropImageField } from './cropper';
 
 export const SettingsManager: React.FC = () => {
   const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SETTINGS);
@@ -97,8 +98,11 @@ export const SettingsManager: React.FC = () => {
         <Field label="Portrait image" className="mt-4">
           <ImageField value={settings.profile.portrait} onChange={(url) => patchNested('profile', { portrait: url })} />
         </Field>
-        <Field label="Logo image (optional — auto-cropped to square)" className="mt-4">
-          <ImageField value={settings.profile.logo_image} onChange={(url) => patchNested('profile', { logo_image: url })} />
+        <Field label="Logo image (optional — crop to square)" className="mt-4">
+          <CropImageField value={settings.profile.logo_image} onChange={(url) => patchNested('profile', { logo_image: url })} />
+        </Field>
+        <Field label="Favicon (browser tab icon — crop to square)" className="mt-4">
+          <CropImageField value={settings.profile.favicon} onChange={(url) => patchNested('profile', { favicon: url })} outputSize={64} />
         </Field>
         <Field label="Role line (footer)" className="mt-4">
           <TextInput value={settings.profile.role_line} onChange={(e) => patchNested('profile', { role_line: e.target.value })} />

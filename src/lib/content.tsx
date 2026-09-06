@@ -153,6 +153,19 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     refresh();
   }, [refresh]);
 
+  // 動態更新瀏覽器分頁 favicon（由 CMS 設定）
+  useEffect(() => {
+    const favicon = settings.profile.favicon;
+    if (!favicon) return;
+    let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+    link.href = favicon;
+  }, [settings.profile.favicon]);
+
   const value = useMemo<ContentValue>(
     () => ({ projects, films, stills, engagements, settings, loading, source, refresh }),
     [projects, films, stills, engagements, settings, loading, source, refresh]

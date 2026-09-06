@@ -1,17 +1,22 @@
 import { supabase } from '../lib/supabase';
 
-/** Uploads an image file to the public Supabase Storage bucket, returns its public URL. */
-export async function uploadImage(file: File): Promise<string> {
+/** Uploads a blob (e.g. a cropped canvas) to the public Supabase Storage bucket. */
+export async function uploadBlob(blob: Blob, ext: string): Promise<string> {
   if (!supabase) throw new Error('Supabase is not configured');
-  const ext = file.name.split('.').pop() || 'jpg';
   const name = `cms/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext.toLowerCase()}`;
-  const { error } = await supabase.storage.from('images').upload(name, file, {
+  const { error } = await supabase.storage.from('images').upload(name, blob, {
     cacheControl: '3600',
     upsert: false,
   });
   if (error) throw new Error(error.message);
   const { data } = supabase.storage.from('images').getPublicUrl(name);
   return data.publicUrl;
+}
+
+/** Uploads an image file to the public Supabase Storage bucket, returns its public URL. */
+export function uploadImage(file: File): Promise<string> {
+  const ext = file.name.split('.').pop() || 'jpg';
+  return uploadBlob(file, ext);
 }
 
 /** Generates a URL-safe id from a title. */

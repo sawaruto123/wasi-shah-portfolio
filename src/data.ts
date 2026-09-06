@@ -189,6 +189,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
     role_line: 'HKMU BSc CS · ADOBE AMBASSADOR · CREATIVE DEVELOPER',
     logo_text: 'WS',
     logo_image: '',
+    favicon: '',
   },
   contact: {
     headline: "Let's build something unforgettable.",
