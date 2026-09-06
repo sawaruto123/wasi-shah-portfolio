@@ -38,7 +38,6 @@ html, body {
   background-attachment: fixed;
   color: #11263F;
   font-family: 'Plus Jakarta Sans', sans-serif;
-  scroll-behavior: smooth;
 }
 
 ::selection {
