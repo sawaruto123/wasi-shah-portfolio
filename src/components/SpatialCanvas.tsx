@@ -412,10 +412,11 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     const particles = new THREE.Points(particleGeo, particleMat);
     scene.add(particles);
 
-    // Mouse Interactivity
+    // Mouse Interactivity（只在有滑鼠的裝置啟用）
     let targetRotX = 0;
     let targetRotY = 0;
     const pointerNdc = new THREE.Vector2(0, 0);
+    const hasFinePointer = window.matchMedia('(pointer: fine)').matches;
 
     const handleMouseMove = (e: MouseEvent) => {
       const normX = (e.clientX / window.innerWidth) * 2 - 1;
@@ -424,7 +425,9 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
       targetRotX = normY * 0.35;
       pointerNdc.set(normX, normY);
     };
-    window.addEventListener('mousemove', handleMouseMove);
+    if (hasFinePointer) {
+      window.addEventListener('mousemove', handleMouseMove);
+    }
 
     // Scroll-driven Navigation
     let scrollProgress = 0;
@@ -533,7 +536,9 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
 
     return () => {
       cancelAnimationFrame(animId);
-      window.removeEventListener('mousemove', handleMouseMove);
+      if (hasFinePointer) {
+        window.removeEventListener('mousemove', handleMouseMove);
+      }
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleResize);
       composer.dispose();

@@ -87,7 +87,9 @@ export default function App() {
   }, [activeIndex]);
 
   // 滑鼠驅動的 3D 傾斜（寫入 CSS 變數，rAF 節流，不觸發 React 重繪）
+  // 只在有滑鼠（fine pointer）的裝置啟用，手機/觸控不生效
   useEffect(() => {
+    if (!window.matchMedia('(pointer: fine)').matches) return;
     let raf = 0;
     let mx = 0;
     let my = 0;
