@@ -14,6 +14,7 @@ export const RoomDispatch: React.FC<RoomDispatchProps> = ({ onShowToast }) => {
   const [clientName, setClientName] = useState('');
   const [clientEmail, setClientEmail] = useState('');
   const [parameters, setParameters] = useState('');
+  const [honeypot, setHoneypot] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -33,11 +34,12 @@ export const RoomDispatch: React.FC<RoomDispatchProps> = ({ onShowToast }) => {
       if (!supabase) {
         throw new Error('Message service unavailable — please email me directly.');
       }
-      const { error } = await supabase.from('messages').insert({
-        name: clientName.trim(),
-        email: clientEmail.trim(),
-        scope: domainScope,
-        details: parameters.trim(),
+      const { error } = await supabase.rpc('submit_message', {
+        p_name: clientName.trim(),
+        p_email: clientEmail.trim(),
+        p_scope: domainScope,
+        p_details: parameters.trim(),
+        p_honeypot: honeypot,
       });
       if (error) throw error;
       onShowToast('Message sent to Wasi Shah (峻山). Usually replies within 6 hours.');
@@ -138,6 +140,16 @@ export const RoomDispatch: React.FC<RoomDispatchProps> = ({ onShowToast }) => {
             </div>
 
             <form className="space-y-5" onSubmit={handleSubmit}>
+              <input
+                type="text"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+                name="company"
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                className="hidden"
+              />
               <div>
                 <label className="font-mono text-xs uppercase tracking-wider text-ink font-bold block mb-2.5">
                   What do you need?
