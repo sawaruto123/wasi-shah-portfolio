@@ -4,39 +4,7 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
-import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
-
-/** 程序化吸積盤紋理：白熱內圈 → 橙紅外圈 + 渦流噪點 */
-function makeAccretionTexture(): THREE.Texture {
-  const size = 512;
-  const canvas = document.createElement('canvas');
-  canvas.width = canvas.height = size;
-  const ctx = canvas.getContext('2d')!;
-  const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
-  g.addColorStop(0, 'rgba(255,255,255,1)');
-  g.addColorStop(0.33, 'rgba(255,235,190,0.95)');
-  g.addColorStop(0.5, 'rgba(255,165,80,0.7)');
-  g.addColorStop(0.72, 'rgba(185,75,25,0.28)');
-  g.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, size, size);
-  for (let i = 0; i < 900; i++) {
-    const a = Math.random() * Math.PI * 2;
-    const r = (size / 2) * (0.25 + Math.random() * 0.7);
-    const x = size / 2 + Math.cos(a) * r;
-    const y = size / 2 + Math.sin(a) * r;
-    const warm = 190 + Math.floor(Math.random() * 65);
-    ctx.strokeStyle = `rgba(255,${warm},${60 + Math.floor(Math.random() * 70)},${0.08 + Math.random() * 0.3})`;
-    ctx.lineWidth = 1 + Math.random() * 2.5;
-    ctx.beginPath();
-    ctx.arc(x, y, 3 + Math.random() * 22, a, a + 0.35 + Math.random() * 1.6);
-    ctx.stroke();
-  }
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
-}
 
 interface SpatialCanvasProps {
   onScrollProgress?: (progress: number) => void;
@@ -45,16 +13,148 @@ interface SpatialCanvasProps {
   onReady?: () => void;
 }
 
+// ─────────────────────────────────────────────────────────────
+// 天空（背景）Shader：星雲 + 重力透鏡 + 光子環 + 黑洞陰影
+// ─────────────────────────────────────────────────────────────
+const SKY_VERT = /* glsl */ `
+varying vec3 vWorldPos;
+void main() {
+  vec4 wp = modelMatrix * vec4(position, 1.0);
+  vWorldPos = wp.xyz;
+  gl_Position = projectionMatrix * viewMatrix * wp;
+}
+`;
+
+const SKY_FRAG = /* glsl */ `
+precision highp float;
+uniform vec3 uCamPos;
+uniform vec3 uSkyBase;
+varying vec3 vWorldPos;
+
+vec3 nebula(vec3 rd) {
+  float t1 = 0.5 + 0.5 * sin(rd.y * 2.0 + rd.x * 1.3);
+  float t2 = 0.5 + 0.5 * sin(rd.z * 3.0 - rd.x * 2.0 + 1.7);
+  float t3 = 0.5 + 0.5 * sin(rd.y * 4.0 + rd.z * 3.0 + 3.1);
+  vec3 base = uSkyBase;
+  vec3 tint = vec3(0.06, 0.10, 0.20) * t1 + vec3(0.14, 0.06, 0.20) * t2 + vec3(0.03, 0.12, 0.20) * t3;
+  return base + tint;
+}
+
+void main() {
+  vec3 rd = normalize(vWorldPos - uCamPos);
+  vec3 bhDir = normalize(-uCamPos); // 黑洞在原點
+  float cosA = clamp(dot(rd, bhDir), -1.0, 1.0);
+  float ang = acos(cosA);
+  float d = length(uCamPos);
+  float b = d * sin(ang);      // 撞擊參數（近似）
+  float bCrit = 2.6;           // 臨界撞擊參數（光子環）
+
+  vec3 col = nebula(rd);
+  // 重力透鏡：靠近黑洞的背景光被彎曲、增亮
+  float warp = smoothstep(bCrit * 3.0, bCrit, b);
+  float alpha = 2.0 / max(b, 0.1);
+  vec3 bent = normalize(rd + bhDir * alpha * 0.4 * (1.0 - warp));
+  col = mix(nebula(bent) * 1.5, col, warp);
+
+  // 光子環（白熱）
+  float ring = exp(-pow((b - bCrit) * 3.5, 2.0));
+  col += vec3(1.0, 0.9, 0.75) * ring * 2.2;
+
+  gl_FragColor = vec4(col, 1.0);
+}
+`;
+
+// ─────────────────────────────────────────────────────────────
+// 吸積盤 Shader：溫度漸層 + 差速旋轉 + 都卜勒增亮
+// ─────────────────────────────────────────────────────────────
+const DISK_VERT = /* glsl */ `
+varying vec3 vPos;
+void main() {
+  vPos = position;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`;
+
+const DISK_FRAG = /* glsl */ `
+precision highp float;
+uniform float uTime;
+varying vec3 vPos;
+
+void main() {
+  float r = length(vPos.xy);
+  float ang = atan(vPos.y, vPos.x);
+  float swirl = ang + uTime * (0.9 / (0.18 + r));
+  float s1 = 0.5 + 0.5 * sin(swirl * 18.0 + r * 30.0);
+  float s2 = 0.5 + 0.5 * sin(swirl * 7.0 - r * 12.0 + 1.7);
+  float grain = 0.55 + 0.5 * s1 * s2;
+
+  vec3 hot = vec3(1.0, 0.96, 0.9);
+  vec3 warm = vec3(1.0, 0.62, 0.2);
+  vec3 cool = vec3(0.5, 0.1, 0.02);
+
+  float t = 1.0 - smoothstep(1.5, 4.5, r); // 1 內圈 → 0 外圈
+  vec3 col = mix(cool, warm, smoothstep(0.1, 0.55, t));
+  col = mix(col, hot, smoothstep(0.7, 1.0, t));
+  col *= grain;
+  col *= (0.5 + 1.0 * smoothstep(-5.0, 5.0, vPos.x)); // 都卜勒增亮
+
+  float fade = (1.0 - smoothstep(3.8, 5.0, r)) * smoothstep(0.0, 0.4, r);
+  gl_FragColor = vec4(col * 1.4, fade);
+}
+`;
+
+function makePlanetTexture(kind: 'gas' | 'rock' | 'ice'): THREE.CanvasTexture {
+  const c = document.createElement('canvas');
+  c.width = c.height = 256;
+  const ctx = c.getContext('2d')!;
+  if (kind === 'gas') {
+    const g = ctx.createLinearGradient(0, 0, 0, 256);
+    g.addColorStop(0, '#7a4f2e');
+    g.addColorStop(0.2, '#c9a06a');
+    g.addColorStop(0.4, '#8a5a3a');
+    g.addColorStop(0.6, '#d9b48a');
+    g.addColorStop(0.8, '#6a4a30');
+    g.addColorStop(1, '#a8825a');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 256, 256);
+    for (let i = 0; i < 50; i++) {
+      const y = Math.random() * 256;
+      ctx.fillStyle = `rgba(0,0,0,${0.04 + Math.random() * 0.1})`;
+      ctx.fillRect(0, y, 256, 2 + Math.random() * 7);
+    }
+  } else if (kind === 'rock') {
+    ctx.fillStyle = '#8a8a8a';
+    ctx.fillRect(0, 0, 256, 256);
+    for (let i = 0; i < 8000; i++) {
+      const v = (60 + Math.random() * 90) | 0;
+      ctx.fillStyle = `rgb(${v},${v},${v})`;
+      ctx.fillRect(Math.random() * 256, Math.random() * 256, 1, 1);
+    }
+    for (let i = 0; i < 22; i++) {
+      ctx.beginPath();
+      ctx.arc(Math.random() * 256, Math.random() * 256, 3 + Math.random() * 12, 0, 6.283);
+      ctx.fillStyle = 'rgba(0,0,0,0.16)';
+      ctx.fill();
+    }
+  } else {
+    const g = ctx.createLinearGradient(0, 0, 0, 256);
+    g.addColorStop(0, '#b8d8f0');
+    g.addColorStop(0.5, '#e8f4fc');
+    g.addColorStop(1, '#9cc4e0');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 256, 256);
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
 export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
   onScrollProgress,
-  lightAngle = 135,
   darkMode = false,
   onReady,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const keyLightRef = useRef<THREE.DirectionalLight | null>(null);
-  const fillLightRef = useRef<THREE.DirectionalLight | null>(null);
-  const backLightRef = useRef<THREE.DirectionalLight | null>(null);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -62,76 +162,13 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
 
     const width = container.clientWidth || window.innerWidth;
     const height = container.clientHeight || window.innerHeight;
-
-    // ── 主題調色盤：夜間更黑更霓虹、日間更乾淨通透 ──────────────
     const dark = darkMode;
-    const P = dark
-      ? {
-          bg: 0x020409,
-          fog: 0x020409,
-          gridCenter: 0x2e7cf6,
-          gridGrid: 0x0f2038,
-          ambient: 0x667799,
-          ambientI: 0.28,
-          key: 0x5599dd,
-          keyI: 1.7,
-          fill: 0xccb09a,
-          fillI: 0.5,
-          back: 0xcc4a8a,
-          backI: 1.0,
-          exposure: 1.1,
-          bloomStrength: 0.4,
-          bloomThreshold: 0.8,
-          coreEmissive: 0x2e7cf6,
-          coreEmissiveI: 1.0,
-          ringBlue: 0x2e7cf6,
-          ringOrange: 0xcc9a62,
-          ringPink: 0xcc4a8a,
-          particle: 0x5599cc,
-          particleOpacity: 0.35,
-          creatureOpacity: 0.35,
-          cloudOpacity: 0.04,
-          planetOpacity: 0.3,
-          planetColor: 0x6cc8ff,
-          planetEmissive: 0x2e7cf6,
-          planetEmissiveI: 0.5,
-        }
-      : {
-          bg: 0xc6dcf3,
-          fog: 0xc6dcf3,
-          gridCenter: 0x2e7cf6,
-          gridGrid: 0x7aa7d8,
-          ambient: 0xffffff,
-          ambientI: 0.6,
-          key: 0xbfd9ff,
-          keyI: 2.5,
-          fill: 0xffdfc4,
-          fillI: 0.9,
-          back: 0xff9db2,
-          backI: 1.5,
-          exposure: 1.15,
-          bloomStrength: 0.3,
-          bloomThreshold: 1.0,
-          coreEmissive: 0x2e7cf6,
-          coreEmissiveI: 1.3,
-          ringBlue: 0x1e5bc4,
-          ringOrange: 0xff9a2e,
-          ringPink: 0xff5ca8,
-          particle: 0x2e7cf6,
-          particleOpacity: 0.9,
-          creatureOpacity: 0.75,
-          cloudOpacity: 0.05,
-          planetOpacity: 0.7,
-          planetColor: 0x2e7cf6,
-          planetEmissive: 0x2e7cf6,
-          planetEmissiveI: 0.6,
-        };
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(P.bg);
+    scene.background = new THREE.Color(dark ? 0x020409 : 0x0a1626);
 
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.set(0, 0, 8);
+    const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 500);
+    camera.position.set(14, 2.5, 0);
 
     const renderer = new THREE.WebGLRenderer({
       alpha: true,
@@ -140,385 +177,192 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    container.appendChild(renderer.domElement);
-
-    // HDR：色彩空間 + 電影色調映射
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = P.exposure;
+    renderer.toneMappingExposure = dark ? 1.0 : 1.0;
+    container.appendChild(renderer.domElement);
 
-    // HDR 環境光（讓材質有反射層次）
+    // 環境光（行星反射用）
     const pmrem = new THREE.PMREMGenerator(renderer);
-    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.06).texture;
     pmrem.dispose();
 
-    // 後處理：Bloom（霓虹柔光）+ 景深（DOF）
     const composer = new EffectComposer(renderer);
     composer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     composer.setSize(width, height);
     composer.addPass(new RenderPass(scene, camera));
-    composer.addPass(new BokehPass(scene, camera, { focus: 6.0, aperture: 0.0001, maxblur: 0.01 }));
-    composer.addPass(
-      new UnrealBloomPass(new THREE.Vector2(width, height), P.bloomStrength, 0.6, P.bloomThreshold)
-    );
+    composer.addPass(new UnrealBloomPass(new THREE.Vector2(width, height), dark ? 0.5 : 0.4, 0.6, dark ? 0.78 : 0.85));
     composer.addPass(new OutputPass());
 
-    // 三點打光：主光（冷藍）+ 補光（暖白）+ 背光（螢光粉），立體分離
-    const ambientLight = new THREE.AmbientLight(P.ambient, P.ambientI);
+    // 主光（黑洞背光）
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
+    keyLight.position.set(8, 6, 4);
+    scene.add(keyLight);
+    const ambientLight = new THREE.AmbientLight(dark ? 0x334455 : 0x8899aa, dark ? 0.5 : 1.0);
     scene.add(ambientLight);
 
-    const keyLight = new THREE.DirectionalLight(P.key, P.keyI);
-    keyLight.position.set(5, 8, 7);
-    scene.add(keyLight);
-
-    const fillLight = new THREE.DirectionalLight(P.fill, P.fillI);
-    fillLight.position.set(-5, 2, 6);
-    scene.add(fillLight);
-
-    const backLight = new THREE.DirectionalLight(P.back, P.backI);
-    backLight.position.set(-6, -4, -5);
-    scene.add(backLight);
-
-    keyLightRef.current = keyLight;
-    fillLightRef.current = fillLight;
-    backLightRef.current = backLight;
-
-    // OZ 網格地面（霓虹底網）
-    const gridHelper = new THREE.GridHelper(160, 80, P.gridCenter, P.gridGrid);
-    gridHelper.position.y = -6;
-    scene.add(gridHelper);
-
-    // 前景柔焦球（Z 分層：靠近鏡頭，強化視差）
-    const fgPos: [number, number, number][] = [[-7, 5, 5], [8, -5, 4], [-9, -6, 3], [9, 6, 2]];
-    fgPos.forEach(([x, y, z], i) => {
-      const s = new THREE.Mesh(
-        new THREE.SphereGeometry(1.5 + i * 0.5, 32, 32),
-        new THREE.MeshBasicMaterial({ color: P.ringBlue, transparent: true, opacity: 0.05, depthWrite: false })
-      );
-      s.position.set(x, y, z);
-      scene.add(s);
-    });
-
-    // --- 角落彩蛋（世界模式探索時的小驚喜）---
-    const sun = new THREE.Mesh(
-      new THREE.SphereGeometry(0.7, 32, 32),
-      new THREE.MeshBasicMaterial({ color: 0xffb800 })
-    );
-    sun.position.set(11, 7, -52);
-    scene.add(sun);
-
-    const planet = new THREE.Mesh(
-      new THREE.SphereGeometry(0.4, 32, 32),
-      new THREE.MeshStandardMaterial({ color: 0x3d5a80, roughness: 0.5, metalness: 0.2, emissive: 0x2e4a6a, emissiveIntensity: 0.3 })
-    );
-    planet.position.set(-11, -1.5, -6);
-    scene.add(planet);
-    const planetRing = new THREE.Mesh(
-      new THREE.TorusGeometry(0.62, 0.03, 16, 48),
-      new THREE.MeshStandardMaterial({ color: 0x4cc8ff, roughness: 0.35, metalness: 0.3, emissive: 0x4cc8ff, emissiveIntensity: 0.7 })
-    );
-    planetRing.rotation.x = Math.PI / 2.6;
-    planet.add(planetRing);
-
-    // --- 數位生物（小抽象幾何，漂流） ---
-    const creatureGeos = [
-      new THREE.TetrahedronGeometry(0.18),
-      new THREE.OctahedronGeometry(0.2),
-      new THREE.TorusGeometry(0.14, 0.05, 8, 24),
-      new THREE.IcosahedronGeometry(0.15, 0),
-      new THREE.ConeGeometry(0.16, 0.28, 4),
-      new THREE.DodecahedronGeometry(0.15, 0),
-    ];
-    const creatureColors = [0x3a7bd5, 0x4cc8ff, 0x2e7cf6, 0x6aa8ff, 0x4cc8ff, 0x3a7bd5];
-    const creatures: { mesh: THREE.Mesh; baseY: number; phase: number; rot: number }[] = [];
-    creatureGeos.forEach((geo, i) => {
-      const mat = new THREE.MeshStandardMaterial({
-        color: creatureColors[i],
-        flatShading: true,
-        transparent: true,
-        opacity: P.creatureOpacity,
-        roughness: 0.4,
-        metalness: 0.15,
-        emissive: creatureColors[i],
-        emissiveIntensity: 0.35,
-      });
-      const m = new THREE.Mesh(geo, mat);
-      const baseY = 1.2 + (i % 3) * 2.2;
-      m.position.set((i % 2 === 0 ? -1 : 1) * (5 + (i % 3) * 1.5), baseY, -8 - i * 10);
-      scene.add(m);
-      creatures.push({ mesh: m, baseY, phase: i * 1.1, rot: 0.3 + i * 0.15 });
-    });
-
-    // --- 雲朵（柔白扁平球體，高空漂移） ---
-    const clouds: { mesh: THREE.Mesh; speed: number; x: number }[] = [];
-    for (let i = 0; i < 5; i++) {
-      const cloud = new THREE.Mesh(
-        new THREE.SphereGeometry(2.6 + (i % 3) * 1.1, 16, 16),
-        new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: P.cloudOpacity, roughness: 1, metalness: 0 })
-      );
-      cloud.scale.set(1, 0.42, 0.8);
-      cloud.position.set(-8 + i * 4.5, 9.5 + (i % 2) * 2.5, -5 - i * 12);
-      scene.add(cloud);
-      clouds.push({ mesh: cloud, speed: 0.03 + i * 0.02, x: cloud.position.x });
-    }
-
-    // Master Spatial Corridor Group
-    const corridorGroup = new THREE.Group();
-    scene.add(corridorGroup);
-
-    // --- ROOM 1: HERO / CORE NEXUS (Z = 0) ---
-    const room1Group = new THREE.Group();
-    room1Group.position.set(0, 0, 0);
-    corridorGroup.add(room1Group);
-
-    // 黑洞（Interstellar 風格：事件視界 + 吸積盤 + 光子環 + 透鏡光環）
-    const horizon = new THREE.Mesh(
-      new THREE.SphereGeometry(1.0, 64, 64),
-      new THREE.MeshBasicMaterial({ color: 0x000000 })
-    );
-    room1Group.add(horizon);
-
-    const accretionTex = makeAccretionTexture();
-    const diskHolder = new THREE.Group();
-    diskHolder.rotation.x = -Math.PI / 2 + 0.32; // 稍微傾斜，露出盤面
-    const accretionDisk = new THREE.Mesh(
-      new THREE.RingGeometry(1.12, 3.4, 128),
-      new THREE.MeshBasicMaterial({ map: accretionTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
-    );
-    diskHolder.add(accretionDisk);
-    room1Group.add(diskHolder);
-
-    const photonRing = new THREE.Mesh(
-      new THREE.TorusGeometry(1.1, 0.02, 16, 160),
-      new THREE.MeshBasicMaterial({ color: 0xffffff, blending: THREE.AdditiveBlending })
-    );
-    photonRing.rotation.x = -Math.PI / 2 + 0.32;
-    room1Group.add(photonRing);
-
-    const lensedHalo = new THREE.Mesh(
-      new THREE.TorusGeometry(1.5, 0.02, 16, 160),
-      new THREE.MeshBasicMaterial({ color: 0xffd9a0, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending })
-    );
-    room1Group.add(lensedHalo);
-
-    const nodeGroup = new THREE.Group();
-    const nodeCount = 24;
-    const nodePoints: THREE.Vector3[] = [];
-    const nodeDots: THREE.Mesh[] = [];
-    for (let i = 0; i < nodeCount; i++) {
-      const phi = Math.acos(1 - (2 * (i + 0.5)) / nodeCount);
-      const theta = Math.PI * (1 + Math.sqrt(5)) * i;
-      const r = 1.72;
-      const x = r * Math.sin(phi) * Math.cos(theta);
-      const y = r * Math.sin(phi) * Math.sin(theta);
-      const z = r * Math.cos(phi);
-      const dot = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffb15e }));
-      dot.position.set(x, y, z);
-      nodeGroup.add(dot);
-      nodeDots.push(dot);
-      nodePoints.push(new THREE.Vector3(x, y, z));
-    }
-    const lineMat = new THREE.LineDashedMaterial({ color: P.ringBlue, transparent: true, opacity: 0.55, dashSize: 0.18, gapSize: 0.12 });
-    for (let i = 0; i < nodePoints.length; i++) {
-      for (let j = i + 1; j < nodePoints.length; j++) {
-        if (nodePoints[i].distanceTo(nodePoints[j]) < 1.05) {
-          const geo = new THREE.BufferGeometry().setFromPoints([nodePoints[i], nodePoints[j]]);
-          const line = new THREE.Line(geo, lineMat);
-          line.computeLineDistances();
-          nodeGroup.add(line);
-        }
-      }
-    }
-    room1Group.add(nodeGroup);
-
-    // (內核已被黑洞取代)
-
-    // Dual Kinetic Gyro Rings
-    const ringGeo1 = new THREE.TorusGeometry(3.0, 0.04, 16, 100);
-    const ringMat1 = new THREE.MeshBasicMaterial({ color: P.ringBlue });
-    const ring1 = new THREE.Mesh(ringGeo1, ringMat1);
-    ring1.rotation.x = Math.PI / 3;
-    room1Group.add(ring1);
-
-    const ringGeo2 = new THREE.TorusGeometry(3.3, 0.032, 16, 100);
-    const ringMat2 = new THREE.MeshBasicMaterial({ color: 0xffaa44 });
-    const ring2 = new THREE.Mesh(ringGeo2, ringMat2);
-    ring2.rotation.y = Math.PI / 4;
-    room1Group.add(ring2);
-
-    // 夏日大作戰（OZ）風格的暖色環
-    const ringGeo3 = new THREE.TorusGeometry(3.6, 0.028, 16, 100);
-    const ringMat3 = new THREE.MeshBasicMaterial({ color: 0x8a6cff });
-    const ring3 = new THREE.Mesh(ringGeo3, ringMat3);
-    ring3.rotation.z = Math.PI / 2.4;
-    room1Group.add(ring3);
-
-    // --- ROOM 2: DISCIPLINE & ABOUT STUDIO (Z = -14, X = -3) ---
-    const room2Group = new THREE.Group();
-    room2Group.position.set(-3, 0, -14);
-    corridorGroup.add(room2Group);
-
-    const monolithGeo = new THREE.BoxGeometry(0.8, 3.2, 0.8);
-    const monolithMat = new THREE.MeshPhongMaterial({ color: P.ringBlue, wireframe: true, emissive: P.ringBlue, emissiveIntensity: 0.3 });
-    for (let i = 0; i < 4; i++) {
-      const m = new THREE.Mesh(monolithGeo, monolithMat);
-      m.position.set((i - 1.5) * 2.0, Math.sin(i) * 0.5, i % 2 === 0 ? 1 : -1);
-      room2Group.add(m);
-    }
-
-    const discGeo = new THREE.CylinderGeometry(2.5, 2.5, 0.08, 32);
-    const discMat = new THREE.MeshStandardMaterial({ color: 0x0a0a0c, metalness: 0.3, roughness: 0.45 });
-    const studioDisc = new THREE.Mesh(discGeo, discMat);
-    studioDisc.position.set(0, -2, 0);
-    room2Group.add(studioDisc);
-
-    // --- ROOM 3: SELECTED ARTIFACTS & WORK GALLERY (Z = -28, X = 3) ---
-    const room3Group = new THREE.Group();
-    room3Group.position.set(3, 0, -28);
-    corridorGroup.add(room3Group);
-
-    const portalGeo = new THREE.TorusGeometry(2.8, 0.06, 16, 64, Math.PI * 1.5);
-    const portalMat = new THREE.MeshBasicMaterial({ color: P.ringBlue });
-    const portalMesh = new THREE.Mesh(portalGeo, portalMat);
-    portalMesh.rotation.z = Math.PI / 4;
-    room3Group.add(portalMesh);
-
-    const cubesGroup = new THREE.Group();
-    const cubeGeo = new THREE.BoxGeometry(1.2, 1.2, 1.2);
-    const cubeMats = [
-      new THREE.MeshStandardMaterial({ color: P.ringBlue, wireframe: true, emissive: P.ringBlue, emissiveIntensity: 0.4 }),
-      new THREE.MeshStandardMaterial({ color: 0x4cc8ff, wireframe: true, emissive: 0x4cc8ff, emissiveIntensity: 0.4 }),
-    ];
-    for (let i = 0; i < 8; i++) {
-      const angle = (i / 8) * Math.PI * 2;
-      const rad = 3.8;
-      const cube = new THREE.Mesh(cubeGeo, cubeMats[i % 2]);
-      cube.position.set(Math.cos(angle) * rad, Math.sin(angle) * 1.5, Math.sin(angle) * rad);
-      cube.rotation.x = i * 0.4;
-      cube.rotation.y = i * 0.6;
-      cubesGroup.add(cube);
-    }
-    room3Group.add(cubesGroup);
-
-    // --- ROOM 4: CINEMATIC / FILM & PHOTOGRAPHY LOUNGE (Z = -42, X = -2) ---
-    const room4Group = new THREE.Group();
-    room4Group.position.set(-2, 0, -42);
-    corridorGroup.add(room4Group);
-
-    const frameGeo = new THREE.RingGeometry(2.2, 2.5, 32);
-    const frameMat = new THREE.MeshBasicMaterial({ color: 0x0a0a0c, side: THREE.DoubleSide });
-    const cinemaFrame = new THREE.Mesh(frameGeo, frameMat);
-    room4Group.add(cinemaFrame);
-
-    const coneGeo = new THREE.ConeGeometry(3, 6, 32, 1, true);
-    const coneMat = new THREE.MeshBasicMaterial({
-      color: P.ringBlue,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.32,
-    });
-    const lightCone = new THREE.Mesh(coneGeo, coneMat);
-    lightCone.rotation.x = Math.PI / 2;
-    room4Group.add(lightCone);
-
-    // --- ROOM 5: DISPATCH & CONTACT TRANSMISSION (Z = -56, X = 0) ---
-    const room5Group = new THREE.Group();
-    room5Group.position.set(0, 0, -56);
-    corridorGroup.add(room5Group);
-
-    const beaconGeo = new THREE.SphereGeometry(1.2, 16, 16);
-    const beaconMat = new THREE.MeshStandardMaterial({ color: 0xffaa44, wireframe: true, emissive: 0xffaa44, emissiveIntensity: 1.0 });
-    const beaconMesh = new THREE.Mesh(beaconGeo, beaconMat);
-    room5Group.add(beaconMesh);
-
-    const waveGeo = new THREE.TorusGeometry(3.5, 0.03, 16, 100);
-    const waveMat = new THREE.MeshBasicMaterial({ color: P.ringBlue });
-    const waveRing = new THREE.Mesh(waveGeo, waveMat);
-    room5Group.add(waveRing);
-
-    // --- GLOBAL CONNECTING CORRIDOR PARTICLES ---
-    const particleCount = 420;
-    const particleGeo = new THREE.BufferGeometry();
-    const particlePos = new Float32Array(particleCount * 3);
-    for (let i = 0; i < particleCount * 3; i += 3) {
-      particlePos[i] = (Math.random() - 0.5) * 16;
-      particlePos[i + 1] = (Math.random() - 0.5) * 13;
-      particlePos[i + 2] = -Math.random() * 62;
-    }
-    particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePos, 3));
-    const particleMat = new THREE.PointsMaterial({
-      color: P.particle,
-      size: 0.07,
-      transparent: true,
-      opacity: P.particleOpacity,
-      blending: dark ? THREE.AdditiveBlending : THREE.NormalBlending,
+    // ── 天空球（星雲 + 透鏡） ──
+    const skyBase = dark ? new THREE.Color(0.015, 0.025, 0.05) : new THREE.Color(0.30, 0.42, 0.55);
+    const skyMat = new THREE.ShaderMaterial({
+      vertexShader: SKY_VERT,
+      fragmentShader: SKY_FRAG,
+      uniforms: {
+        uCamPos: { value: camera.position.clone() },
+        uSkyBase: { value: skyBase },
+      },
+      side: THREE.BackSide,
       depthWrite: false,
     });
-    const particles = new THREE.Points(particleGeo, particleMat);
-    scene.add(particles);
+    const sky = new THREE.Mesh(new THREE.SphereGeometry(120, 48, 32), skyMat);
+    sky.renderOrder = -100;
+    sky.frustumCulled = false;
+    scene.add(sky);
 
-    // 亮星層（深空星野）
-    const starCount = 280;
+    // ── 黑洞 ──
+    const blackhole = new THREE.Group();
+    scene.add(blackhole);
+
+    const horizon = new THREE.Mesh(
+      new THREE.SphereGeometry(1.4, 64, 64),
+      new THREE.MeshBasicMaterial({ color: 0x000000 })
+    );
+    blackhole.add(horizon);
+
+    const diskMat = new THREE.ShaderMaterial({
+      vertexShader: DISK_VERT,
+      fragmentShader: DISK_FRAG,
+      uniforms: { uTime: { value: 0 } },
+      transparent: true,
+      blending: THREE.NormalBlending,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+    });
+    const diskHolder = new THREE.Group();
+    diskHolder.rotation.x = -Math.PI / 2; // 平放（水平）
+    const accretionDisk = new THREE.Mesh(new THREE.RingGeometry(1.55, 5.0, 160, 1), diskMat);
+    diskHolder.add(accretionDisk);
+    blackhole.add(diskHolder);
+
+    const photonRing = new THREE.Mesh(
+      new THREE.TorusGeometry(1.5, 0.02, 16, 180),
+      new THREE.MeshBasicMaterial({ color: 0xffffff, blending: THREE.AdditiveBlending })
+    );
+    photonRing.rotation.x = -Math.PI / 2; // 平放
+    blackhole.add(photonRing);
+
+    // ── 行星 ──
+    const planets: Array<{ mesh: THREE.Mesh; rot: number; orbit: number; r: number; y: number }> = [];
+    const addPlanet = (radius: number, kind: 'gas' | 'rock' | 'ice', orbit: number, r: number, y: number, scale: number) => {
+      const m = new THREE.Mesh(
+        new THREE.SphereGeometry(radius, 48, 48),
+        new THREE.MeshStandardMaterial({ map: makePlanetTexture(kind), roughness: 0.85, metalness: 0.05 })
+      );
+      m.position.set(Math.cos(orbit) * r, y, Math.sin(orbit) * r);
+      m.scale.setScalar(scale);
+      scene.add(m);
+      planets.push({ mesh: m, rot: 0.01 + Math.random() * 0.02, orbit, r, y });
+      return m;
+    };
+    addPlanet(1.3, 'gas', 0.7, 10, 1.2, 1);
+    addPlanet(0.55, 'rock', 2.0, 7, -0.6, 1);
+    addPlanet(0.4, 'ice', 3.1, 5.5, 1.6, 1);
+
+    // ── UFO ──
+    const ufo = new THREE.Group();
+    const ufoBody = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.2, 0.6, 0.42, 32),
+      new THREE.MeshStandardMaterial({ color: 0x8899aa, metalness: 0.85, roughness: 0.3 })
+    );
+    ufo.add(ufoBody);
+    const ufoDome = new THREE.Mesh(
+      new THREE.SphereGeometry(0.5, 32, 16),
+      new THREE.MeshStandardMaterial({ color: 0x66ccff, emissive: 0x66ccff, emissiveIntensity: 0.7, roughness: 0.2, metalness: 0.1 })
+    );
+    ufoDome.position.y = 0.32;
+    ufoDome.scale.set(1, 0.62, 1);
+    ufo.add(ufoDome);
+    const ufoLights = new THREE.Mesh(
+      new THREE.TorusGeometry(0.9, 0.06, 8, 40),
+      new THREE.MeshBasicMaterial({ color: 0xffaa44 })
+    );
+    ufoLights.rotation.x = Math.PI / 2;
+    ufoLights.position.y = -0.12;
+    ufo.add(ufoLights);
+    ufo.position.set(Math.cos(2.6) * 8, 0.6, Math.sin(2.6) * 8);
+    scene.add(ufo);
+
+    // ── 小行星帶 ──
+    const asteroidGroup = new THREE.Group();
+    const rockGeo = new THREE.DodecahedronGeometry(0.12, 0);
+    const rockMat = new THREE.MeshStandardMaterial({ color: 0x8a8a8a, roughness: 0.9, metalness: 0.1 });
+    for (let i = 0; i < 140; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const r = 4.4 + Math.random() * 1.4;
+      const m = new THREE.Mesh(rockGeo, rockMat);
+      m.position.set(Math.cos(a) * r, (Math.random() - 0.5) * 0.5, Math.sin(a) * r);
+      m.scale.setScalar(0.4 + Math.random() * 1.7);
+      asteroidGroup.add(m);
+    }
+    scene.add(asteroidGroup);
+
+    // ── 星野（點） ──
+    const starCount = 700;
     const starGeo = new THREE.BufferGeometry();
     const starPos = new Float32Array(starCount * 3);
     for (let i = 0; i < starCount * 3; i += 3) {
-      starPos[i] = (Math.random() - 0.5) * 32;
-      starPos[i + 1] = (Math.random() - 0.5) * 22;
-      starPos[i + 2] = -Math.random() * 72;
+      const v = new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize().multiplyScalar(90);
+      starPos[i] = v.x;
+      starPos[i + 1] = v.y;
+      starPos[i + 2] = v.z;
     }
     starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-    const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.09, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false });
+    const starMat = new THREE.PointsMaterial({
+      color: 0xffffff,
+      size: 0.14,
+      transparent: true,
+      opacity: 0.9,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
     const stars = new THREE.Points(starGeo, starMat);
     scene.add(stars);
 
-    // --- 流星（Shooting stars）---
+    // ── 流星 ──
     const comets: Array<{ mesh: THREE.Mesh; vel: THREE.Vector3 }> = [];
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 5; i++) {
       const cm = new THREE.Mesh(
-        new THREE.SphereGeometry(0.06, 8, 8),
-        new THREE.MeshBasicMaterial({ color: i % 2 === 0 ? 0xffffff : 0x7fd4ff })
+        new THREE.SphereGeometry(0.05, 8, 8),
+        new THREE.MeshBasicMaterial({ color: 0xffffff })
       );
-      cm.position.set((Math.random() - 0.5) * 22, (Math.random() - 0.5) * 16, 8 + Math.random() * 6);
+      cm.position.set((Math.random() - 0.5) * 30, (Math.random() - 0.5) * 20, 20 + Math.random() * 15);
       scene.add(cm);
-      comets.push({
-        mesh: cm,
-        vel: new THREE.Vector3((Math.random() - 0.5) * 0.03, (Math.random() - 0.5) * 0.03, -0.08 - Math.random() * 0.08),
-      });
+      comets.push({ mesh: cm, vel: new THREE.Vector3((Math.random() - 0.5) * 0.04, (Math.random() - 0.5) * 0.04, -0.12 - Math.random() * 0.1) });
     }
 
-    // --- 可互動物件（滑鼠 hover 放大）---
-    const interactive: Array<{ mesh: THREE.Mesh; baseScale: number }> = [];
-    [horizon, accretionDisk, photonRing, lensedHalo, ring1, ring2, ring3, portalMesh, sun, planet, ...creatures.map((c) => c.mesh)].forEach((m) => {
+    // ── 可互動物件（hover 放大） ──
+    const interactive: Array<{ mesh: THREE.Object3D; baseScale: number }> = [];
+    [horizon, accretionDisk, photonRing, ufoBody, ufoDome, ufoLights, ...planets.map((p) => p.mesh)].forEach((m) => {
       interactive.push({ mesh: m, baseScale: m.scale.x });
     });
-    cubesGroup.children.forEach((m) => {
-      if ((m as THREE.Mesh).isMesh) interactive.push({ mesh: m as THREE.Mesh, baseScale: m.scale.x });
-    });
     const raycaster = new THREE.Raycaster();
-    let hovered: THREE.Mesh | null = null;
+    let hovered: THREE.Object3D | null = null;
 
-    // --- 點擊漣漪（Click ripple）---
+    // ── 點擊衝擊波（不可見球上的漣漪） ──
     const ripples: Array<{ mesh: THREE.Mesh; life: number }> = [];
-    const groundPlane = new THREE.Mesh(
-      new THREE.PlaneGeometry(200, 200),
-      new THREE.MeshBasicMaterial({ visible: false })
-    );
-    groundPlane.rotation.x = -Math.PI / 2;
-    groundPlane.position.y = -6;
-    scene.add(groundPlane);
-
+    const hitSphere = new THREE.Mesh(new THREE.SphereGeometry(26, 32, 32), new THREE.MeshBasicMaterial({ visible: false }));
+    scene.add(hitSphere);
     const spawnRipple = (point: THREE.Vector3) => {
       const ring = new THREE.Mesh(
-        new THREE.RingGeometry(0.15, 0.32, 40),
-        new THREE.MeshBasicMaterial({ color: P.ringBlue, transparent: true, opacity: 0.65, side: THREE.DoubleSide, depthWrite: false })
+        new THREE.RingGeometry(0.1, 0.28, 40),
+        new THREE.MeshBasicMaterial({ color: 0x88ccff, transparent: true, opacity: 0.7, side: THREE.DoubleSide, depthWrite: false })
       );
-      ring.rotation.x = -Math.PI / 2;
-      ring.position.set(point.x, -5.9, point.z);
+      ring.position.copy(point);
+      ring.lookAt(0, 0, 0);
       scene.add(ring);
       ripples.push({ mesh: ring, life: 1 });
     };
 
-    // Mouse / Touch Interactivity
+    // ── 互動 ──
     let targetRotX = 0;
     let targetRotY = 0;
     const pointerNdc = new THREE.Vector2(0, 0);
@@ -526,24 +370,22 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     const deviceRot = { x: 0, y: 0 };
 
     const handleMouseMove = (e: MouseEvent) => {
-      const normX = (e.clientX / window.innerWidth) * 2 - 1;
-      const normY = -(e.clientY / window.innerHeight) * 2 + 1;
-      targetRotY = normX * 0.45;
-      targetRotX = normY * 0.35;
-      pointerNdc.set(normX, normY);
+      const nx = (e.clientX / window.innerWidth) * 2 - 1;
+      const ny = -(e.clientY / window.innerHeight) * 2 + 1;
+      targetRotY = nx * 0.5;
+      targetRotX = ny * 0.4;
+      pointerNdc.set(nx, ny);
       raycaster.setFromCamera(pointerNdc, camera);
-      const hits = raycaster.intersectObjects(interactive.map((i) => i.mesh), false);
-      hovered = (hits[0]?.object as THREE.Mesh) ?? null;
+      const hits = raycaster.intersectObjects(interactive.map((i) => i.mesh), true);
+      hovered = (hits[0]?.object as THREE.Object3D) ?? null;
     };
-
     const handleClick = (e: MouseEvent) => {
       const nx = (e.clientX / window.innerWidth) * 2 - 1;
       const ny = -(e.clientY / window.innerHeight) * 2 + 1;
       raycaster.setFromCamera(new THREE.Vector2(nx, ny), camera);
-      const hits = raycaster.intersectObject(groundPlane, false);
+      const hits = raycaster.intersectObject(hitSphere, false);
       if (hits.length > 0) spawnRipple(hits[0].point);
     };
-
     const handleOrientation = (e: DeviceOrientationEvent) => {
       if (e.gamma == null || e.beta == null) return;
       deviceRot.y = Math.max(-1, Math.min(1, e.gamma / 45));
@@ -563,20 +405,17 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     }
     window.addEventListener('click', handleClick);
 
-    // Scroll-driven Navigation
+    // ── 滾動 ──
     let scrollProgress = 0;
     const handleScroll = () => {
       const total = document.documentElement.scrollHeight - window.innerHeight;
-      if (total > 0) {
-        scrollProgress = Math.min(Math.max(window.scrollY / total, 0), 1);
-      }
+      if (total > 0) scrollProgress = Math.min(Math.max(window.scrollY / total, 0), 1);
       onScrollProgress?.(scrollProgress);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
 
     const handleResize = () => {
-      if (!container) return;
       const w = container.clientWidth || window.innerWidth;
       const h = container.clientHeight || window.innerHeight;
       camera.aspect = w / h;
@@ -589,111 +428,67 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     const clock = new THREE.Clock();
     let animId: number;
     let readyFired = false;
+    const tmpVec = new THREE.Vector3();
 
     const animate = () => {
       animId = requestAnimationFrame(animate);
       const elapsed = clock.getElapsedTime();
+      const p = scrollProgress;
 
-      // 手機方向感應（無滑鼠時）
       if (!hasFinePointer) {
         targetRotY += (deviceRot.y * 0.6 - targetRotY) * 0.06;
         targetRotX += (deviceRot.x * 0.5 - targetRotX) * 0.06;
       }
 
-      const targetCamZ = 8 - scrollProgress * 56;
-      const targetCamX = Math.sin(scrollProgress * Math.PI * 3.0) * 2.8 + targetRotY * 1.2 + Math.sin(elapsed * 0.5) * 0.15;
-      const targetCamY = Math.cos(scrollProgress * Math.PI * 2.0) * 0.6 - targetRotX * 0.8 + Math.cos(elapsed * 0.6) * 0.12;
+      // 相機：繞黑洞螺旋前進（越滾越近，從上方俯視吸積盤）
+      const orbit = p * Math.PI * 2.6 + targetRotY * 0.3;
+      const radius = 16 - p * 11;
+      const camY = 8 * (1 - p) + 1.5 - targetRotX * 1.4;
+      tmpVec.set(Math.cos(orbit) * radius, camY, Math.sin(orbit) * radius);
+      camera.position.lerp(tmpVec, 0.06);
+      camera.lookAt(0, 0, 0);
+      skyMat.uniforms.uCamPos.value.copy(camera.position);
 
-      camera.position.z += (targetCamZ - camera.position.z) * 0.08;
-      camera.position.x += (targetCamX - camera.position.x) * 0.08;
-      camera.position.y += (targetCamY - camera.position.y) * 0.08;
+      // 動畫
+      diskMat.uniforms.uTime.value = elapsed;
+      accretionDisk.rotation.z += 0.012;
+      photonRing.rotation.z += 0.005;
+      blackhole.rotation.y += 0.001;
+      asteroidGroup.rotation.y += 0.004;
+      ufo.rotation.y += 0.01;
+      ufo.position.y = 0.6 + Math.sin(elapsed * 0.6) * 0.25;
+      stars.rotation.y += 0.0005;
 
-      const targetFov = 45 + scrollProgress * 8 + Math.sin(elapsed * 0.4) * 0.5;
-      camera.fov += (targetFov - camera.fov) * 0.05;
-      camera.updateProjectionMatrix();
-
-      camera.lookAt(camera.position.x * 0.2, camera.position.y * 0.2, camera.position.z - 6.0);
-
-      room1Group.rotation.y += 0.008;
-      room1Group.rotation.x = Math.sin(elapsed * 0.8) * 0.15;
-      ring1.rotation.z += 0.015;
-      ring2.rotation.x += 0.012;
-      accretionDisk.rotation.z += 0.02;
-      lensedHalo.rotation.z += 0.004;
-
-      horizon.rotation.y += 0.001;
-      nodeGroup.rotation.y += 0.003;
-      nodeGroup.rotation.x = Math.sin(elapsed * 0.4) * 0.1;
-
-      camera.updateMatrixWorld();
-      nodeGroup.updateMatrixWorld(true);
-      const tempV = new THREE.Vector3();
-      nodeDots.forEach((d, i) => {
-        d.getWorldPosition(tempV);
-        tempV.project(camera);
-        const dx = tempV.x - pointerNdc.x;
-        const dy = tempV.y - pointerNdc.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const glow = Math.max(0, 1 - dist / 0.32);
-        const pulse2 = 1 + Math.sin(elapsed * 2 + i * 0.9) * 0.4;
-        d.scale.setScalar(pulse2 + glow * 2.4);
-        (d.material as THREE.MeshBasicMaterial).color.set(glow > 0.03 ? 0xffffff : 0xffb15e);
+      planets.forEach((pl) => {
+        pl.mesh.rotation.y += pl.rot;
+        const a = pl.orbit + elapsed * 0.04;
+        pl.mesh.position.set(Math.cos(a) * pl.r, pl.y, Math.sin(a) * pl.r);
       });
 
-      creatures.forEach((c) => {
-        c.mesh.rotation.y += c.rot * 0.008;
-        c.mesh.rotation.x += c.rot * 0.005;
-        c.mesh.position.y = c.baseY + Math.sin(elapsed * 0.7 + c.phase) * 0.5;
-      });
-
-      clouds.forEach((c) => {
-        c.x += c.speed * 0.01;
-        if (c.x > 15) c.x = -15;
-        c.mesh.position.x = c.x;
-      });
-
-      room2Group.rotation.y = elapsed * 0.2;
-      cubesGroup.rotation.y += 0.01;
-      cubesGroup.rotation.z = Math.sin(elapsed * 0.5) * 0.2;
-      lightCone.rotation.z += 0.008;
-
-      const bPulse = 1.0 + Math.sin(elapsed * 3.5) * 0.15;
-      beaconMesh.scale.set(bPulse, bPulse, bPulse);
-      waveRing.rotation.x = elapsed * 0.5;
-
-      sun.rotation.y += 0.005;
-      planet.rotation.y += 0.01;
-      planetRing.rotation.z += 0.008;
-
-      // 節點連線（虛線，隨 nodeGroup 旋轉）
-
-      // 流星
       comets.forEach((c) => {
         c.mesh.position.add(c.vel);
-        if (c.mesh.position.z < -62) {
-          c.mesh.position.set((Math.random() - 0.5) * 22, (Math.random() - 0.5) * 16, 8 + Math.random() * 6);
+        if (c.mesh.position.z < -40) {
+          c.mesh.position.set((Math.random() - 0.5) * 30, (Math.random() - 0.5) * 20, 20 + Math.random() * 15);
         }
       });
 
-      // 點擊漣漪
       for (let i = ripples.length - 1; i >= 0; i--) {
         const r = ripples[i];
-        r.life -= 0.03;
+        r.life -= 0.025;
         if (r.life <= 0) {
           scene.remove(r.mesh);
           (r.mesh.material as THREE.MeshBasicMaterial).dispose();
           ripples.splice(i, 1);
           continue;
         }
-        const t = 1 - r.life;
-        r.mesh.scale.setScalar(1 + t * 7);
-        (r.mesh.material as THREE.MeshBasicMaterial).opacity = r.life * 0.65;
+        r.mesh.scale.setScalar(1 + (1 - r.life) * 9);
+        (r.mesh.material as THREE.MeshBasicMaterial).opacity = r.life * 0.7;
       }
 
-      // hover 放大
       interactive.forEach(({ mesh, baseScale }) => {
-        const target = mesh === hovered ? baseScale * 1.3 : baseScale;
-        mesh.scale.setScalar(mesh.scale.x + (target - mesh.scale.x) * 0.12);
+        const target = mesh === hovered ? baseScale * 1.25 : baseScale;
+        const s = mesh.scale.x + (target - mesh.scale.x) * 0.12;
+        mesh.scale.setScalar(s);
       });
 
       composer.render();
@@ -707,30 +502,16 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
 
     return () => {
       cancelAnimationFrame(animId);
-      if (hasFinePointer) {
-        window.removeEventListener('mousemove', handleMouseMove);
-      } else {
-        window.removeEventListener('deviceorientation', handleOrientation);
-      }
+      if (hasFinePointer) window.removeEventListener('mousemove', handleMouseMove);
+      else window.removeEventListener('deviceorientation', handleOrientation);
       window.removeEventListener('click', handleClick);
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleResize);
       composer.dispose();
       renderer.dispose();
-      if (container.contains(renderer.domElement)) {
-        container.removeChild(renderer.domElement);
-      }
+      if (container.contains(renderer.domElement)) container.removeChild(renderer.domElement);
     };
   }, [onScrollProgress, onReady, darkMode]);
-
-  // 光線方向：旋轉三點光源位置（key/fill/back 分開計算）
-  useEffect(() => {
-    const rad = (lightAngle * Math.PI) / 180;
-    const dist = 11;
-    keyLightRef.current?.position.set(Math.cos(rad) * dist, 6, Math.sin(rad) * dist);
-    fillLightRef.current?.position.set(Math.cos(rad + (Math.PI * 2) / 3) * dist, 2, Math.sin(rad + (Math.PI * 2) / 3) * dist);
-    backLightRef.current?.position.set(Math.cos(rad + Math.PI) * dist, -4, Math.sin(rad + Math.PI) * dist);
-  }, [lightAngle]);
 
   return (
     <div
