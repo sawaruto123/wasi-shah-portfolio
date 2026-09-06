@@ -123,7 +123,15 @@ export default function App() {
 
   const scrollToRoom = useCallback((index: number) => {
     const clamped = Math.max(0, Math.min(ROOM_COUNT - 1, index));
-    window.scrollTo({ top: clamped * window.innerHeight, behavior: 'smooth' });
+    // 直接切換房間狀態（不依賴 scroll 事件），再用「比例」方式捲到正確位置。
+    // 手機上 100vh 與 window.innerHeight 不一致，用 innerHeight 相乘會捲不到位。
+    activeIndexRef.current = clamped;
+    setActiveIndex(clamped);
+    setCurrentRoom(ROOMS[clamped]);
+    setWarpKey((k) => k + 1);
+    const total = document.documentElement.scrollHeight - window.innerHeight;
+    const target = total > 0 ? (clamped / (ROOM_COUNT - 1)) * total : 0;
+    window.scrollTo(0, target);
   }, []);
 
   // 旋鈕：從指針位置計算光線角度
