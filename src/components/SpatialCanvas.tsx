@@ -96,7 +96,9 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(P.bg);
-    scene.fog = new THREE.Fog(P.fog, 16, 64);
+    // 霧：手機畫面小，霧太重會把細節蓋掉，故手機端調淡、桌機也略減
+    const isNarrow = width < 768;
+    scene.fog = new THREE.Fog(P.fog, isNarrow ? 38 : 24, isNarrow ? 140 : 90);
 
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
     camera.position.set(0, 0, 8);
