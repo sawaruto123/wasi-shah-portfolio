@@ -71,6 +71,8 @@ export interface ProfileInfo {
   name_cn: string;
   tagline: string;
   location: string;
+  portrait: string;
+  role_line: string;
 }
 
 export interface ContactInfo {

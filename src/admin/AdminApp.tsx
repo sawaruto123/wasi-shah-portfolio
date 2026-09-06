@@ -7,6 +7,7 @@ import { StillsManager } from './StillsManager';
 import { EngagementsManager } from './EngagementsManager';
 import { SettingsManager } from './SettingsManager';
 import { MessagesManager } from './MessagesManager';
+import { ThemeToggle } from '../lib/theme';
 import { Field, TextInput, Button } from './fields';
 
 type Tab = 'messages' | 'projects' | 'films' | 'stills' | 'engagements' | 'settings';
@@ -120,6 +121,7 @@ export const AdminApp: React.FC = () => {
                 Signed in as {session.user.email}
               </p>
             </div>
+            <ThemeToggle />
           </div>
 
           {tab === 'messages' && <MessagesManager />}

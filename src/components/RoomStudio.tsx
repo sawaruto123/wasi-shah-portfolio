@@ -23,7 +23,7 @@ export const RoomStudio: React.FC = () => {
         <div className="lg:col-span-5">
           <div className="relative rounded-3xl overflow-hidden float-slow">
             <img
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAU6O-XRWGTRWSCSR30EeBHCrgFk7TCES4izCwW6dMZcopNnylUJjPV1fAYX1-ZyTiqku_Q_pNMXFDnxspeBzBRQ_BGDm4LH4JtVT-GOtJUFvhnLh--MhZPxhCSfdx0iZ10Q_XmPEfXj2FnuuXAdsB8reWU0hV0xuPq2Lrsu01Zx-lKF3yhh08aYtNJRlxCNJmJQC3sYamlo0nvsXoGCHT85yc5a_ms-hmVxW9sktJp-fw3MlUyADhw"
+              src={profile.portrait}
               alt={profile.name}
               referrerPolicy="no-referrer"
               className="w-full h-[440px] object-cover"

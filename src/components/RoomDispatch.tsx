@@ -227,7 +227,7 @@ export const RoomDispatch: React.FC<RoomDispatchProps> = ({ onShowToast }) => {
         <span className="font-display text-sm font-bold text-ink">
           {profile.name} <span className="font-chinese text-primary">{profile.name_cn}</span>
         </span>
-        <span>HKMU BSc CS · ADOBE AMBASSADOR · CREATIVE DEVELOPER</span>
+        <span>{profile.role_line}</span>
         <span>© {new Date().getFullYear()} · Hong Kong SAR</span>
         <a
           href="/privacy"
