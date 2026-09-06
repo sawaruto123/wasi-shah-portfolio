@@ -98,7 +98,7 @@ html, body {
 
 /* 全螢幕環境光（從光源方向掃過、漸淡） */
 .light-wash {
-  background: linear-gradient(var(--light-angle, 135deg), rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 45%, rgba(15, 35, 80, 0.1) 100%);
+  background: linear-gradient(var(--light-angle, 135deg), rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 40%, rgba(15, 35, 80, 0.06) 100%);
   mix-blend-mode: soft-light;
 }
 

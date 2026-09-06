@@ -61,14 +61,15 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
           creatureOpacity: 0.35,
           cloudOpacity: 0.04,
           planetOpacity: 0.3,
+          planetColor: 0x6cc8ff,
           planetEmissive: 0x2e7cf6,
           planetEmissiveI: 0.5,
         }
       : {
-          bg: 0xf6faff,
-          fog: 0xeaf2fb,
+          bg: 0xc6dcf3,
+          fog: 0xc6dcf3,
           gridCenter: 0x2e7cf6,
-          gridGrid: 0x8fb4e8,
+          gridGrid: 0x7aa7d8,
           ambient: 0xffffff,
           ambientI: 0.6,
           key: 0xbfd9ff,
@@ -90,6 +91,7 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
           creatureOpacity: 0.75,
           cloudOpacity: 0.05,
           planetOpacity: 0.7,
+          planetColor: 0x2e7cf6,
           planetEmissive: 0x2e7cf6,
           planetEmissiveI: 0.6,
         };
@@ -196,7 +198,7 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
       new THREE.ConeGeometry(0.16, 0.28, 4),
       new THREE.DodecahedronGeometry(0.15, 0),
     ];
-    const creatureColors = [0x6cc8ff, 0xffb15e, 0xff9db2, 0x6cc8ff, 0xffd166, 0xff9db2];
+    const creatureColors = [0x2e7cf6, 0xff8a1e, 0xff5ca8, 0x2e7cf6, 0xffc41e, 0xff5ca8];
     const creatures: { mesh: THREE.Mesh; baseY: number; phase: number; rot: number }[] = [];
     creatureGeos.forEach((geo, i) => {
       const mat = new THREE.MeshStandardMaterial({
@@ -241,7 +243,7 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     // OZ 網際網路行星（半透明 + 節點連線星座）
     const ozPlanet = new THREE.Mesh(
       new THREE.SphereGeometry(1.6, 32, 32),
-      new THREE.MeshStandardMaterial({ color: 0x6cc8ff, transparent: true, opacity: P.planetOpacity, roughness: 0.25, metalness: 0.15, emissive: P.planetEmissive, emissiveIntensity: P.planetEmissiveI })
+      new THREE.MeshStandardMaterial({ color: P.planetColor, transparent: true, opacity: P.planetOpacity, roughness: 0.25, metalness: 0.15, emissive: P.planetEmissive, emissiveIntensity: P.planetEmissiveI })
     );
     room1Group.add(ozPlanet);
 

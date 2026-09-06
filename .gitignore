@@ -10,3 +10,4 @@ coverage/
 .supabase-admin-password.txt
 supabase/.temp/
 .vercel
+shot-*.png
