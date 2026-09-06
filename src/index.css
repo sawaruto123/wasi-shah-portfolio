@@ -6,22 +6,22 @@
   --font-mono: 'JetBrains Mono', monospace;
   --font-chinese: 'Noto Sans TC', sans-serif;
 
-  --color-ink: #11263F;
-  --color-ink-muted: #4A5A70;
-  --color-surface-pure: #FFFDF8;
-  --color-surface-warm: #F1F6FF;
-  --color-surface-container: #E6EFFC;
-  --color-surface-container-high: #D7E6FB;
-  --color-primary: #2E7CF6;
-  --color-primary-dark: #1E5BC4;
-  --color-primary-light: #EAF4FF;
-  --color-accent-lime: #ccff00;
-  --color-accent-lime-dark: #506600;
-  --color-accent-orange: #FFB15E;
-  --color-accent-pink: #FF9DB2;
-  --color-accent-yellow: #FFD166;
-  --color-accent-sky: #6CC8FF;
-  --color-border-crisp: #E7EFFB;
+  --color-ink: #EAF2FB;
+  --color-ink-muted: #A8BAD2;
+  --color-surface-pure: #0D1B2E;
+  --color-surface-warm: #12233A;
+  --color-surface-container: #1B304E;
+  --color-surface-container-high: #234061;
+  --color-primary: #4C9FFF;
+  --color-primary-dark: #8AB8FF;
+  --color-primary-light: #0E2A4A;
+  --color-accent-lime: #D6FF33;
+  --color-accent-lime-dark: #8fb300;
+  --color-accent-orange: #FFC07A;
+  --color-accent-pink: #FFB3C8;
+  --color-accent-yellow: #FFDE80;
+  --color-accent-sky: #7FD4FF;
+  --color-border-crisp: #24405F;
 }
 
 :root {
@@ -33,10 +33,10 @@
 html, body {
   margin: 0;
   padding: 0;
-  background-color: #F6FAFF;
-  background-image: radial-gradient(ellipse 120% 80% at 50% -10%, #dff0ff 0%, #F6FAFF 55%, #ffffff 100%);
+  background-color: #0D1B2E;
+  background-image: radial-gradient(ellipse 120% 80% at 50% -10%, #132a47 0%, #0D1B2E 55%, #060d18 100%);
   background-attachment: fixed;
-  color: #11263F;
+  color: #EAF2FB;
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
@@ -65,26 +65,26 @@ html, body {
 .hairline-grid {
   background-size: 40px 40px;
   background-image: 
-    linear-gradient(to right, rgba(0, 0, 0, 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.035) 1px, transparent 1px);
+    linear-gradient(to right, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.82);
+  background: rgba(13, 27, 46, 0.82);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
 }
 
 .spatial-card {
-  background-color: rgba(255, 255, 255, 0.82);
-  background-image: radial-gradient(560px circle at calc(var(--mx, 0) * 50% + 50%) calc(var(--my, 0) * 50% + 50%), rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 55%);
-  box-shadow: 0 18px 44px rgba(17, 38, 63, 0.10), 0 3px 10px rgba(17, 38, 63, 0.05);
+  background-color: rgba(13, 27, 46, 0.88);
+  background-image: radial-gradient(560px circle at calc(var(--mx, 0) * 50% + 50%) calc(var(--my, 0) * 50% + 50%), rgba(76, 159, 255, 0.10), rgba(0, 0, 0, 0) 55%);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.45), 0 3px 10px rgba(0, 0, 0, 0.35);
   transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease, border-color 0.35s ease;
 }
 .spatial-card:hover {
   transform: translateY(-5px);
-  border-color: rgba(46, 124, 246, 0.4);
-  box-shadow: 0 0 0 1px rgba(46, 124, 246, 0.2), 0 0 26px rgba(108, 200, 255, 0.35), 0 24px 50px rgba(17, 38, 63, 0.16);
+  border-color: rgba(76, 159, 255, 0.5);
+  box-shadow: 0 0 0 1px rgba(76, 159, 255, 0.3), 0 0 26px rgba(76, 159, 255, 0.35), 0 24px 50px rgba(0, 0, 0, 0.5);
 }
 
 /* 滑鼠驅動的 3D 傾斜層 */
@@ -232,26 +232,40 @@ html, body {
   100% { transform: translate(0, 0); }
 }
 
+/* 深空 UI 基底（light 模式也走深色）：按鈕/面板改為淺色深底 */
+.bg-ink {
+  background-color: #EAF2FB;
+  color: #0A1626;
+}
+.bg-white { background-color: #0D1B2E; }
+.bg-white\/60 { background-color: rgb(13 27 46 / 0.6); }
+.bg-white\/70 { background-color: rgb(13 27 46 / 0.7); }
+.bg-white\/80 { background-color: rgb(13 27 46 / 0.8); }
+.bg-white\/85 { background-color: rgb(13 27 46 / 0.85); }
+.bg-white\/90 { background-color: rgb(13 27 46 / 0.9); }
+.bg-white\/95 { background-color: rgb(13 27 46 / 0.95); }
+.focus\:bg-white:focus { background-color: #1B304E; }
+.hover\:bg-ink:hover { background-color: #4C9FFF; }
+
 /* =============================================================
-   Dark mode (night mode)
-   Tailwind v4 顏色 token 都是 CSS 變數，重新定義即可整站翻轉。
+   Night mode（更暗）
    ============================================================= */
 @custom-variant dark (&:where(.dark, .dark *));
 
-:root { color-scheme: light; }
+:root { color-scheme: dark; }
 html.dark { color-scheme: dark; }
 
 html.dark {
   --color-ink: #F4F8FF;
-  --color-ink-muted: #B8C8DD;
-  --color-surface-pure: #0F1C2E;
-  --color-surface-warm: #13233A;
-  --color-surface-container: #1B304E;
-  --color-surface-container-high: #234061;
-  --color-primary: #3F8FFF;
-  --color-primary-dark: #7FB4FF;
-  --color-primary-light: #0E2C50;
-  --color-border-crisp: #2C4C74;
+  --color-ink-muted: #A6B8D0;
+  --color-surface-pure: #0A1626;
+  --color-surface-warm: #0E1D30;
+  --color-surface-container: #14273E;
+  --color-surface-container-high: #1B304C;
+  --color-primary: #55A6FF;
+  --color-primary-dark: #8FBDFF;
+  --color-primary-light: #0B2542;
+  --color-border-crisp: #1C3554;
   --color-accent-lime: #D6FF33;
   --color-accent-orange: #FFC07A;
   --color-accent-pink: #FFB3C8;
@@ -272,16 +286,16 @@ html.dark .bg-ink {
 }
 
 /* 半透明白色面板/chips → 半透明深色（與卡片同色系） */
-html.dark .bg-white { background-color: #0F1C2E; }
-html.dark .bg-white\/60 { background-color: rgb(15 28 46 / 0.6); }
-html.dark .bg-white\/70 { background-color: rgb(15 28 46 / 0.7); }
-html.dark .bg-white\/80 { background-color: rgb(15 28 46 / 0.8); }
-html.dark .bg-white\/85 { background-color: rgb(15 28 46 / 0.85); }
-html.dark .bg-white\/90 { background-color: rgb(15 28 46 / 0.9); }
-html.dark .bg-white\/95 { background-color: rgb(15 28 46 / 0.95); }
+html.dark .bg-white { background-color: #0A1626; }
+html.dark .bg-white\/60 { background-color: rgb(10 22 38 / 0.6); }
+html.dark .bg-white\/70 { background-color: rgb(10 22 38 / 0.7); }
+html.dark .bg-white\/80 { background-color: rgb(10 22 38 / 0.8); }
+html.dark .bg-white\/85 { background-color: rgb(10 22 38 / 0.85); }
+html.dark .bg-white\/90 { background-color: rgb(10 22 38 / 0.9); }
+html.dark .bg-white\/95 { background-color: rgb(10 22 38 / 0.95); }
 
 html.dark .glass-card {
-  background: rgba(15, 28, 46, 0.82);
+  background: rgba(10, 22, 38, 0.82);
 }
 
 html.dark .hairline-grid {
@@ -297,7 +311,7 @@ html.dark .light-wash {
 }
 
 html.dark .spatial-card {
-  background-color: rgba(15, 28, 46, 0.9);
+  background-color: rgba(10, 22, 38, 0.9);
   background-image: radial-gradient(560px circle at calc(var(--mx, 0) * 50% + 50%) calc(var(--my, 0) * 50% + 50%), rgba(85, 166, 255, 0.12), rgba(0, 0, 0, 0) 55%);
   box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55), 0 3px 10px rgba(0, 0, 0, 0.4);
 }
