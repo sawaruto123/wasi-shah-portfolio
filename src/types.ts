@@ -73,6 +73,7 @@ export interface ProfileInfo {
   location: string;
   portrait: string;
   role_line: string;
+  logo_text: string;
 }
 
 export interface ContactInfo {

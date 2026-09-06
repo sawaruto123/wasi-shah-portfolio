@@ -25,7 +25,7 @@ export const NavigationHUD: React.FC<NavigationHUDProps> = ({
           className="flex items-center gap-2.5 shrink-0 group text-left cursor-pointer bg-transparent border-none p-0"
         >
           <div className="w-9 h-9 rounded-xl bg-ink text-white flex items-center justify-center font-mono font-bold text-xs tracking-wider group-hover:bg-primary transition-colors">
-            WS
+            {settings.profile.logo_text}
           </div>
           <div className="flex items-baseline gap-1.5 font-display text-sm md:text-base font-black tracking-tight text-ink whitespace-nowrap">
             <span className="group-hover:text-primary transition-colors hidden sm:inline">{settings.profile.name}</span>

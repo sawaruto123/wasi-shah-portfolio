@@ -90,6 +90,9 @@ export const SettingsManager: React.FC = () => {
           <Field label="Tagline">
             <TextInput value={settings.profile.tagline} onChange={(e) => patchNested('profile', { tagline: e.target.value })} />
           </Field>
+          <Field label="Logo text (monogram)">
+            <TextInput value={settings.profile.logo_text} onChange={(e) => patchNested('profile', { logo_text: e.target.value })} />
+          </Field>
         </div>
         <Field label="Portrait image" className="mt-4">
           <ImageField value={settings.profile.portrait} onChange={(url) => patchNested('profile', { portrait: url })} />
