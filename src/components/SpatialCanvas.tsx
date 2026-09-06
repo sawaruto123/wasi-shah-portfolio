@@ -59,7 +59,7 @@ void main() {
 
   // 光子環（白熱）
   float ring = exp(-pow((b - bCrit) * 3.5, 2.0));
-  col += vec3(1.0, 0.9, 0.75) * ring * 2.2;
+  col += vec3(1.0, 0.85, 0.65) * ring * 1.4;
 
   gl_FragColor = vec4(col, 1.0);
 }
@@ -89,18 +89,18 @@ void main() {
   float s2 = 0.5 + 0.5 * sin(swirl * 7.0 - r * 12.0 + 1.7);
   float grain = 0.55 + 0.5 * s1 * s2;
 
-  vec3 hot = vec3(1.0, 0.96, 0.9);
-  vec3 warm = vec3(1.0, 0.62, 0.2);
-  vec3 cool = vec3(0.5, 0.1, 0.02);
+  vec3 hot = vec3(1.0, 0.82, 0.5);
+  vec3 warm = vec3(1.0, 0.55, 0.16);
+  vec3 cool = vec3(0.45, 0.08, 0.02);
 
   float t = 1.0 - smoothstep(1.5, 4.5, r); // 1 內圈 → 0 外圈
   vec3 col = mix(cool, warm, smoothstep(0.1, 0.55, t));
   col = mix(col, hot, smoothstep(0.7, 1.0, t));
   col *= grain;
-  col *= (0.5 + 1.0 * smoothstep(-5.0, 5.0, vPos.x)); // 都卜勒增亮
+  col *= (0.55 + 0.7 * smoothstep(-5.0, 5.0, vPos.x)); // 都卜勒增亮
 
   float fade = (1.0 - smoothstep(3.8, 5.0, r)) * smoothstep(0.0, 0.4, r);
-  gl_FragColor = vec4(col * 1.4, fade);
+  gl_FragColor = vec4(col, fade);
 }
 `;
 
@@ -192,7 +192,7 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     composer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     composer.setSize(width, height);
     composer.addPass(new RenderPass(scene, camera));
-    composer.addPass(new UnrealBloomPass(new THREE.Vector2(width, height), dark ? 0.5 : 0.4, 0.6, dark ? 0.78 : 0.85));
+    composer.addPass(new UnrealBloomPass(new THREE.Vector2(width, height), dark ? 0.38 : 0.32, 0.6, dark ? 0.78 : 0.85));
     composer.addPass(new OutputPass());
 
     // 主光（黑洞背光）
@@ -458,7 +458,7 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
 
       // 相機：繞黑洞螺旋前進（越滾越近，從上方俯視吸積盤）
       const orbit = p * Math.PI * 2.6 + targetRotY * 0.3;
-      const radius = 16 - p * 11;
+      const radius = 16 - p * 8.5;
       const camY = 8 * (1 - p) + 1.5 - targetRotX * 1.4;
       tmpVec.set(Math.cos(orbit) * radius, camY, Math.sin(orbit) * radius);
       camera.position.lerp(tmpVec, 0.08);
