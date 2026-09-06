@@ -405,14 +405,28 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     }
     window.addEventListener('click', handleClick);
 
-    // ── 滾動 ──
+    // ── 滾動：房間進度 + 房內內容捲動（讓 3D 隨時跟著動）──
     let scrollProgress = 0;
     const handleScroll = () => {
       const total = document.documentElement.scrollHeight - window.innerHeight;
-      if (total > 0) scrollProgress = Math.min(Math.max(window.scrollY / total, 0), 1);
-      onScrollProgress?.(scrollProgress);
+      const roomProgress = total > 0 ? Math.min(Math.max(window.scrollY / total, 0), 1) : 0;
+
+      // 目前房間的內部捲動進度（房內內容多時，捲動也讓 3D 產生視差）
+      let innerProgress = 0;
+      document.querySelectorAll('[data-room-scroll]').forEach((node) => {
+        const el = node as HTMLElement;
+        const wrapper = el.parentElement?.parentElement;
+        if (wrapper && wrapper.classList.contains('opacity-100')) {
+          const max = el.scrollHeight - el.clientHeight;
+          if (max > 0) innerProgress = Math.min(Math.max(el.scrollTop / max, 0), 1);
+        }
+      });
+
+      scrollProgress = Math.min(Math.max(roomProgress + innerProgress * 0.1, 0), 1);
+      onScrollProgress?.(roomProgress);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
+    document.addEventListener('scroll', handleScroll, { capture: true, passive: true });
     handleScroll();
 
     const handleResize = () => {
@@ -445,7 +459,7 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
       const radius = 16 - p * 11;
       const camY = 8 * (1 - p) + 1.5 - targetRotX * 1.4;
       tmpVec.set(Math.cos(orbit) * radius, camY, Math.sin(orbit) * radius);
-      camera.position.lerp(tmpVec, 0.06);
+      camera.position.lerp(tmpVec, 0.08);
       camera.lookAt(0, 0, 0);
       skyMat.uniforms.uCamPos.value.copy(camera.position);
 
@@ -506,6 +520,7 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
       else window.removeEventListener('deviceorientation', handleOrientation);
       window.removeEventListener('click', handleClick);
       window.removeEventListener('scroll', handleScroll);
+      document.removeEventListener('scroll', handleScroll, true);
       window.removeEventListener('resize', handleResize);
       composer.dispose();
       renderer.dispose();
