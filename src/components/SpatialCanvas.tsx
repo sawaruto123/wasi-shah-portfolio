@@ -264,12 +264,14 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
       nodeDots.push(dot);
       nodePoints.push(new THREE.Vector3(x, y, z));
     }
-    const lineMat = new THREE.LineBasicMaterial({ color: P.ringBlue, transparent: true, opacity: 0.75 });
+    const lineMat = new THREE.LineDashedMaterial({ color: P.ringBlue, transparent: true, opacity: 0.55, dashSize: 0.18, gapSize: 0.12 });
     for (let i = 0; i < nodePoints.length; i++) {
       for (let j = i + 1; j < nodePoints.length; j++) {
         if (nodePoints[i].distanceTo(nodePoints[j]) < 1.05) {
           const geo = new THREE.BufferGeometry().setFromPoints([nodePoints[i], nodePoints[j]]);
-          nodeGroup.add(new THREE.Line(geo, lineMat));
+          const line = new THREE.Line(geo, lineMat);
+          line.computeLineDistances();
+          nodeGroup.add(line);
         }
       }
     }
@@ -413,11 +415,59 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     const particles = new THREE.Points(particleGeo, particleMat);
     scene.add(particles);
 
-    // Mouse Interactivity（只在有滑鼠的裝置啟用）
+    // --- 流星（Shooting stars）---
+    const comets: Array<{ mesh: THREE.Mesh; vel: THREE.Vector3 }> = [];
+    for (let i = 0; i < 4; i++) {
+      const cm = new THREE.Mesh(
+        new THREE.SphereGeometry(0.06, 8, 8),
+        new THREE.MeshBasicMaterial({ color: i % 2 === 0 ? 0xffffff : 0x7fd4ff })
+      );
+      cm.position.set((Math.random() - 0.5) * 22, (Math.random() - 0.5) * 16, 8 + Math.random() * 6);
+      scene.add(cm);
+      comets.push({
+        mesh: cm,
+        vel: new THREE.Vector3((Math.random() - 0.5) * 0.03, (Math.random() - 0.5) * 0.03, -0.08 - Math.random() * 0.08),
+      });
+    }
+
+    // --- 可互動物件（滑鼠 hover 放大）---
+    const interactive: Array<{ mesh: THREE.Mesh; baseScale: number }> = [];
+    [ozPlanet, ring1, ring2, ring3, portalMesh, sun, planet, ...creatures.map((c) => c.mesh)].forEach((m) => {
+      interactive.push({ mesh: m, baseScale: m.scale.x });
+    });
+    cubesGroup.children.forEach((m) => {
+      if ((m as THREE.Mesh).isMesh) interactive.push({ mesh: m as THREE.Mesh, baseScale: m.scale.x });
+    });
+    const raycaster = new THREE.Raycaster();
+    let hovered: THREE.Mesh | null = null;
+
+    // --- 點擊漣漪（Click ripple）---
+    const ripples: Array<{ mesh: THREE.Mesh; life: number }> = [];
+    const groundPlane = new THREE.Mesh(
+      new THREE.PlaneGeometry(200, 200),
+      new THREE.MeshBasicMaterial({ visible: false })
+    );
+    groundPlane.rotation.x = -Math.PI / 2;
+    groundPlane.position.y = -6;
+    scene.add(groundPlane);
+
+    const spawnRipple = (point: THREE.Vector3) => {
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(0.15, 0.32, 40),
+        new THREE.MeshBasicMaterial({ color: P.ringBlue, transparent: true, opacity: 0.65, side: THREE.DoubleSide, depthWrite: false })
+      );
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.set(point.x, -5.9, point.z);
+      scene.add(ring);
+      ripples.push({ mesh: ring, life: 1 });
+    };
+
+    // Mouse / Touch Interactivity
     let targetRotX = 0;
     let targetRotY = 0;
     const pointerNdc = new THREE.Vector2(0, 0);
     const hasFinePointer = window.matchMedia('(pointer: fine)').matches;
+    const deviceRot = { x: 0, y: 0 };
 
     const handleMouseMove = (e: MouseEvent) => {
       const normX = (e.clientX / window.innerWidth) * 2 - 1;
@@ -425,10 +475,37 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
       targetRotY = normX * 0.45;
       targetRotX = normY * 0.35;
       pointerNdc.set(normX, normY);
+      raycaster.setFromCamera(pointerNdc, camera);
+      const hits = raycaster.intersectObjects(interactive.map((i) => i.mesh), false);
+      hovered = (hits[0]?.object as THREE.Mesh) ?? null;
     };
+
+    const handleClick = (e: MouseEvent) => {
+      const nx = (e.clientX / window.innerWidth) * 2 - 1;
+      const ny = -(e.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(new THREE.Vector2(nx, ny), camera);
+      const hits = raycaster.intersectObject(groundPlane, false);
+      if (hits.length > 0) spawnRipple(hits[0].point);
+    };
+
+    const handleOrientation = (e: DeviceOrientationEvent) => {
+      if (e.gamma == null || e.beta == null) return;
+      deviceRot.y = Math.max(-1, Math.min(1, e.gamma / 45));
+      deviceRot.x = Math.max(-1, Math.min(1, (e.beta - 45) / 45));
+    };
+    const requestOrientationPermission = () => {
+      const evt = DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> };
+      evt.requestPermission?.().catch(() => {});
+    };
+
     if (hasFinePointer) {
       window.addEventListener('mousemove', handleMouseMove);
+    } else {
+      window.addEventListener('deviceorientation', handleOrientation);
+      window.addEventListener('click', requestOrientationPermission, { once: true });
+      window.addEventListener('touchstart', requestOrientationPermission, { once: true });
     }
+    window.addEventListener('click', handleClick);
 
     // Scroll-driven Navigation
     let scrollProgress = 0;
@@ -460,6 +537,12 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     const animate = () => {
       animId = requestAnimationFrame(animate);
       const elapsed = clock.getElapsedTime();
+
+      // 手機方向感應（無滑鼠時）
+      if (!hasFinePointer) {
+        targetRotY += (deviceRot.y * 0.6 - targetRotY) * 0.06;
+        targetRotX += (deviceRot.x * 0.5 - targetRotX) * 0.06;
+      }
 
       const targetCamZ = 8 - scrollProgress * 56;
       const targetCamX = Math.sin(scrollProgress * Math.PI * 3.0) * 2.8 + targetRotY * 1.2 + Math.sin(elapsed * 0.5) * 0.15;
@@ -526,6 +609,37 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
       planet.rotation.y += 0.01;
       planetRing.rotation.z += 0.008;
 
+      // 節點連線（虛線，隨 nodeGroup 旋轉）
+
+      // 流星
+      comets.forEach((c) => {
+        c.mesh.position.add(c.vel);
+        if (c.mesh.position.z < -62) {
+          c.mesh.position.set((Math.random() - 0.5) * 22, (Math.random() - 0.5) * 16, 8 + Math.random() * 6);
+        }
+      });
+
+      // 點擊漣漪
+      for (let i = ripples.length - 1; i >= 0; i--) {
+        const r = ripples[i];
+        r.life -= 0.03;
+        if (r.life <= 0) {
+          scene.remove(r.mesh);
+          (r.mesh.material as THREE.MeshBasicMaterial).dispose();
+          ripples.splice(i, 1);
+          continue;
+        }
+        const t = 1 - r.life;
+        r.mesh.scale.setScalar(1 + t * 7);
+        (r.mesh.material as THREE.MeshBasicMaterial).opacity = r.life * 0.65;
+      }
+
+      // hover 放大
+      interactive.forEach(({ mesh, baseScale }) => {
+        const target = mesh === hovered ? baseScale * 1.3 : baseScale;
+        mesh.scale.setScalar(mesh.scale.x + (target - mesh.scale.x) * 0.12);
+      });
+
       composer.render();
 
       if (!readyFired) {
@@ -539,7 +653,10 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
       cancelAnimationFrame(animId);
       if (hasFinePointer) {
         window.removeEventListener('mousemove', handleMouseMove);
+      } else {
+        window.removeEventListener('deviceorientation', handleOrientation);
       }
+      window.removeEventListener('click', handleClick);
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleResize);
       composer.dispose();
