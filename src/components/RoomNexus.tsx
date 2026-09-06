@@ -12,7 +12,7 @@ export const RoomNexus: React.FC<RoomNexusProps> = ({ onNavigate }) => {
   return (
     <section
       id="room-nexus"
-      className="room-anchor min-h-full flex flex-col justify-center px-5 sm:px-8 lg:px-12 max-w-[1720px] mx-auto pt-24 pb-16 relative"
+      className="room-anchor min-h-full flex flex-col justify-center px-5 sm:px-8 lg:px-12 max-w-[1720px] mx-auto pt-24 pb-24 md:pb-16 relative"
     >
       {/* 漂浮幾何生物 */}
       <span className="float-shape text-5xl" style={{ left: '10%', top: '20%', animationDelay: '0s' }}>◇</span>

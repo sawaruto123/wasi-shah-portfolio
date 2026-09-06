@@ -56,7 +56,7 @@ export const RoomDispatch: React.FC<RoomDispatchProps> = ({ onShowToast }) => {
   return (
     <section
       id="room-dispatch"
-      className="room-anchor min-h-full flex flex-col justify-center px-5 sm:px-8 lg:px-12 max-w-[1720px] mx-auto pt-24 pb-20"
+      className="room-anchor min-h-full flex flex-col justify-center px-5 sm:px-8 lg:px-12 max-w-[1720px] mx-auto pt-24 pb-28 md:pb-20"
     >
       <div className="flex items-center gap-3 mb-8">
         <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/70 border border-border-crisp font-mono text-[11px] font-bold text-ink">

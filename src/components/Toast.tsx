@@ -10,7 +10,7 @@ export const Toast: React.FC<ToastProps> = ({ message, onClose }) => {
   if (!message) return null;
 
   return (
-    <div className="fixed bottom-14 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl bg-ink text-white font-mono text-xs shadow-2xl border border-white/10 animate-slide-up">
+    <div className="fixed bottom-20 right-4 md:bottom-14 md:right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl bg-ink text-white font-mono text-xs shadow-2xl border border-white/10 animate-slide-up">
       <CheckCircle className="w-4 h-4 text-accent-lime shrink-0" />
       <span className="font-medium">{message}</span>
       <button

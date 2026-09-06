@@ -199,7 +199,7 @@ export default function App() {
       const t = e.changedTouches[0];
       const dx = t.clientX - start.x;
       const dy = t.clientY - start.y;
-      if (Math.abs(dy) < 60 || Math.abs(dy) < Math.abs(dx) * 1.2) return;
+      if (Math.abs(dy) < 35 || Math.abs(dy) < Math.abs(dx) * 1.2) return;
       const idx = activeIndexRef.current;
       const el = document.querySelector(`[data-room-scroll="${idx}"]`) as HTMLElement | null;
       if (el) {
@@ -367,6 +367,30 @@ export default function App() {
           style={{ transform: `translate(-50%, -50%) rotate(${lightAngle}deg) translateY(-18px)` }}
         />
       </div>
+
+      {/* 手機底部導覽列：點擊直接切換房間（最可靠的到達方式） */}
+      <nav
+        className="fixed bottom-0 inset-x-0 z-40 md:hidden flex items-stretch bg-white/90 backdrop-blur-md border-t border-border-crisp shadow-[0_-4px_20px_rgba(0,0,0,0.10)]"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
+        {ROOMS.map((room, i) => {
+          const active = i === activeIndex;
+          return (
+            <button
+              key={room.id}
+              onClick={() => scrollToRoom(i)}
+              aria-label={room.name}
+              aria-current={active ? 'true' : undefined}
+              className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 cursor-pointer border-none bg-transparent ${
+                active ? 'text-primary' : 'text-ink-muted'
+              }`}
+            >
+              <span className={`font-mono text-[9px] font-bold ${active ? 'opacity-100' : 'opacity-60'}`}>{room.number}</span>
+              <span className="font-mono text-[10px] font-bold uppercase tracking-wide">{room.label}</span>
+            </button>
+          );
+        })}
+      </nav>
       <Modals
         activeProject={activeProject}
         activeFilm={activeFilm}
