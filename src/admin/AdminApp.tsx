@@ -67,7 +67,7 @@ export const AdminApp: React.FC = () => {
   return (
     <div className="min-h-screen bg-surface-warm text-ink flex flex-col lg:flex-row">
       {/* Sidebar */}
-      <aside className="lg:w-60 bg-ink text-white flex lg:flex-col items-center lg:items-stretch gap-1 p-3 lg:p-4 lg:sticky lg:top-0 lg:h-screen overflow-x-auto">
+      <aside className="lg:w-60 bg-[#0D1826] text-white flex lg:flex-col items-center lg:items-stretch gap-1 p-3 lg:p-4 lg:sticky lg:top-0 lg:h-screen overflow-x-auto">
         <div className="hidden lg:flex items-center gap-2 px-2 py-3 mb-4">
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center font-mono font-bold text-xs">
             WS

@@ -16,11 +16,13 @@ import { RoomDispatch } from './components/RoomDispatch';
 import { Modals } from './components/Modals';
 import { Toast } from './components/Toast';
 import { CookieConsent } from './components/CookieConsent';
+import { useTheme } from './lib/theme';
 import { Eye, EyeOff, ArrowLeft, ArrowRight, Sun } from 'lucide-react';
 
 const ROOM_COUNT = ROOMS.length;
 
 export default function App() {
+  const { dark } = useTheme();
   const [currentRoom, setCurrentRoom] = useState<Room>(ROOMS[0]);
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const [zCoord, setZCoord] = useState<string>('Z: +8.00m');
@@ -40,6 +42,7 @@ export default function App() {
   const travelLockRef = useRef(0);
   const dialRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const readyFlagsRef = useRef({ fonts: false, world: false });
   const startTimeRef = useRef(Date.now());
 
@@ -180,6 +183,39 @@ export default function App() {
     return () => window.removeEventListener('wheel', onWheel);
   }, [scrollToRoom]);
 
+  // 觸控滑動：手機沒有滾輪，改用手滑上下切換房間（含房內滾動邊界）
+  useEffect(() => {
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+    };
+    const onTouchEnd = (e: TouchEvent) => {
+      const start = touchStartRef.current;
+      touchStartRef.current = null;
+      if (!start) return;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - start.x;
+      const dy = t.clientY - start.y;
+      if (Math.abs(dy) < 60 || Math.abs(dy) < Math.abs(dx) * 1.2) return;
+      const idx = activeIndexRef.current;
+      const el = document.querySelector(`[data-room-scroll="${idx}"]`) as HTMLElement | null;
+      if (el) {
+        const maxScroll = el.scrollHeight - el.clientHeight;
+        if (dy < 0 && el.scrollTop < maxScroll - 2) return; // 房內還有內容，繼續滾
+        if (dy > 0 && el.scrollTop > 2) return;
+      }
+      const next = idx + (dy < 0 ? 1 : -1);
+      if (next >= 0 && next < ROOM_COUNT) scrollToRoom(next);
+    };
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [scrollToRoom]);
+
   // 滾動停止後吸附到最近的房間（章節鎖定）
   useEffect(() => {
     let timer: number | undefined;
@@ -235,7 +271,7 @@ export default function App() {
     <div className="relative min-h-screen text-ink selection:bg-primary selection:text-white">
       {/* 世界背景：網格 + 3D 走廊 */}
       <div className="fixed inset-0 z-0 hairline-grid pointer-events-none" />
-      <SpatialCanvas onScrollProgress={handleScrollProgress} lightAngle={lightAngle} onReady={handleWorldReady} />
+      <SpatialCanvas onScrollProgress={handleScrollProgress} lightAngle={lightAngle} darkMode={dark} onReady={handleWorldReady} />
 
       {/* 滾動長度：每個房間一屏，滾動即飛越世界 */}
       <div style={{ height: `${ROOM_COUNT * 100}vh` }} aria-hidden="true" />
@@ -285,7 +321,7 @@ export default function App() {
       {/* 只顯示 3D 世界的開關 */}
       <button
         onClick={() => setWorldOnly((v) => !v)}
-        className="fixed bottom-5 right-5 z-50 inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-ink text-white font-mono text-xs font-bold uppercase tracking-wider shadow-lg hover:bg-primary transition-colors cursor-pointer border-none"
+        className="fixed bottom-5 right-5 z-50 hidden md:inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-ink text-white font-mono text-xs font-bold uppercase tracking-wider shadow-lg hover:bg-primary transition-colors cursor-pointer border-none"
         title={worldOnly ? '回到網站' : '只顯示 3D 世界'}
       >
         {worldOnly ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -313,7 +349,7 @@ export default function App() {
       {/* 光線方向（360° 旋鈕） */}
       <div
         ref={dialRef}
-        className="fixed bottom-5 left-5 z-40 w-14 h-14 rounded-full bg-white/85 backdrop-blur-md border border-border-crisp shadow-lg cursor-grab select-none touch-none"
+        className="fixed bottom-5 left-5 z-40 hidden md:block w-14 h-14 rounded-full bg-white/85 backdrop-blur-md border border-border-crisp shadow-lg cursor-grab select-none touch-none"
         onPointerDown={(e) => {
           draggingRef.current = true;
           (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -341,7 +377,7 @@ export default function App() {
 
       {/* 載入畫面 */}
       <div
-        className={`fixed inset-0 z-[100] flex flex-col items-center justify-center gap-6 bg-[#F6FAFF] transition-opacity duration-500 ${loading ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 z-[100] flex flex-col items-center justify-center gap-6 bg-surface-warm transition-opacity duration-500 ${loading ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         aria-hidden={!loading}
       >
         <div className="font-display text-2xl sm:text-3xl font-bold text-ink tracking-tight">

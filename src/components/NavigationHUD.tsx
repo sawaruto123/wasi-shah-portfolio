@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { useContent } from '../lib/content';
+import { ThemeToggle } from '../lib/theme';
 import { Room } from '../types';
 
 interface NavigationHUDProps {
@@ -98,6 +99,7 @@ export const NavigationHUD: React.FC<NavigationHUDProps> = ({
 
         {/* Action Button */}
         <div className="flex items-center gap-2 shrink-0">
+          <ThemeToggle />
           <button
             onClick={() => onNavigate('room-dispatch')}
             className="group inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white font-mono text-xs font-bold uppercase tracking-wider shadow-[0_4px_16px_rgba(0,71,255,0.3)] hover:bg-ink hover:shadow-none hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border-none"

@@ -1,7 +1,7 @@
 import React from 'react';
 
 export const PrivacyPolicy: React.FC = () => (
-  <div className="min-h-screen bg-[#F6FAFF] text-ink px-4 sm:px-6 py-16">
+  <div className="min-h-screen bg-surface-warm text-ink px-4 sm:px-6 py-16">
     <div className="max-w-2xl mx-auto">
       <a href="/" className="font-mono text-xs text-primary hover:underline mb-8 inline-block">
         ← Back to site

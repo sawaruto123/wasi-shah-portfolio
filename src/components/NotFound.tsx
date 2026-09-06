@@ -1,7 +1,7 @@
 import React from 'react';
 
 export const NotFound: React.FC = () => (
-  <div className="min-h-screen flex items-center justify-center bg-[#F6FAFF] px-6 text-center">
+  <div className="min-h-screen flex items-center justify-center bg-surface-warm px-6 text-center">
     <div className="max-w-md">
       <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/70 border border-border-crisp font-mono text-[11px] font-bold text-ink mb-8">
         <span className="w-2 h-2 rounded-full bg-accent-orange" />
