@@ -96,11 +96,6 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(P.bg);
-    // 霧：手機完全不設霧（保持世界清晰），桌機保留深度霧
-    const isNarrow = width < 768;
-    if (!isNarrow) {
-      scene.fog = new THREE.Fog(P.fog, 24, 90);
-    }
 
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
     camera.position.set(0, 0, 8);
