@@ -19,7 +19,7 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
   const [dims, setDims] = useState({ cols: 40, rows: 30 });
   const [fontSize, setFontSize] = useState(8);
   const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
-  const [pos, setPos] = useState(100); // 100 = 全 ASCII
+  const [pos, setPos] = useState(50); // 預設一半 ASCII、一半真實影像
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const draggingRef = useRef(false);
@@ -110,7 +110,8 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#0A1626';
+    ctx.fillRect(0, 0, W, H);
 
     const { cols, rows } = dims;
     const charW = CHAR_W * fontSize;
