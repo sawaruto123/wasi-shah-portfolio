@@ -23,6 +23,8 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
   const containerRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const lastMoveRef = useRef(0);
+  const draggingRef = useRef(false);
+  const [pos, setPos] = useState(50);
 
   // 依容器尺寸計算點陣格數（用固定字元大小，不 scale）
   useEffect(() => {
@@ -32,7 +34,7 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
       const w = el.clientWidth;
       const h = el.clientHeight;
       if (w < 10 || h < 10) return;
-      const fs = w >= 360 ? 5 : 6; // PC / 平板更密、手機適中
+      const fs = w >= 360 ? 4 : 5; // PC 更密、手機適中
       setFontSize(fs);
       const cols = Math.max(12, Math.ceil(w / (fs * CHAR_W)));
       const rows = Math.max(12, Math.ceil(h / fs));
@@ -129,6 +131,27 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
   };
   const handleLeave = () => setPointer(null);
 
+  // 分隔線拖曳（比較 ASCII 與真實影像）
+  const updatePos = (e: React.PointerEvent) => {
+    const el = containerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const p = ((e.clientX - rect.left) / rect.width) * 100;
+    setPos(Math.max(0, Math.min(100, p)));
+  };
+  const handleBarDown = (e: React.PointerEvent) => {
+    draggingRef.current = true;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    updatePos(e);
+  };
+  const handleBarMove = (e: React.PointerEvent) => {
+    if (!draggingRef.current) return;
+    updatePos(e);
+  };
+  const handleBarUp = () => {
+    draggingRef.current = false;
+  };
+
   if (!grid) {
     return (
       <img
@@ -147,22 +170,28 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
       ref={containerRef}
       onPointerMove={handleMove}
       onPointerLeave={handleLeave}
-      className={`relative flex items-center justify-center overflow-hidden select-none cursor-crosshair ascii-bob ${className}`}
+      className={`relative overflow-hidden select-none ascii-bob ${className}`}
       style={{ fontFamily: "'JetBrains Mono', monospace" }}
     >
-      {/* 真實影像淡影，幫助看出細節 */}
+      {/* 真實影像（底層，完整） */}
       <img
         src={src}
         alt=""
         referrerPolicy="no-referrer"
         aria-hidden="true"
-        className="absolute inset-0 w-full h-full object-cover opacity-[0.22] pointer-events-none"
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
       />
+
+      {/* ASCII（上層，依分隔線裁切） */}
       <div
-        ref={gridRef}
-        className="relative leading-none"
-        style={{ fontSize, lineHeight: 1, transform: `scale(${scale})` }}
+        className="absolute inset-0 flex items-center justify-center"
+        style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}
       >
+        <div
+          ref={gridRef}
+          className="leading-none cursor-crosshair"
+          style={{ fontSize, lineHeight: 1, transform: `scale(${scale})` }}
+        >
         {grid.map((row, y) => (
           <div key={y} className="whitespace-pre">
             {row.map((ch, x) => {
@@ -202,6 +231,20 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
             })}
           </div>
         ))}
+        </div>
+      </div>
+
+      {/* 分隔線 bar */}
+      <div
+        className="absolute top-0 bottom-0 w-1 -translate-x-1/2 bg-white/90 cursor-ew-resize z-10 touch-none"
+        style={{ left: `${pos}%` }}
+        onPointerDown={handleBarDown}
+        onPointerMove={handleBarMove}
+        onPointerUp={handleBarUp}
+      >
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white shadow-lg flex items-center justify-center text-[11px] text-ink font-bold pointer-events-none">
+          ⇔
+        </div>
       </div>
     </div>
   );
