@@ -47,7 +47,7 @@ export const RoomStudio: React.FC = () => {
                     <span className="text-ink font-bold">{lang.name}</span>
                     <span className="font-mono text-[10px] text-ink-muted">{lang.level}</span>
                   </div>
-                  <div className="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+                  <div className="w-full h-2 bg-surface-container-high rounded-full overflow-hidden">
                     <div
                       className="h-full rounded-full language-bar"
                       style={{ width: `${lang.pct}%`, animationDelay: `${i * 0.18}s` }}

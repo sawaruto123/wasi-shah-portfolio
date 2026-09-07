@@ -154,7 +154,7 @@ html, body {
 
 /* 語言進度條：房間進入時由 0 展開到目標值 */
 .language-bar {
-  transform: scaleX(0);
+  transform: scaleX(1); /* 預設就是顯示的；進場動畫會從 0 展開 */
   transform-origin: left;
   background: linear-gradient(90deg, #4C9FFF, #7FD4FF);
 }
