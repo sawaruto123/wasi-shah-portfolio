@@ -158,10 +158,11 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
               const lum = isDot ? 0 : CHARS.indexOf(ch) / (CHARS.length - 1);
               let dy = 0;
               let opacity = isDot ? 0.5 : 0.92;
-              // 單色調：固定藍色相，亮度隨明暗變化（暗部深藍、亮部接近白）
-              const hue = 200;
-              const light = isDot ? 20 : 28 + lum * 55;
-              let color = `hsl(${hue}, 75%, ${light}%)`;
+              // 兩相反色（互補高對比）：暗部深藍 → 亮部琥珀橙
+              const hue = 215 - lum * 180; // 215(blue) → 35(amber)
+              const light = 22 + lum * 42; // 22% → 64%
+              const sat = 70 + lum * 25; // 70% → 95%
+              let color = isDot ? 'hsl(215, 45%, 18%)' : `hsl(${hue}, ${sat}%, ${light}%)`;
               let glow = 'none';
               if (pointer) {
                 const d = Math.hypot(x - pointer.x * cols, y - pointer.y * rows);
@@ -169,7 +170,7 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
                 dy = Math.sin(d * 0.7) * 3.5 * wave;
                 opacity = isDot ? 0.5 : 0.6 + 0.4 * Math.exp(-d / 16);
                 color = `hsl(${hue}, 100%, ${Math.min(96, light + 15 + 20 * wave)}%)`;
-                glow = isDot ? 'none' : `0 0 8px rgba(140,220,255,${(0.9 * wave).toFixed(2)})`;
+                glow = isDot ? 'none' : `0 0 8px rgba(255,190,120,${(0.9 * wave).toFixed(2)})`;
               }
               return (
                 <span
