@@ -187,12 +187,6 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
     draggingRef.current = false;
   };
 
-  if (!grid) {
-    return (
-      <img src={src} alt={alt} referrerPolicy="no-referrer" className={`w-full h-full object-cover ${className}`} />
-    );
-  }
-
   return (
     <div
       ref={containerRef}
@@ -201,33 +195,37 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
       className={`relative overflow-hidden select-none ascii-bob ${className}`}
       style={{ fontFamily: "'JetBrains Mono', monospace" }}
     >
-      {/* 真實影像（底層） */}
+      {/* 真實影像（底層，也是載入中的 fallback） */}
       <img
         src={src}
-        alt=""
+        alt={grid ? '' : alt}
         referrerPolicy="no-referrer"
-        aria-hidden="true"
+        aria-hidden={!!grid}
         className="absolute inset-0 w-full h-full object-cover pointer-events-none"
       />
 
-      {/* ASCII canvas（上層，依分隔線裁切） */}
-      <div className="absolute inset-0" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
-        <canvas ref={canvasRef} className="w-full h-full block" />
-      </div>
+      {grid && (
+        <>
+          {/* ASCII canvas（上層，依分隔線裁切） */}
+          <div className="absolute inset-0" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
+            <canvas ref={canvasRef} className="w-full h-full block" />
+          </div>
 
-      {/* 分隔線 bar（加大命中區，易拖曳） */}
-      <div
-        className="absolute top-0 bottom-0 w-10 -translate-x-1/2 z-10 touch-none cursor-ew-resize"
-        style={{ left: `${pos}%` }}
-        onPointerDown={handleBarDown}
-        onPointerMove={handleBarMove}
-        onPointerUp={handleBarUp}
-      >
-        <div className="absolute left-1/2 top-0 bottom-0 w-0.5 -translate-x-1/2 bg-white/90" />
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-lg flex items-center justify-center text-ink font-bold pointer-events-none">
-          <span className="text-[13px] leading-none">⇔</span>
-        </div>
-      </div>
+          {/* 分隔線 bar（加大命中區，易拖曳） */}
+          <div
+            className="absolute top-0 bottom-0 w-10 -translate-x-1/2 z-10 touch-none cursor-ew-resize"
+            style={{ left: `${pos}%` }}
+            onPointerDown={handleBarDown}
+            onPointerMove={handleBarMove}
+            onPointerUp={handleBarUp}
+          >
+            <div className="absolute left-1/2 top-0 bottom-0 w-0.5 -translate-x-1/2 bg-white/90" />
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-lg flex items-center justify-center text-ink font-bold pointer-events-none">
+              <span className="text-[13px] leading-none">⇔</span>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
