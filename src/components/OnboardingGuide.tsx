@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { MousePointer2, ArrowUpDown, SlidersHorizontal, Moon, X } from 'lucide-react';
+import { MousePointer2, ArrowUpDown, SlidersHorizontal, Moon, Images, X } from 'lucide-react';
 
 const STORAGE_KEY = 'ws-onboarded';
 
@@ -21,9 +21,14 @@ const PC_STEPS: Step[] = [
     desc: 'Hover the 3D objects to make them grow. Click anywhere to send a ripple through space.',
   },
   {
+    icon: <Images className="w-5 h-5" />,
+    title: 'Browse the details',
+    desc: 'Click a project or photo to open it, then use the ← → arrows (or keyboard) to flip through.',
+  },
+  {
     icon: <SlidersHorizontal className="w-5 h-5" />,
-    title: 'Adjust to taste',
-    desc: 'Use the sliders icon in the top bar to dim the background if the text feels busy.',
+    title: 'Adjust background',
+    desc: 'Use the sliders icon in the top bar to dim the background (default 75%) if text feels busy.',
   },
   {
     icon: <Moon className="w-5 h-5" />,
@@ -44,9 +49,14 @@ const MOBILE_STEPS: Step[] = [
     desc: 'Tap anywhere to create a ripple. Tilt your phone to move the camera.',
   },
   {
+    icon: <Images className="w-5 h-5" />,
+    title: 'Swipe the details',
+    desc: 'Tap a project or photo to open it, then swipe left/right to flip through.',
+  },
+  {
     icon: <SlidersHorizontal className="w-5 h-5" />,
-    title: 'Adjust to taste',
-    desc: 'Tap the sliders icon in the top bar to dim the background if text feels busy.',
+    title: 'Adjust background',
+    desc: 'Tap the sliders icon in the top bar to dim the background (default 75%).',
   },
   {
     icon: <Moon className="w-5 h-5" />,

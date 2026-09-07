@@ -212,6 +212,18 @@ html, body {
   100% { opacity: 0; transform: translateX(0); }
 }
 
+/* 彈窗切換動畫（上／下一張） */
+@keyframes modalSlideRight {
+  from { opacity: 0; transform: translateX(42px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes modalSlideLeft {
+  from { opacity: 0; transform: translateX(-42px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.modal-slide-right { animation: modalSlideRight 0.32s ease-out; }
+.modal-slide-left { animation: modalSlideLeft 0.32s ease-out; }
+
 /* 彈窗進場 */
 @keyframes modalEnter {
   0% { opacity: 0; transform: translateY(26px) scale(0.92); filter: drop-shadow(-4px 0 rgba(255, 0, 60, 0.4)) drop-shadow(4px 0 rgba(0, 255, 220, 0.4)); }

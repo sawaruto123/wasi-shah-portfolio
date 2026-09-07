@@ -3,10 +3,10 @@ import { SlidersHorizontal } from 'lucide-react';
 
 const STORAGE_KEY = 'ws-bg-opacity';
 
-let current = 1;
+let current = 0.75;
 try {
   const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) current = Math.min(1, Math.max(0.2, parseFloat(saved) || 1));
+  if (saved) current = Math.min(1, Math.max(0.2, parseFloat(saved) || 0.75));
 } catch { /* ignore */ }
 
 const listeners = new Set<(v: number) => void>();

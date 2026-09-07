@@ -437,9 +437,6 @@ export default function App() {
           <div className="absolute inset-0 rounded-full border-2 border-[#6CC8FF]/30" />
           <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#FFB15E] border-r-[#6CC8FF] animate-spin" />
         </div>
-        <div className="w-40 h-0.5 bg-[#6CC8FF]/20 rounded-full overflow-hidden">
-          <div className="h-full w-1/2 bg-gradient-to-r from-[#6CC8FF] to-[#FFB15E] rounded-full animate-progress" />
-        </div>
         <div className="font-mono text-xs text-ink-muted uppercase tracking-widest">Entering the world…</div>
       </div>
     </div>

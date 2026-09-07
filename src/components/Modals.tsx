@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { X, Play, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Project, FilmRecord, StillCapture } from '../types';
 
@@ -29,6 +29,9 @@ export const Modals: React.FC<ModalsProps> = ({
   onClose,
   onShowToast,
 }) => {
+  const [dir, setDir] = useState(0);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+
   if (!activeProject && !activeFilm && !activeStill) return null;
 
   // 目前開啟的列表與索引，用於上／下一張
@@ -37,18 +40,37 @@ export const Modals: React.FC<ModalsProps> = ({
   const idx = list.findIndex((item) => item.id === currentId);
   const hasPrev = idx > 0;
   const hasNext = idx >= 0 && idx < list.length - 1;
+  const slideClass = dir === 1 ? 'modal-slide-right' : dir === -1 ? 'modal-slide-left' : '';
 
   const goPrev = () => {
     if (!hasPrev) return;
+    setDir(-1);
     if (activeProject) onSelectProject(projects[idx - 1]);
     else if (activeFilm) onSelectFilm(films[idx - 1]);
     else if (activeStill) onSelectStill(stills[idx - 1]);
   };
   const goNext = () => {
     if (!hasNext) return;
+    setDir(1);
     if (activeProject) onSelectProject(projects[idx + 1]);
     else if (activeFilm) onSelectFilm(films[idx + 1]);
     else if (activeStill) onSelectStill(stills[idx + 1]);
+  };
+
+  // 手機左右滑動切換
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const start = touchStartRef.current;
+    touchStartRef.current = null;
+    if (!start) return;
+    const dx = e.changedTouches[0].clientX - start.x;
+    const dy = e.changedTouches[0].clientY - start.y;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+      if (dx < 0) goNext();
+      else goPrev();
+    }
   };
 
   // 鍵盤左右切換、Esc 關閉
@@ -70,6 +92,8 @@ export const Modals: React.FC<ModalsProps> = ({
       <div
         className="modal-enter relative w-full max-w-4xl bg-surface-pure rounded-3xl border border-border-crisp overflow-hidden spatial-card max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
         {/* Close Button */}
         <button
@@ -107,7 +131,7 @@ export const Modals: React.FC<ModalsProps> = ({
 
         {/* Project Inspection Modal */}
         {activeProject && (
-          <div className="overflow-y-auto">
+          <div key={currentId} className={`overflow-y-auto ${slideClass}`}>
             <div className="relative w-full h-80 sm:h-96 bg-black">
               <img
                 src={activeProject.image}
@@ -165,7 +189,7 @@ export const Modals: React.FC<ModalsProps> = ({
 
         {/* Film Player Modal */}
         {activeFilm && (
-          <div className="overflow-y-auto">
+          <div key={currentId} className={`overflow-y-auto ${slideClass}`}>
             <div className="relative w-full aspect-[16/9] bg-black flex items-center justify-center">
               <img
                 src={activeFilm.image}
@@ -215,7 +239,7 @@ export const Modals: React.FC<ModalsProps> = ({
 
         {/* Still Photo Lightbox */}
         {activeStill && (
-          <div className="overflow-y-auto">
+          <div key={currentId} className={`overflow-y-auto ${slideClass}`}>
             <div className="relative w-full max-h-[65vh] bg-black flex items-center justify-center">
               <img
                 src={activeStill.image}
