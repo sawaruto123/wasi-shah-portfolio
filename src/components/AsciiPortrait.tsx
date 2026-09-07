@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 const CHARS = '·:-=+*#%@'; // 暗 → 亮（最暗用點，讓整個空間填滿）
-const BASE_FONT = 8;
 const CHAR_W = 0.6; // 等寬字體約 0.6em 寬
 
 interface AsciiPortraitProps {
@@ -20,6 +19,7 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
   const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
   const [dims, setDims] = useState({ cols: 40, rows: 30 });
   const [scale, setScale] = useState(1);
+  const [fontSize, setFontSize] = useState(8);
   const rafRef = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -32,8 +32,10 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
       const w = el.clientWidth;
       const h = el.clientHeight;
       if (w < 10 || h < 10) return;
-      const cols = Math.max(12, Math.ceil(w / (BASE_FONT * CHAR_W)));
-      const rows = Math.max(12, Math.ceil(h / BASE_FONT));
+      const fs = w >= 400 ? 6 : 7; // PC 更密、手機適中
+      setFontSize(fs);
+      const cols = Math.max(12, Math.ceil(w / (fs * CHAR_W)));
+      const rows = Math.max(12, Math.ceil(h / fs));
       setDims({ cols, rows });
     };
     measure();
@@ -143,13 +145,21 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
       ref={containerRef}
       onPointerMove={handleMove}
       onPointerLeave={handleLeave}
-      className={`flex items-center justify-center overflow-hidden select-none cursor-crosshair ascii-bob ${className}`}
+      className={`relative flex items-center justify-center overflow-hidden select-none cursor-crosshair ascii-bob ${className}`}
       style={{ fontFamily: "'JetBrains Mono', monospace" }}
     >
+      {/* 真實影像淡影，幫助看出細節 */}
+      <img
+        src={src}
+        alt=""
+        referrerPolicy="no-referrer"
+        aria-hidden="true"
+        className="absolute inset-0 w-full h-full object-cover opacity-[0.22] pointer-events-none"
+      />
       <div
         ref={gridRef}
-        className="leading-none"
-        style={{ fontSize: BASE_FONT, lineHeight: 1, transform: `scale(${scale})` }}
+        className="relative leading-none"
+        style={{ fontSize, lineHeight: 1, transform: `scale(${scale})` }}
       >
         {grid.map((row, y) => (
           <div key={y} className="whitespace-pre">
