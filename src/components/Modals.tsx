@@ -32,9 +32,7 @@ export const Modals: React.FC<ModalsProps> = ({
   const [dir, setDir] = useState(0);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
-  if (!activeProject && !activeFilm && !activeStill) return null;
-
-  // 目前開啟的列表與索引，用於上／下一張
+  // 目前開啟的列表與索引（關閉時為空，安全）
   const list = activeProject ? projects : activeFilm ? films : activeStill ? stills : [];
   const currentId = activeProject?.id ?? activeFilm?.id ?? activeStill?.id;
   const idx = list.findIndex((item) => item.id === currentId);
@@ -73,7 +71,7 @@ export const Modals: React.FC<ModalsProps> = ({
     }
   };
 
-  // 鍵盤左右切換、Esc 關閉
+  // 鍵盤左右切換、Esc 關閉（hook 必須在任何條件回傳之前）
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft') goPrev();
@@ -83,6 +81,8 @@ export const Modals: React.FC<ModalsProps> = ({
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   });
+
+  if (!activeProject && !activeFilm && !activeStill) return null;
 
   return (
     <div
