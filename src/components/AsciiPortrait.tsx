@@ -19,8 +19,10 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
   const [grid, setGrid] = useState<string[][] | null>(null);
   const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
   const [dims, setDims] = useState({ cols: 40, rows: 30 });
+  const [scale, setScale] = useState(1);
   const rafRef = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   // 依容器尺寸計算點陣格數（用固定字元大小，不 scale）
   useEffect(() => {
@@ -39,6 +41,26 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
+
+  // 依「實際渲染」的 grid 尺寸做細微 scale，確保真正填滿容器（字型度量可能不是 0.6）
+  useEffect(() => {
+    const el = containerRef.current;
+    const g = gridRef.current;
+    if (!el || !g) return;
+    const measure = () => {
+      const cw = el.clientWidth;
+      const ch = el.clientHeight;
+      const gw = g.scrollWidth;
+      const gh = g.scrollHeight;
+      if (cw < 10 || ch < 10 || gw < 10 || gh < 10) return;
+      setScale(Math.max(cw / gw, ch / gh));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    ro.observe(g);
+    return () => ro.disconnect();
+  }, [grid, dims]);
 
   // 載入圖片：contain 置中，留白處用點填滿
   useEffect(() => {
@@ -124,7 +146,11 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
       className={`flex items-center justify-center overflow-hidden select-none cursor-crosshair ascii-bob ${className}`}
       style={{ fontFamily: "'JetBrains Mono', monospace" }}
     >
-      <div className="leading-none" style={{ fontSize: BASE_FONT, lineHeight: 1 }}>
+      <div
+        ref={gridRef}
+        className="leading-none"
+        style={{ fontSize: BASE_FONT, lineHeight: 1, transform: `scale(${scale})` }}
+      >
         {grid.map((row, y) => (
           <div key={y} className="whitespace-pre">
             {row.map((ch, x) => {
