@@ -53,17 +53,16 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
         c.height = rows;
         const ctx = c.getContext('2d', { willReadFrequently: true });
         if (!ctx) return;
-        // contain：但需校正「字元單元」的寬高比（CHAR_W = 0.6），
-        // 否則圖會被壓成窄條
+        // cover：填滿整個容器（裁切溢出），並校正字元單元寬高比
         const drawAspect = img.width / img.height / CHAR_W;
         let dw: number;
         let dh: number;
         if (drawAspect >= cols / rows) {
-          dw = cols;
-          dh = cols / drawAspect;
-        } else {
           dh = rows;
           dw = rows * drawAspect;
+        } else {
+          dw = cols;
+          dh = cols / drawAspect;
         }
         ctx.drawImage(img, (cols - dw) / 2, (rows - dh) / 2, dw, dh);
         const data = ctx.getImageData(0, 0, cols, rows).data;
