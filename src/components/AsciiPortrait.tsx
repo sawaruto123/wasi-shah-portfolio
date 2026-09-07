@@ -102,6 +102,8 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
     const canvas = canvasRef.current;
     const container = containerRef.current;
     if (!canvas || !container || !grid) return;
+    // grid 是異步產生的，可能暫時與 dims 不同步（例如尺寸剛改變）；等兩者一致再畫，避免越界
+    if (grid.length !== dims.rows || !grid[0] || grid[0].length !== dims.cols) return;
     const W = container.clientWidth;
     const H = container.clientHeight;
     if (W < 10 || H < 10) return;
