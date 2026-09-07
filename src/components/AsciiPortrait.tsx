@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-const CHARS = '·:-=+*#%@'; // 暗 → 亮
+const CHARS = '·.:-;=+*#%@&$B8'; // 16 級灰階（稀疏 → 密集），更多層次更好辨識
 const CHAR_W = 0.6; // 等寬字體約 0.6em 寬
 
 interface AsciiPortraitProps {
@@ -33,7 +33,7 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
       const w = el.clientWidth;
       const h = el.clientHeight;
       if (w < 10 || h < 10) return;
-      const fs = w >= 360 ? 2 : 4; // PC 2px 高密度、手機 4px
+      const fs = w >= 360 ? 1.5 : 4; // PC 1.5px 高密度、手機 4px
       setFontSize(fs);
       const cols = Math.max(12, Math.ceil(w / (fs * CHAR_W)));
       const rows = Math.max(12, Math.ceil(h / fs));
