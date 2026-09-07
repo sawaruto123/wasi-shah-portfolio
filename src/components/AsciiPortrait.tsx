@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 const CHARS = ' .:-=+*#%@'; // 暗 → 亮
+const BASE_FONT = 14;
 
 interface AsciiPortraitProps {
   src: string;
@@ -12,7 +13,8 @@ interface AsciiPortraitProps {
 
 /**
  * 把 CMS 上傳的肖像轉成互動 ASCII 藝術：
- * 滑鼠靠近時字元會像水面般波動 + 發光。
+ * - 自動 scale 到「cover」填滿整個空間（無論圖片比例）
+ * - 滑鼠靠近時字元會像水面般波動 + 發光
  */
 export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({
   src,
@@ -23,27 +25,30 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({
 }) => {
   const [grid, setGrid] = useState<string[][] | null>(null);
   const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
-  const [fontSize, setFontSize] = useState(14);
+  const [scale, setScale] = useState(1);
   const rafRef = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
 
-  // 測量容器尺寸，計算「cover」字體大小讓 ASCII 填滿整個空間（無論圖片比例）
+  // 測量實際渲染的 grid 尺寸，scale 到 cover 填滿容器
   useEffect(() => {
     const el = containerRef.current;
-    if (!el) return;
+    const g = gridRef.current;
+    if (!el || !g) return;
     const measure = () => {
-      const rect = el.getBoundingClientRect();
-      if (rect.width < 10 || rect.height < 10) return;
-      const charW = 0.6; // 等寬字體約 0.6em 寬
-      const fx = rect.width / (cols * charW);
-      const fy = rect.height / rows;
-      setFontSize(Math.max(7, Math.min(42, Math.max(fx, fy)))); // cover：取較大者
+      const cw = el.clientWidth;
+      const ch = el.clientHeight;
+      const gw = g.scrollWidth;
+      const gh = g.scrollHeight;
+      if (cw < 10 || ch < 10 || gw < 10 || gh < 10) return;
+      setScale(Math.max(cw / gw, ch / gh)); // cover
     };
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
+    ro.observe(g);
     return () => ro.disconnect();
-  }, [cols, rows]);
+  }, [cols, rows, grid]);
 
   useEffect(() => {
     let alive = true;
@@ -56,9 +61,9 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({
         c.height = rows;
         const ctx = c.getContext('2d', { willReadFrequently: true });
         if (!ctx) return;
-        const scale = Math.max(cols / img.width, rows / img.height);
-        const dw = img.width * scale;
-        const dh = img.height * scale;
+        const s = Math.max(cols / img.width, rows / img.height);
+        const dw = img.width * s;
+        const dh = img.height * s;
         ctx.drawImage(img, (cols - dw) / 2, (rows - dh) / 2, dw, dh);
         const data = ctx.getImageData(0, 0, cols, rows).data;
         const g: string[][] = [];
@@ -113,9 +118,13 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({
       className={`flex items-center justify-center overflow-hidden select-none cursor-crosshair ascii-bob ${className}`}
       style={{ fontFamily: "'JetBrains Mono', monospace" }}
     >
-      <div className="leading-none">
+      <div
+        ref={gridRef}
+        className="leading-none"
+        style={{ fontSize: BASE_FONT, lineHeight: 1, transform: `scale(${scale})` }}
+      >
         {grid.map((row, y) => (
-          <div key={y} className="whitespace-pre" style={{ fontSize, lineHeight: 1 }}>
+          <div key={y} className="whitespace-pre">
             {row.map((ch, x) => {
               const lum = CHARS.indexOf(ch) / (CHARS.length - 1);
               let dy = 0;
