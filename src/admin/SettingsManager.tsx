@@ -97,6 +97,9 @@ export const SettingsManager: React.FC = () => {
         </div>
         <Field label="Portrait image" className="mt-4">
           <ImageField value={settings.profile.portrait} onChange={(url) => patchNested('profile', { portrait: url })} />
+          <p className="text-[11px] text-ink-muted mt-1.5 leading-relaxed">
+            建議尺寸：方形或直式（例如 800×1000px 或以上）。會自動轉成 ASCII，並以點陣填滿整個區塊，比例不對也沒關係。
+          </p>
         </Field>
         <Field label="Logo image (optional — crop to square)" className="mt-4">
           <CropImageField value={settings.profile.logo_image} onChange={(url) => patchNested('profile', { logo_image: url })} />

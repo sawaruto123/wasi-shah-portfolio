@@ -19,6 +19,7 @@ import { CookieConsent } from './components/CookieConsent';
 import { OnboardingGuide } from './components/OnboardingGuide';
 import { useTheme } from './lib/theme';
 import { useBgOpacity } from './lib/bgOpacity';
+import { useContent } from './lib/content';
 import { Eye, EyeOff, ArrowLeft, ArrowRight, Sun } from 'lucide-react';
 
 const ROOM_COUNT = ROOMS.length;
@@ -26,6 +27,7 @@ const ROOM_COUNT = ROOMS.length;
 export default function App() {
   const { dark } = useTheme();
   const { bgOpacity } = useBgOpacity();
+  const { projects, films, stills } = useContent();
   const [currentRoom, setCurrentRoom] = useState<Room>(ROOMS[0]);
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const [zCoord, setZCoord] = useState<string>('Z: +8.00m');
@@ -410,6 +412,12 @@ export default function App() {
         activeProject={activeProject}
         activeFilm={activeFilm}
         activeStill={activeStill}
+        projects={projects}
+        films={films}
+        stills={stills}
+        onSelectProject={setActiveProject}
+        onSelectFilm={setActiveFilm}
+        onSelectStill={setActiveStill}
         onClose={handleCloseModal}
         onShowToast={showToast}
       />

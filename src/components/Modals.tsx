@@ -1,11 +1,17 @@
-import React from 'react';
-import { X, Play } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { X, Play, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Project, FilmRecord, StillCapture } from '../types';
 
 interface ModalsProps {
   activeProject: Project | null;
   activeFilm: FilmRecord | null;
   activeStill: StillCapture | null;
+  projects: Project[];
+  films: FilmRecord[];
+  stills: StillCapture[];
+  onSelectProject: (p: Project) => void;
+  onSelectFilm: (f: FilmRecord) => void;
+  onSelectStill: (s: StillCapture) => void;
   onClose: () => void;
   onShowToast: (msg: string) => void;
 }
@@ -14,10 +20,47 @@ export const Modals: React.FC<ModalsProps> = ({
   activeProject,
   activeFilm,
   activeStill,
+  projects,
+  films,
+  stills,
+  onSelectProject,
+  onSelectFilm,
+  onSelectStill,
   onClose,
   onShowToast,
 }) => {
   if (!activeProject && !activeFilm && !activeStill) return null;
+
+  // 目前開啟的列表與索引，用於上／下一張
+  const list = activeProject ? projects : activeFilm ? films : activeStill ? stills : [];
+  const currentId = activeProject?.id ?? activeFilm?.id ?? activeStill?.id;
+  const idx = list.findIndex((item) => item.id === currentId);
+  const hasPrev = idx > 0;
+  const hasNext = idx >= 0 && idx < list.length - 1;
+
+  const goPrev = () => {
+    if (!hasPrev) return;
+    if (activeProject) onSelectProject(projects[idx - 1]);
+    else if (activeFilm) onSelectFilm(films[idx - 1]);
+    else if (activeStill) onSelectStill(stills[idx - 1]);
+  };
+  const goNext = () => {
+    if (!hasNext) return;
+    if (activeProject) onSelectProject(projects[idx + 1]);
+    else if (activeFilm) onSelectFilm(films[idx + 1]);
+    else if (activeStill) onSelectStill(stills[idx + 1]);
+  };
+
+  // 鍵盤左右切換、Esc 關閉
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') goPrev();
+      else if (e.key === 'ArrowRight') goNext();
+      else if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
 
   return (
     <div
@@ -36,6 +79,31 @@ export const Modals: React.FC<ModalsProps> = ({
         >
           <X className="w-5 h-5" />
         </button>
+
+        {/* Prev / Next 切換 */}
+        {hasPrev && (
+          <button
+            onClick={goPrev}
+            aria-label="Previous"
+            className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/60 text-white hover:bg-primary flex items-center justify-center cursor-pointer border-none shadow-md transition-colors"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+        )}
+        {hasNext && (
+          <button
+            onClick={goNext}
+            aria-label="Next"
+            className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/60 text-white hover:bg-primary flex items-center justify-center cursor-pointer border-none shadow-md transition-colors"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        )}
+        {idx >= 0 && (
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 rounded-full bg-black/60 text-white font-mono text-[11px] font-bold pointer-events-none">
+            {idx + 1} / {list.length}
+          </div>
+        )}
 
         {/* Project Inspection Modal */}
         {activeProject && (
