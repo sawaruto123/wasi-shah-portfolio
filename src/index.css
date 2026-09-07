@@ -152,6 +152,17 @@ html, body {
   animation: warpFade 0.45s ease-out forwards;
 }
 
+/* 語言進度條：從 0 填充到目標值 */
+@keyframes languageFill {
+  from { width: 0; }
+  to { width: var(--pct); }
+}
+.language-bar {
+  width: 0;
+  background: linear-gradient(90deg, #4C9FFF, #7FD4FF);
+  animation: languageFill 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
 /* ASCII 肖像的柔和漂浮 */
 @keyframes asciiBob {
   0%, 100% { transform: translateY(0); }

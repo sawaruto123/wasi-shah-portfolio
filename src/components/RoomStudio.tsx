@@ -41,7 +41,7 @@ export const RoomStudio: React.FC = () => {
               Languages
             </span>
             <div className="mt-4 space-y-4">
-              {languages.map((lang) => (
+              {languages.map((lang, i) => (
                 <div key={lang.name}>
                   <div className="flex justify-between font-body text-xs mb-1.5">
                     <span className="text-ink font-bold">{lang.name}</span>
@@ -49,8 +49,8 @@ export const RoomStudio: React.FC = () => {
                   </div>
                   <div className="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-primary rounded-full"
-                      style={{ width: `${lang.pct}%` }}
+                      className="h-full rounded-full language-bar"
+                      style={{ '--pct': `${lang.pct}%`, animationDelay: `${i * 0.18}s` } as React.CSSProperties}
                     />
                   </div>
                 </div>

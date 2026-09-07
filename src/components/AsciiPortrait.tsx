@@ -17,8 +17,8 @@ interface AsciiPortraitProps {
 export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({
   src,
   alt,
-  cols = 56,
-  rows = 40,
+  cols = 40,
+  rows = 30,
   className = '',
 }) => {
   const [grid, setGrid] = useState<string[][] | null>(null);
@@ -86,31 +86,34 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({
     );
   }
 
-  const fontSize = `clamp(5px, ${Math.round(600 / cols)}px, 10px)`;
+  const fontSize = Math.max(7, Math.min(15, Math.round(560 / cols)));
 
   return (
     <div
       ref={containerRef}
       onPointerMove={handleMove}
       onPointerLeave={handleLeave}
-      className={`flex items-center justify-center overflow-hidden select-none cursor-crosshair p-3 ascii-bob ${className}`}
-      style={{ fontFamily: "'JetBrains Mono', monospace", background: 'radial-gradient(circle at 50% 40%, #12233A 0%, #0A1626 75%)' }}
+      className={`flex items-center justify-center overflow-hidden select-none cursor-crosshair ascii-bob ${className}`}
+      style={{ fontFamily: "'JetBrains Mono', monospace" }}
     >
       <div className="leading-none">
         {grid.map((row, y) => (
           <div key={y} className="whitespace-pre" style={{ fontSize, lineHeight: 1 }}>
             {row.map((ch, x) => {
+              const lum = CHARS.indexOf(ch) / (CHARS.length - 1);
               let dy = 0;
-              let opacity = 0.85;
-              let color = 'var(--color-ink-muted)';
+              let opacity = 0.9;
+              const hue = 205 + lum * 20;
+              const light = 50 + lum * 30;
+              let color = `hsl(${hue}, 95%, ${light}%)`;
               let glow = 'none';
               if (pointer) {
                 const d = Math.hypot(x - pointer.x * cols, y - pointer.y * rows);
-                const wave = Math.exp(-d / 14);
-                dy = Math.sin(d * 0.7) * 3 * wave;
-                opacity = 0.35 + 0.65 * Math.exp(-d / 20);
-                color = 'var(--color-primary)';
-                glow = `0 0 6px rgba(76,159,255,${0.8 * wave})`;
+                const wave = Math.exp(-d / 12);
+                dy = Math.sin(d * 0.7) * 3.5 * wave;
+                opacity = 0.5 + 0.5 * Math.exp(-d / 16);
+                color = `hsl(${hue}, 100%, ${Math.min(92, light + 25)}%)`;
+                glow = `0 0 8px rgba(110,190,255,${(0.9 * wave).toFixed(2)})`;
               }
               return (
                 <span
