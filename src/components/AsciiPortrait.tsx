@@ -20,9 +20,9 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
   const [dims, setDims] = useState({ cols: 40, rows: 30 });
   const [scale, setScale] = useState(1);
   const [fontSize, setFontSize] = useState(8);
-  const rafRef = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  const lastMoveRef = useRef(0);
 
   // 依容器尺寸計算點陣格數（用固定字元大小，不 scale）
   useEffect(() => {
@@ -32,7 +32,7 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
       const w = el.clientWidth;
       const h = el.clientHeight;
       if (w < 10 || h < 10) return;
-      const fs = w >= 400 ? 6 : 7; // PC 更密、手機適中
+      const fs = w >= 360 ? 5 : 6; // PC / 平板更密、手機適中
       setFontSize(fs);
       const cols = Math.max(12, Math.ceil(w / (fs * CHAR_W)));
       const rows = Math.max(12, Math.ceil(h / fs));
@@ -117,13 +117,15 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
   }, [src, dims]);
 
   const handleMove = (e: React.PointerEvent) => {
+    const now = performance.now();
+    if (now - lastMoveRef.current < 80) return; // 節流，避免高密度時卡頓
+    lastMoveRef.current = now;
     const el = containerRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
     const x = (e.clientX - rect.left) / rect.width;
     const y = (e.clientY - rect.top) / rect.height;
-    rafRef.current = requestAnimationFrame(() => setPointer({ x, y }));
+    setPointer({ x, y });
   };
   const handleLeave = () => setPointer(null);
 
