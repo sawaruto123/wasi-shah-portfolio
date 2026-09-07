@@ -66,7 +66,8 @@ export const BgOpacityControl: React.FC = () => {
             step={0.05}
             value={bgOpacity}
             onChange={(e) => setBgOpacity(parseFloat(e.target.value))}
-            className="w-full accent-[#4C9FFF]"
+            className="opacity-slider w-full"
+            style={{ ['--fill' as any]: `${((bgOpacity - 0.2) / 0.8) * 100}%` }}
           />
           <button
             onClick={() => setBgOpacity(1)}
