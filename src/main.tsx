@@ -5,6 +5,7 @@ import { AdminApp } from './admin/AdminApp.tsx';
 import { ContentProvider } from './lib/content.tsx';
 import { NotFound } from './components/NotFound.tsx';
 import { PrivacyPolicy } from './components/PrivacyPolicy.tsx';
+import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 import './index.css';
 
 // Simple client-side routing:
@@ -45,4 +46,4 @@ function render() {
   );
 }
 
-createRoot(document.getElementById('root')!).render(render());
+createRoot(document.getElementById('root')!).render(<ErrorBoundary>{render()}</ErrorBoundary>);

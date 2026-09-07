@@ -173,11 +173,18 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 500);
     camera.position.set(14, 2.5, 0);
 
-    const renderer = new THREE.WebGLRenderer({
-      alpha: true,
-      antialias: true,
-      powerPreference: 'high-performance',
-    });
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({
+        alpha: true,
+        antialias: true,
+        powerPreference: 'high-performance',
+      });
+    } catch (err) {
+      console.error('[SpatialCanvas] WebGL unavailable, using static background:', err);
+      onReady?.();
+      return;
+    }
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;

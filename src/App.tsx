@@ -85,6 +85,12 @@ export default function App() {
     }
   }, [tryFinish]);
 
+  // 安全網：若 3D 世界一直未就緒，8 秒後強制關閉載入畫面（避免卡住）
+  useEffect(() => {
+    const t = window.setTimeout(() => setLoading(false), 8000);
+    return () => window.clearTimeout(t);
+  }, []);
+
   // 進入新房間時，把房內滾動重置到頂端（避免從中間開始）
   useEffect(() => {
     const el = document.querySelector(`[data-room-scroll="${activeIndex}"]`) as HTMLElement | null;
