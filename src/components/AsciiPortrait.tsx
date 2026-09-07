@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-const CHARS = '·:-=+*#%@'; // 暗 → 亮（最暗用點，讓整個空間填滿）
+const CHARS = '·:-=+*#%@'; // 暗 → 亮
 const CHAR_W = 0.6; // 等寬字體約 0.6em 寬
 
 interface AsciiPortraitProps {
@@ -10,23 +10,22 @@ interface AsciiPortraitProps {
 }
 
 /**
- * 把肖像轉成互動 ASCII + 點陣背景：
- * - 圖片「contain」置中，其餘空間用點（·）填滿
+ * 把肖像轉成互動 ASCII（canvas 渲染，高密度也流暢）：
+ * - 預設全 ASCII，可用中間的 bar 左右拖曳比較真實影像
  * - 滑鼠靠近時字元像水面般波動 + 發光
  */
 export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, className = '' }) => {
   const [grid, setGrid] = useState<string[][] | null>(null);
-  const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
   const [dims, setDims] = useState({ cols: 40, rows: 30 });
-  const [scale, setScale] = useState(1);
   const [fontSize, setFontSize] = useState(8);
+  const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
+  const [pos, setPos] = useState(100); // 100 = 全 ASCII
   const containerRef = useRef<HTMLDivElement>(null);
-  const gridRef = useRef<HTMLDivElement>(null);
-  const lastMoveRef = useRef(0);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const draggingRef = useRef(false);
-  const [pos, setPos] = useState(50);
+  const lastMoveRef = useRef(0);
 
-  // 依容器尺寸計算點陣格數（用固定字元大小，不 scale）
+  // 依容器尺寸計算點陣格數與字體大小
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -46,27 +45,7 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
     return () => ro.disconnect();
   }, []);
 
-  // 依「實際渲染」的 grid 尺寸做細微 scale，確保真正填滿容器（字型度量可能不是 0.6）
-  useEffect(() => {
-    const el = containerRef.current;
-    const g = gridRef.current;
-    if (!el || !g) return;
-    const measure = () => {
-      const cw = el.clientWidth;
-      const ch = el.clientHeight;
-      const gw = g.scrollWidth;
-      const gh = g.scrollHeight;
-      if (cw < 10 || ch < 10 || gw < 10 || gh < 10) return;
-      setScale(Math.max(cw / gw, ch / gh));
-    };
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    ro.observe(g);
-    return () => ro.disconnect();
-  }, [grid, dims]);
-
-  // 載入圖片：contain 置中，留白處用點填滿
+  // 載入圖片：cover + 校正字元單元寬高比，暗部填點
   useEffect(() => {
     let alive = true;
     const { cols, rows } = dims;
@@ -79,7 +58,6 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
         c.height = rows;
         const ctx = c.getContext('2d', { willReadFrequently: true });
         if (!ctx) return;
-        // cover：填滿整個容器（裁切溢出），並校正字元單元寬高比
         const drawAspect = img.width / img.height / CHAR_W;
         let dw: number;
         let dh: number;
@@ -98,7 +76,7 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
           for (let x = 0; x < cols; x++) {
             const i = (y * cols + x) * 4;
             if (data[i + 3] === 0) {
-              row.push('·'); // 留白 → 點
+              row.push('·');
             } else {
               const lum = (0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]) / 255;
               row.push(CHARS[Math.min(CHARS.length - 1, Math.floor(lum * CHARS.length))]);
@@ -118,20 +96,75 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
     };
   }, [src, dims]);
 
+  // 畫到 canvas（互補雙色 + 互動波動）
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const container = containerRef.current;
+    if (!canvas || !container || !grid) return;
+    const W = container.clientWidth;
+    const H = container.clientHeight;
+    if (W < 10 || H < 10) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+
+    const { cols, rows } = dims;
+    const charW = CHAR_W * fontSize;
+    const lineH = fontSize;
+    const s = Math.max(W / (cols * charW), H / (rows * lineH));
+    const drawFont = fontSize * s;
+    ctx.font = `${drawFont}px 'JetBrains Mono', monospace`;
+    ctx.textBaseline = 'top';
+    const gw = cols * charW * s;
+    const gh = rows * lineH * s;
+    const ox = (W - gw) / 2;
+    const oy = (H - gh) / 2;
+
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
+        const ch = grid[y][x];
+        const isDot = ch === '·';
+        const lum = isDot ? 0 : CHARS.indexOf(ch) / (CHARS.length - 1);
+        let dy = 0;
+        let opacity = isDot ? 0.5 : 0.92;
+        let color: string;
+        if (pointer) {
+          const d = Math.hypot(x - pointer.x * cols, y - pointer.y * rows);
+          const wave = Math.exp(-d / 12);
+          dy = Math.sin(d * 0.7) * fontSize * 0.5 * wave;
+          opacity = isDot ? 0.5 : 0.6 + 0.4 * Math.exp(-d / 16);
+          const hue = 215 - lum * 180;
+          const light = 22 + lum * 42;
+          color = `hsl(${hue}, 100%, ${Math.min(96, light + 15 + 20 * wave)}%)`;
+        } else {
+          const hue = 215 - lum * 180;
+          const light = 22 + lum * 42;
+          const sat = 70 + lum * 25;
+          color = isDot ? 'hsl(215, 45%, 18%)' : `hsl(${hue}, ${sat}%, ${light}%)`;
+        }
+        ctx.globalAlpha = opacity;
+        ctx.fillStyle = color;
+        ctx.fillText(ch, ox + x * charW * s, oy + y * lineH * s + dy);
+      }
+    }
+    ctx.globalAlpha = 1;
+  }, [grid, dims, fontSize, pointer]);
+
   const handleMove = (e: React.PointerEvent) => {
     const now = performance.now();
-    if (now - lastMoveRef.current < 80) return; // 節流，避免高密度時卡頓
+    if (now - lastMoveRef.current < 80) return; // 節流
     lastMoveRef.current = now;
     const el = containerRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width;
-    const y = (e.clientY - rect.top) / rect.height;
-    setPointer({ x, y });
+    setPointer({ x: (e.clientX - rect.left) / rect.width, y: (e.clientY - rect.top) / rect.height });
   };
   const handleLeave = () => setPointer(null);
 
-  // 分隔線拖曳（比較 ASCII 與真實影像）
   const updatePos = (e: React.PointerEvent) => {
     const el = containerRef.current;
     if (!el) return;
@@ -154,16 +187,9 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
 
   if (!grid) {
     return (
-      <img
-        src={src}
-        alt={alt}
-        referrerPolicy="no-referrer"
-        className={`w-full h-full object-cover ${className}`}
-      />
+      <img src={src} alt={alt} referrerPolicy="no-referrer" className={`w-full h-full object-cover ${className}`} />
     );
   }
-
-  const { cols, rows } = dims;
 
   return (
     <div
@@ -173,7 +199,7 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
       className={`relative overflow-hidden select-none ascii-bob ${className}`}
       style={{ fontFamily: "'JetBrains Mono', monospace" }}
     >
-      {/* 真實影像（底層，完整） */}
+      {/* 真實影像（底層） */}
       <img
         src={src}
         alt=""
@@ -182,68 +208,22 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
         className="absolute inset-0 w-full h-full object-cover pointer-events-none"
       />
 
-      {/* ASCII（上層，依分隔線裁切） */}
-      <div
-        className="absolute inset-0 flex items-center justify-center"
-        style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}
-      >
-        <div
-          ref={gridRef}
-          className="leading-none cursor-crosshair"
-          style={{ fontSize, lineHeight: 1, transform: `scale(${scale})` }}
-        >
-        {grid.map((row, y) => (
-          <div key={y} className="whitespace-pre">
-            {row.map((ch, x) => {
-              const isDot = ch === '·';
-              const lum = isDot ? 0 : CHARS.indexOf(ch) / (CHARS.length - 1);
-              let dy = 0;
-              let opacity = isDot ? 0.5 : 0.92;
-              // 兩相反色（互補高對比）：暗部深藍 → 亮部琥珀橙
-              const hue = 215 - lum * 180; // 215(blue) → 35(amber)
-              const light = 22 + lum * 42; // 22% → 64%
-              const sat = 70 + lum * 25; // 70% → 95%
-              let color = isDot ? 'hsl(215, 45%, 18%)' : `hsl(${hue}, ${sat}%, ${light}%)`;
-              let glow = 'none';
-              if (pointer) {
-                const d = Math.hypot(x - pointer.x * cols, y - pointer.y * rows);
-                const wave = Math.exp(-d / 12);
-                dy = Math.sin(d * 0.7) * 3.5 * wave;
-                opacity = isDot ? 0.5 : 0.6 + 0.4 * Math.exp(-d / 16);
-                color = `hsl(${hue}, 100%, ${Math.min(96, light + 15 + 20 * wave)}%)`;
-                glow = isDot ? 'none' : `0 0 8px rgba(255,190,120,${(0.9 * wave).toFixed(2)})`;
-              }
-              return (
-                <span
-                  key={x}
-                  style={{
-                    display: 'inline-block',
-                    transform: `translateY(${dy.toFixed(1)}px)`,
-                    opacity: opacity.toFixed(2),
-                    color,
-                    textShadow: glow,
-                    willChange: 'transform',
-                  }}
-                >
-                  {ch}
-                </span>
-              );
-            })}
-          </div>
-        ))}
-        </div>
+      {/* ASCII canvas（上層，依分隔線裁切） */}
+      <div className="absolute inset-0" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
+        <canvas ref={canvasRef} className="w-full h-full block" />
       </div>
 
-      {/* 分隔線 bar */}
+      {/* 分隔線 bar（加大命中區，易拖曳） */}
       <div
-        className="absolute top-0 bottom-0 w-1 -translate-x-1/2 bg-white/90 cursor-ew-resize z-10 touch-none"
+        className="absolute top-0 bottom-0 w-10 -translate-x-1/2 z-10 touch-none cursor-ew-resize"
         style={{ left: `${pos}%` }}
         onPointerDown={handleBarDown}
         onPointerMove={handleBarMove}
         onPointerUp={handleBarUp}
       >
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white shadow-lg flex items-center justify-center text-[11px] text-ink font-bold pointer-events-none">
-          ⇔
+        <div className="absolute left-1/2 top-0 bottom-0 w-0.5 -translate-x-1/2 bg-white/90" />
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-lg flex items-center justify-center text-ink font-bold pointer-events-none">
+          <span className="text-[13px] leading-none">⇔</span>
         </div>
       </div>
     </div>
