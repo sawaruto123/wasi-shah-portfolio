@@ -45,9 +45,9 @@ export const RoomStudio: React.FC = () => {
                 <div key={lang.name}>
                   <div className="flex justify-between font-body text-xs mb-1.5">
                     <span className="text-ink font-bold">{lang.name}</span>
-                    <span className="font-mono text-[10px] text-ink-muted">{lang.level}</span>
+                    <span className="font-mono text-[10px] text-ink-muted">{lang.level} · {lang.pct}%</span>
                   </div>
-                  <div className="w-full h-2 bg-surface-container-high rounded-full overflow-hidden">
+                  <div className="w-full h-2 bg-[#3A5678] rounded-full overflow-hidden">
                     <div
                       className="h-full rounded-full language-bar"
                       style={{ width: `${lang.pct}%`, animationDelay: `${i * 0.18}s` }}
