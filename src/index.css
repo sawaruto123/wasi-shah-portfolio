@@ -156,7 +156,8 @@ html, body {
 .language-bar {
   transform: scaleX(1); /* 預設就是顯示的；進場動畫會從 0 展開 */
   transform-origin: left;
-  background: linear-gradient(90deg, #4C9FFF, #7FD4FF);
+  background: linear-gradient(90deg, #5FB2FF, #93DAFF);
+  box-shadow: 0 0 8px rgba(88, 178, 255, 0.45);
 }
 .room-enter .language-bar {
   animation: barGrow 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
