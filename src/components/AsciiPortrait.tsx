@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 const CHARS = '·:-=+*#%@'; // 暗 → 亮（最暗用點，讓整個空間填滿）
-const BASE_FONT = 12;
+const BASE_FONT = 8;
 const CHAR_W = 0.6; // 等寬字體約 0.6em 寬
 
 interface AsciiPortraitProps {
