@@ -50,7 +50,7 @@ export const RoomStudio: React.FC = () => {
                   <div className="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
                     <div
                       className="h-full rounded-full language-bar"
-                      style={{ '--pct': `${lang.pct}%`, transitionDelay: `${i * 0.18}s` } as React.CSSProperties}
+                      style={{ width: `${lang.pct}%`, animationDelay: `${i * 0.18}s` }}
                     />
                   </div>
                 </div>

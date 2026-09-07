@@ -152,14 +152,18 @@ html, body {
   animation: warpFade 0.45s ease-out forwards;
 }
 
-/* 語言進度條：房間進入時由 0 過渡到目標值 */
+/* 語言進度條：房間進入時由 0 展開到目標值 */
 .language-bar {
-  width: 0;
+  transform: scaleX(0);
+  transform-origin: left;
   background: linear-gradient(90deg, #4C9FFF, #7FD4FF);
-  transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .room-enter .language-bar {
-  width: var(--pct);
+  animation: barGrow 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes barGrow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
 }
 
 /* ASCII 肖像的柔和漂浮 */
