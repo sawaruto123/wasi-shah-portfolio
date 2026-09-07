@@ -33,7 +33,7 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
       const w = el.clientWidth;
       const h = el.clientHeight;
       if (w < 10 || h < 10) return;
-      const fs = w >= 360 ? 3 : 4; // 更高密度：PC 3px、手機 4px
+      const fs = w >= 360 ? 2 : 4; // PC 2px 高密度、手機 4px
       setFontSize(fs);
       const cols = Math.max(12, Math.ceil(w / (fs * CHAR_W)));
       const rows = Math.max(12, Math.ceil(h / fs));
@@ -157,7 +157,7 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
 
   const handleMove = (e: React.PointerEvent) => {
     const now = performance.now();
-    if (now - lastMoveRef.current < 80) return; // 節流
+    if (now - lastMoveRef.current < 100) return; // 節流
     lastMoveRef.current = now;
     const el = containerRef.current;
     if (!el) return;
