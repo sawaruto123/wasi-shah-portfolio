@@ -153,6 +153,15 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     refresh();
   }, [refresh]);
 
+  // 回到此分頁時自動重新拉取（例如在 CMS 更新後切回來）
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') refresh();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [refresh]);
+
   // 動態更新瀏覽器分頁 favicon（由 CMS 設定）
   useEffect(() => {
     const favicon = settings.profile.favicon;
