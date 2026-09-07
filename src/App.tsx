@@ -16,13 +16,16 @@ import { RoomDispatch } from './components/RoomDispatch';
 import { Modals } from './components/Modals';
 import { Toast } from './components/Toast';
 import { CookieConsent } from './components/CookieConsent';
+import { OnboardingGuide } from './components/OnboardingGuide';
 import { useTheme } from './lib/theme';
+import { useBgOpacity } from './lib/bgOpacity';
 import { Eye, EyeOff, ArrowLeft, ArrowRight, Sun } from 'lucide-react';
 
 const ROOM_COUNT = ROOMS.length;
 
 export default function App() {
   const { dark } = useTheme();
+  const { bgOpacity } = useBgOpacity();
   const [currentRoom, setCurrentRoom] = useState<Room>(ROOMS[0]);
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const [zCoord, setZCoord] = useState<string>('Z: +8.00m');
@@ -285,7 +288,7 @@ export default function App() {
     <div className="relative min-h-screen text-ink selection:bg-primary selection:text-white">
       {/* 世界背景：網格 + 3D 走廊 */}
       <div className="fixed inset-0 z-0 hairline-grid pointer-events-none" />
-      <SpatialCanvas onScrollProgress={handleScrollProgress} lightAngle={lightAngle} darkMode={dark} onReady={handleWorldReady} />
+      <SpatialCanvas onScrollProgress={handleScrollProgress} lightAngle={lightAngle} darkMode={dark} bgOpacity={bgOpacity} onReady={handleWorldReady} />
 
       {/* 滾動長度：每個房間一屏，滾動即飛越世界 */}
       <div style={{ height: `${ROOM_COUNT * 100}vh` }} aria-hidden="true" />
@@ -412,6 +415,7 @@ export default function App() {
       />
       <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
       <CookieConsent />
+      <OnboardingGuide />
 
       {/* 載入畫面 */}
       <div

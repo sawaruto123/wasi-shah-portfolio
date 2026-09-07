@@ -10,6 +10,7 @@ interface SpatialCanvasProps {
   onScrollProgress?: (progress: number) => void;
   lightAngle?: number;
   darkMode?: boolean;
+  bgOpacity?: number;
   onReady?: () => void;
 }
 
@@ -153,6 +154,7 @@ function makePlanetTexture(kind: 'gas' | 'rock' | 'ice'): THREE.CanvasTexture {
 export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
   onScrollProgress,
   darkMode = false,
+  bgOpacity = 1,
   onReady,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -502,7 +504,7 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
       }
 
       interactive.forEach(({ mesh, baseScale }) => {
-        const target = mesh === hovered ? baseScale * 1.25 : baseScale;
+        const target = mesh === hovered ? baseScale * 1.1 : baseScale;
         const s = mesh.scale.x + (target - mesh.scale.x) * 0.12;
         mesh.scale.setScalar(s);
       });
@@ -534,7 +536,8 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     <div
       id="spatial-canvas-container"
       ref={containerRef}
-      className="fixed inset-0 w-full h-full pointer-events-none z-0 overflow-hidden bg-transparent"
+      className="fixed inset-0 w-full h-full pointer-events-none z-0 overflow-hidden bg-transparent transition-opacity duration-300"
+      style={{ opacity: bgOpacity }}
     />
   );
 };

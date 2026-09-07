@@ -152,6 +152,15 @@ html, body {
   animation: warpFade 0.45s ease-out forwards;
 }
 
+/* ASCII 肖像的柔和漂浮 */
+@keyframes asciiBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.ascii-bob {
+  animation: asciiBob 6s ease-in-out infinite;
+}
+
 /* 房間進場：真實故障（RGB 三色分離 + 抖動 + 掃描塊） */
 @keyframes glitchPop {
   0% { opacity: 0; transform: translateY(var(--from-y, 60px)) scale(var(--from-scale, 0.93)); filter: none; }

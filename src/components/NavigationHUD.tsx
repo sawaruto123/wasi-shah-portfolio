@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { useContent } from '../lib/content';
 import { ThemeToggle } from '../lib/theme';
+import { BgOpacityControl } from '../lib/bgOpacity';
 import { Room } from '../types';
 
 interface NavigationHUDProps {
@@ -108,6 +109,7 @@ export const NavigationHUD: React.FC<NavigationHUDProps> = ({
 
         {/* Action Button */}
         <div className="flex items-center gap-2 shrink-0">
+          <BgOpacityControl />
           <ThemeToggle />
           <button
             onClick={() => onNavigate('room-dispatch')}
