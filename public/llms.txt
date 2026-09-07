@@ -1,0 +1,20 @@
+# WASI SHAH / 峻山 — Digital World Portfolio
+
+> Filmmaker, motion designer, graphic designer and creative developer based in Hong Kong. Film, motion, design, 3D and AI.
+
+## Pages
+- [Home / World](https://wasi-shah-portfolio.vercel.app/): A 3D spatial portfolio with an interactive space world, blackhole, and five rooms (World, Lab, Archive, Films, Connect).
+- [Privacy Policy](https://wasi-shah-portfolio.vercel.app/privacy): How personal data and cookies are handled.
+- [Admin CMS](https://wasi-shah-portfolio.vercel.app/admin): Content management (login required).
+
+## About
+Syed Wasi Shah (峻山) is a video editor, motion designer and graphic designer based in Hong Kong, studying Computer Science at Hong Kong Metropolitan University (HKMU). He cuts films, designs brand systems, and builds interactive tools.
+
+Skills: Premiere Pro, After Effects, Photoshop, Illustrator, Python, Blender, ComfyUI, CrewAI, Three.js, React.
+
+Experience: Adobe Ambassador (Behance Co), Marketing & Teacher (Virtual Academy International), Creative Intern APAC (moji Corporation), Graphic Trainee (Seaman Paper Asia).
+
+## Contact
+- Email: syedwasi983@gmail.com
+- Phone: +852 9899 2944
+- Location: Hong Kong SAR · HKT (UTC+8)

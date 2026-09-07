@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+# LLM crawlers are welcome — see /llms.txt
