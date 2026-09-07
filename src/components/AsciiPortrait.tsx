@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-const CHARS = ' .:-=+*#%@'; // 暗 → 亮
+const CHARS = '·:-=+*#%@'; // 暗 → 亮（最暗用點，讓整個空間填滿）
 const BASE_FONT = 12;
 const CHAR_W = 0.6; // 等寬字體約 0.6em 寬
 
@@ -30,8 +30,8 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
       const w = el.clientWidth;
       const h = el.clientHeight;
       if (w < 10 || h < 10) return;
-      const cols = Math.max(12, Math.floor(w / (BASE_FONT * CHAR_W)));
-      const rows = Math.max(12, Math.floor(h / BASE_FONT));
+      const cols = Math.max(12, Math.ceil(w / (BASE_FONT * CHAR_W)));
+      const rows = Math.max(12, Math.ceil(h / BASE_FONT));
       setDims({ cols, rows });
     };
     measure();
@@ -123,17 +123,17 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
               const isDot = ch === '·';
               const lum = isDot ? 0 : CHARS.indexOf(ch) / (CHARS.length - 1);
               let dy = 0;
-              let opacity = isDot ? 0.28 : 0.9;
+              let opacity = isDot ? 0.5 : 0.9;
               const hue = 205 + lum * 20;
               const light = 50 + lum * 30;
-              let color = isDot ? 'hsl(215, 45%, 38%)' : `hsl(${hue}, 95%, ${light}%)`;
+              let color = isDot ? 'hsl(215, 70%, 52%)' : `hsl(${hue}, 95%, ${light}%)`;
               let glow = 'none';
               if (pointer) {
                 const d = Math.hypot(x - pointer.x * cols, y - pointer.y * rows);
                 const wave = Math.exp(-d / 12);
                 dy = Math.sin(d * 0.7) * 3.5 * wave;
                 opacity = isDot ? 0.28 : 0.5 + 0.5 * Math.exp(-d / 16);
-                color = isDot ? `hsl(215, 60%, ${38 + 20 * wave}%)` : `hsl(${hue}, 100%, ${Math.min(92, light + 25)}%)`;
+                color = isDot ? `hsl(215, 80%, ${55 + 15 * wave}%)` : `hsl(${hue}, 100%, ${Math.min(92, light + 25)}%)`;
                 glow = isDot ? 'none' : `0 0 8px rgba(110,190,255,${(0.9 * wave).toFixed(2)})`;
               }
               return (
