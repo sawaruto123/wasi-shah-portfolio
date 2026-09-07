@@ -33,7 +33,8 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
       const w = el.clientWidth;
       const h = el.clientHeight;
       if (w < 10 || h < 10) return;
-      const fs = w >= 360 ? 1.5 : 4; // PC 1.5px 高密度、手機 4px
+      const coarse = window.matchMedia('(pointer: coarse)').matches;
+      const fs = coarse || window.innerWidth < 768 ? 4 : 1.5; // 觸控/小螢幕 4px，桌機 1.5px
       setFontSize(fs);
       const cols = Math.max(12, Math.ceil(w / (fs * CHAR_W)));
       const rows = Math.max(12, Math.ceil(h / fs));
