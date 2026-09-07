@@ -23,8 +23,27 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({
 }) => {
   const [grid, setGrid] = useState<string[][] | null>(null);
   const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
+  const [fontSize, setFontSize] = useState(14);
   const rafRef = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // 測量容器尺寸，計算「cover」字體大小讓 ASCII 填滿整個空間（無論圖片比例）
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const measure = () => {
+      const rect = el.getBoundingClientRect();
+      if (rect.width < 10 || rect.height < 10) return;
+      const charW = 0.6; // 等寬字體約 0.6em 寬
+      const fx = rect.width / (cols * charW);
+      const fy = rect.height / rows;
+      setFontSize(Math.max(7, Math.min(42, Math.max(fx, fy)))); // cover：取較大者
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [cols, rows]);
 
   useEffect(() => {
     let alive = true;
@@ -85,8 +104,6 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({
       />
     );
   }
-
-  const fontSize = Math.max(7, Math.min(15, Math.round(560 / cols)));
 
   return (
     <div
