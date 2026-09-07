@@ -202,6 +202,8 @@ export const AsciiPortrait: React.FC<AsciiPortraitProps> = ({ src, alt, classNam
         src={src}
         alt={grid ? '' : alt}
         referrerPolicy="no-referrer"
+        loading="lazy"
+        decoding="async"
         aria-hidden={!!grid}
         className="absolute inset-0 w-full h-full object-cover pointer-events-none"
       />

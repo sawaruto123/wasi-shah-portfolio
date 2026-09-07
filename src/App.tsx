@@ -393,7 +393,7 @@ export default function App() {
 
       {/* 手機底部導覽列：點擊直接切換房間（最可靠的到達方式） */}
       <nav
-        className="fixed bottom-0 inset-x-0 z-40 md:hidden flex items-stretch bg-white/90 backdrop-blur-md border-t border-border-crisp shadow-[0_-4px_20px_rgba(0,0,0,0.10)]"
+        className="fixed bottom-0 inset-x-0 z-40 md:hidden flex items-stretch bg-white/90 border-t border-border-crisp shadow-[0_-4px_20px_rgba(0,0,0,0.10)]"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         {ROOMS.map((room, i) => {

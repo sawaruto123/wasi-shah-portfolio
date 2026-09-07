@@ -424,3 +424,28 @@ html.dark .opacity-slider::-moz-range-thumb {
   border-color: #55A6FF;
 }
 
+/* =============================================================
+   行動裝置效能優化：降低連續重繪與過重的進場特效，但保留整體視覺
+   ============================================================= */
+@media (max-width: 767px) {
+  /* 底片顆粒：保留紋理，但停用持續位移動畫（全螢幕重繪很貴） */
+  .film-grain {
+    animation: none;
+  }
+
+  /* 進場故障特效：改成輕量版（只淡入＋上移，不再多層 drop-shadow 模糊） */
+  .room-enter .spatial-card {
+    --from-y: 40px;
+    --from-scale: 0.96;
+    animation: glitchPopLight 0.5s ease-out backwards;
+  }
+  .room-enter .spatial-card::after {
+    display: none;
+  }
+}
+
+@keyframes glitchPopLight {
+  0% { opacity: 0; transform: translateY(var(--from-y, 40px)) scale(var(--from-scale, 0.96)); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+

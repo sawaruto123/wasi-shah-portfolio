@@ -40,6 +40,8 @@ export const RoomCinema: React.FC<RoomCinemaProps> = ({ onSelectFilm, onSelectSt
                 src={film.image}
                 alt={film.title}
                 referrerPolicy="no-referrer"
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#11263F]/80 via-transparent to-transparent" />
@@ -95,6 +97,8 @@ export const RoomCinema: React.FC<RoomCinemaProps> = ({ onSelectFilm, onSelectSt
                 src={still.image}
                 alt={still.title}
                 referrerPolicy="no-referrer"
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
