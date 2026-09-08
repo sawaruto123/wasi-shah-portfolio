@@ -15,6 +15,9 @@ export interface Project {
   tag: string;
   extraBadge?: string;
   image: string;
+  images?: string[];
+  githubUrl?: string;
+  websiteUrl?: string;
   colSpan: '8' | '4';
   description: string;
   detailedDescription?: string;

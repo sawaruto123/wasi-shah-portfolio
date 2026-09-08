@@ -15,6 +15,9 @@ const empty = {
   tag: '',
   extra_badge: '',
   image: '',
+  images: [] as string[],
+  github_url: '',
+  website_url: '',
   col_span: '4',
   description: '',
   detailed_description: '',
@@ -27,26 +30,33 @@ export const ProjectsManager: React.FC = () => {
   const { rows, reload, loading, error } = useCollection<any>('projects');
   const [editing, setEditing] = useState<any | null>(null);
   const [techText, setTechText] = useState('');
+  const [imagesText, setImagesText] = useState('');
   const [saving, setSaving] = useState(false);
 
   const openNew = () => {
     setEditing({ ...empty, sort_order: rows.length });
     setTechText('');
+    setImagesText('');
   };
   const openEdit = (row: any) => {
     setEditing({ ...row });
     setTechText((row.tech ?? []).join(', '));
+    setImagesText((row.images ?? []).filter((u: string) => u && u !== row.image).join('\n'));
   };
 
   const save = async () => {
     if (!editing || !supabase) return;
     setSaving(true);
     const tech = techText.split(',').map((s) => s.trim()).filter(Boolean);
+    const additionalImages = imagesText.split('\n').map((s) => s.trim()).filter(Boolean);
     const row = {
       ...editing,
       id: editing.id || slugify(editing.title || 'project'),
       exp_number: editing.exp_number || String(rows.length + 1).padStart(2, '0'),
       tech,
+      images: [editing.image, ...additionalImages].filter(Boolean),
+      github_url: editing.github_url || null,
+      website_url: editing.website_url || null,
     };
     const { error: err } = await supabase.from('projects').upsert(row);
     if (err) {
@@ -185,6 +195,32 @@ export const ProjectsManager: React.FC = () => {
             <Field label="Image">
               <ImageField value={editing.image} onChange={(url) => setEditing({ ...editing, image: url })} />
             </Field>
+
+            <Field label="More images (one URL per line, optional)">
+              <TextArea
+                rows={3}
+                value={imagesText}
+                onChange={(e) => setImagesText(e.target.value)}
+                placeholder={'https://…/image-2.jpg\nhttps://…/image-3.jpg'}
+              />
+            </Field>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="GitHub URL (optional)">
+                <TextInput
+                  value={editing.github_url ?? ''}
+                  onChange={(e) => setEditing({ ...editing, github_url: e.target.value })}
+                  placeholder="https://github.com/…"
+                />
+              </Field>
+              <Field label="Website URL (optional)">
+                <TextInput
+                  value={editing.website_url ?? ''}
+                  onChange={(e) => setEditing({ ...editing, website_url: e.target.value })}
+                  placeholder="https://…"
+                />
+              </Field>
+            </div>
 
             <Field label="Short description">
               <TextArea

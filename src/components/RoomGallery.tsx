@@ -47,6 +47,11 @@ export const RoomGallery: React.FC<RoomGalleryProps> = ({ onSelectProject }) => 
               <span className="absolute top-3 left-4 font-display text-lg font-black text-white/80">
                 #{project.expNumber}
               </span>
+              {(project.images?.length ?? 0) > 1 && (
+                <span className="absolute top-3 right-3 px-2 py-1 rounded-full bg-black/50 text-white font-mono text-[9px] font-bold">
+                  {project.images!.length} photos
+                </span>
+              )}
               <div className="absolute bottom-3 inset-x-4">
                 <h3 className="font-display text-lg font-bold text-white leading-tight">
                   {project.title}

@@ -32,6 +32,7 @@ export const Modals: React.FC<ModalsProps> = ({
   onShowToast,
 }) => {
   const [dir, setDir] = useState(0);
+  const [imgIdx, setImgIdx] = useState(0);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
   // 目前開啟的列表與索引（關閉時為空，安全）
@@ -41,6 +42,11 @@ export const Modals: React.FC<ModalsProps> = ({
   const hasPrev = idx > 0;
   const hasNext = idx >= 0 && idx < list.length - 1;
   const slideClass = dir === 1 ? 'modal-slide-right' : dir === -1 ? 'modal-slide-left' : '';
+  const projImages = activeProject
+    ? activeProject.images && activeProject.images.length
+      ? activeProject.images
+      : [activeProject.image]
+    : [];
 
   const goPrev = () => {
     if (!hasPrev) return;
@@ -83,6 +89,11 @@ export const Modals: React.FC<ModalsProps> = ({
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   });
+
+  // 切換專案/照片時重設圖片索引
+  useEffect(() => {
+    setImgIdx(0);
+  }, [currentId]);
 
   if (!activeProject && !activeFilm && !activeStill) return null;
 
@@ -136,7 +147,7 @@ export const Modals: React.FC<ModalsProps> = ({
           <div key={currentId} className={`overflow-y-auto ${slideClass}`}>
             <div className="relative w-full h-80 sm:h-96 bg-black">
               <img
-                src={thumbUrl(activeProject.image, 1600, 1000)}
+                src={thumbUrl(projImages[imgIdx] ?? activeProject.image, 1600, 1000)}
                 alt={activeProject.title}
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover"
@@ -151,6 +162,34 @@ export const Modals: React.FC<ModalsProps> = ({
                   </span>
                 )}
               </div>
+              {projImages.length > 1 && (
+                <>
+                  <button
+                    onClick={() => setImgIdx((i) => (i - 1 + projImages.length) % projImages.length)}
+                    aria-label="Previous image"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 text-white flex items-center justify-center cursor-pointer border-none hover:bg-black/70 transition-colors"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => setImgIdx((i) => (i + 1) % projImages.length)}
+                    aria-label="Next image"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 text-white flex items-center justify-center cursor-pointer border-none hover:bg-black/70 transition-colors"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                  <div className="absolute bottom-3 inset-x-0 flex justify-center gap-1.5">
+                    {projImages.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setImgIdx(i)}
+                        aria-label={`Image ${i + 1}`}
+                        className={`w-2 h-2 rounded-full cursor-pointer border-none transition-colors ${i === imgIdx ? 'bg-white' : 'bg-white/40'}`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="p-8">
@@ -185,6 +224,31 @@ export const Modals: React.FC<ModalsProps> = ({
                   </span>
                 ))}
               </div>
+
+              {(activeProject.githubUrl || activeProject.websiteUrl) && (
+                <div className="flex flex-wrap gap-3 pt-4">
+                  {activeProject.websiteUrl && (
+                    <a
+                      href={activeProject.websiteUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-white font-mono text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity no-underline"
+                    >
+                      Visit site <ChevronRight className="w-3.5 h-3.5" />
+                    </a>
+                  )}
+                  {activeProject.githubUrl && (
+                    <a
+                      href={activeProject.githubUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-surface-container text-ink font-mono text-xs font-bold uppercase tracking-wider hover:bg-surface-container-high transition-colors no-underline"
+                    >
+                      GitHub <ChevronRight className="w-3.5 h-3.5" />
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}
