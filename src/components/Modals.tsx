@@ -178,10 +178,10 @@ export const Modals: React.FC<ModalsProps> = ({
               {projImages.map((img, i) => (
                 <SmartImage
                   key={i}
-                  src={thumbUrl(img, 1600, 1000)}
+                  src={thumbUrl(img, 1600, 900)}
                   alt={activeProject.title}
-                  className="w-full min-h-[280px] rounded-2xl border border-border-crisp shadow-lg"
-                  imgClassName="w-full h-auto block"
+                  className="w-full aspect-video rounded-2xl border border-border-crisp shadow-lg"
+                  imgClassName="w-full h-full object-cover"
                 />
               ))}
             </div>
