@@ -99,6 +99,86 @@ export const ImageField: React.FC<{ value: string; onChange: (url: string) => vo
   );
 };
 
+export const MultiImageField: React.FC<{ value: string[]; onChange: (urls: string[]) => void }> = ({
+  value,
+  onChange,
+}) => {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    setUploading(true);
+    setError(null);
+    try {
+      const urls: string[] = [];
+      for (const file of files) {
+        const url = await uploadImage(file);
+        urls.push(url);
+      }
+      onChange([...value, ...urls]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Upload failed');
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  };
+
+  const remove = (index: number) => {
+    onChange(value.filter((_, i) => i !== index));
+  };
+
+  return (
+    <div>
+      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+        {value.map((url, i) => (
+          <div
+            key={`${url}-${i}`}
+            className="relative rounded-lg overflow-hidden border border-border-crisp aspect-square"
+          >
+            <img
+              src={url}
+              alt=""
+              referrerPolicy="no-referrer"
+              className="w-full h-full object-cover"
+            />
+            <button
+              type="button"
+              onClick={() => remove(i)}
+              title="Remove"
+              className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 text-white text-xs leading-none flex items-center justify-center cursor-pointer border-none"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          className="aspect-square rounded-lg border-2 border-dashed border-border-crisp flex flex-col items-center justify-center gap-1 text-ink-muted hover:bg-surface-warm transition-colors cursor-pointer bg-transparent"
+        >
+          <span className="text-xl leading-none">+</span>
+          <span className="text-[9px] font-bold uppercase">
+            {uploading ? 'Uploading…' : 'Upload'}
+          </span>
+        </button>
+      </div>
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={handleFiles}
+      />
+      {error && <p className="text-red-600 text-xs mt-1">{error}</p>}
+    </div>
+  );
+};
+
 export const Modal: React.FC<{ title: string; onClose: () => void; children: React.ReactNode }> = ({
   title,
   onClose,

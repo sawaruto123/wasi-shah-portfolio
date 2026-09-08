@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useCollection } from './useCollection';
-import { Field, TextInput, TextArea, Toggle, ImageField, Modal, Button } from './fields';
+import { Field, TextInput, TextArea, Toggle, ImageField, MultiImageField, Modal, Button } from './fields';
 import { slugify } from './helpers';
 
 const CATEGORIES = ['ai', 'code', 'fintech'];
@@ -30,31 +30,30 @@ export const ProjectsManager: React.FC = () => {
   const { rows, reload, loading, error } = useCollection<any>('projects');
   const [editing, setEditing] = useState<any | null>(null);
   const [techText, setTechText] = useState('');
-  const [imagesText, setImagesText] = useState('');
+  const [imagesList, setImagesList] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
   const openNew = () => {
     setEditing({ ...empty, sort_order: rows.length });
     setTechText('');
-    setImagesText('');
+    setImagesList([]);
   };
   const openEdit = (row: any) => {
     setEditing({ ...row });
     setTechText((row.tech ?? []).join(', '));
-    setImagesText((row.images ?? []).filter((u: string) => u && u !== row.image).join('\n'));
+    setImagesList((row.images ?? []).filter((u: string) => u && u !== row.image));
   };
 
   const save = async () => {
     if (!editing || !supabase) return;
     setSaving(true);
     const tech = techText.split(',').map((s) => s.trim()).filter(Boolean);
-    const additionalImages = imagesText.split('\n').map((s) => s.trim()).filter(Boolean);
     const row = {
       ...editing,
       id: editing.id || slugify(editing.title || 'project'),
       exp_number: editing.exp_number || String(rows.length + 1).padStart(2, '0'),
       tech,
-      images: [editing.image, ...additionalImages].filter(Boolean),
+      images: [editing.image, ...imagesList].filter(Boolean),
       github_url: editing.github_url || null,
       website_url: editing.website_url || null,
     };
@@ -196,13 +195,8 @@ export const ProjectsManager: React.FC = () => {
               <ImageField value={editing.image} onChange={(url) => setEditing({ ...editing, image: url })} />
             </Field>
 
-            <Field label="More images (one URL per line, optional)">
-              <TextArea
-                rows={3}
-                value={imagesText}
-                onChange={(e) => setImagesText(e.target.value)}
-                placeholder={'https://…/image-2.jpg\nhttps://…/image-3.jpg'}
-              />
+            <Field label="More images (upload)">
+              <MultiImageField value={imagesList} onChange={setImagesList} />
             </Field>
 
             <div className="grid grid-cols-2 gap-4">
