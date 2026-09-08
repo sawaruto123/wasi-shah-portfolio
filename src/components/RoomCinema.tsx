@@ -68,13 +68,11 @@ export const RoomCinema: React.FC<RoomCinemaProps> = ({ onSelectFilm, onSelectSt
             className="group relative rounded-3xl overflow-hidden spatial-card cursor-pointer"
           >
             <div className="relative w-full aspect-[16/9] overflow-hidden">
-              <img
+              <SmartImage
                 src={thumbUrl(film.image, 900, 506)}
                 alt={film.title}
-                referrerPolicy="no-referrer"
-                loading="lazy"
-                decoding="async"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                className="absolute inset-0"
+                imgClassName="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#11263F]/80 via-transparent to-transparent" />
               <div className="absolute top-4 left-4">

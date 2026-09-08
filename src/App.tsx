@@ -50,10 +50,16 @@ export default function App() {
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const readyFlagsRef = useRef({ fonts: false, world: false });
   const startTimeRef = useRef(Date.now());
+  const modalOpenRef = useRef(false);
 
   useEffect(() => {
     worldOnlyRef.current = worldOnly;
   }, [worldOnly]);
+
+  // 追蹤是否有 modal 開啟（開啟時停用背景的滾動/飛越導航）
+  useEffect(() => {
+    modalOpenRef.current = !!(activeProject || activeFilm || activeStill);
+  }, [activeProject, activeFilm, activeStill]);
 
   // 光線方向 → CSS 變數（驅動卡片漸層方向）
   useEffect(() => {
@@ -172,6 +178,7 @@ export default function App() {
   // 滾輪在房間底部／頂部時，飛到下一／上一間世界位置
   useEffect(() => {
     const onWheel = (e: WheelEvent) => {
+      if (modalOpenRef.current) return; // modal 開啟時，讓 modal 自己處理滾動
       const idx = activeIndexRef.current;
       if (worldOnlyRef.current) {
         // 純世界模式：每次滾動直接飛越
@@ -212,6 +219,7 @@ export default function App() {
       }
     };
     const onTouchEnd = (e: TouchEvent) => {
+      if (modalOpenRef.current) return;
       const start = touchStartRef.current;
       touchStartRef.current = null;
       if (!start) return;

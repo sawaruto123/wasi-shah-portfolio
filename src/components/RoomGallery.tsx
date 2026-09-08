@@ -1,6 +1,7 @@
 import React from 'react';
 import { useContent } from '../lib/content';
 import { thumbUrl } from '../lib/image';
+import { SmartImage } from './SmartImage';
 import { Project } from '../types';
 
 interface RoomGalleryProps {
@@ -35,13 +36,11 @@ export const RoomGallery: React.FC<RoomGalleryProps> = ({ onSelectProject }) => 
             className="group relative rounded-3xl overflow-hidden spatial-card cursor-pointer"
           >
             <div className="relative w-full h-64 overflow-hidden">
-              <img
+              <SmartImage
                 src={thumbUrl(project.image, 700, 450)}
                 alt={project.title}
-                referrerPolicy="no-referrer"
-                loading="lazy"
-                decoding="async"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                className="absolute inset-0"
+                imgClassName="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#11263F]/85 via-[#11263F]/10 to-transparent" />
               <span className="absolute top-3 left-4 font-display text-lg font-black text-white/80">
