@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1B0D0D"/>
+      <stop offset="1" stop-color="#3A1212"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#g)"/>
+  <rect x="40" y="40" width="90" height="6" rx="3" fill="#FF6B6B"/>
+  <text x="400" y="235" fill="#EAF2FB" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="700" text-anchor="middle" letter-spacing="2">CODEX</text>
+  <text x="400" y="285" fill="#FF6B6B" font-family="'Courier New', monospace" font-size="20" text-anchor="middle" letter-spacing="2">PENTESTING</text>
+</svg>
