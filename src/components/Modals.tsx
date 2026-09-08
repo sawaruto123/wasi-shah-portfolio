@@ -180,7 +180,7 @@ export const Modals: React.FC<ModalsProps> = ({
                   key={i}
                   src={thumbUrl(img, 1600, 900)}
                   alt={activeProject.title}
-                  className="w-full aspect-video rounded-2xl border border-border-crisp shadow-lg"
+                  className="w-full max-w-4xl mx-auto aspect-video rounded-2xl border border-border-crisp shadow-lg"
                   imgClassName="w-full h-full object-cover"
                 />
               ))}
