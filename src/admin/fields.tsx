@@ -126,6 +126,27 @@ const POSITIONS = [
   { value: 'bottom-right', label: 'Bottom right' },
 ];
 
+const RATIO_CLASS: Record<string, string> = {
+  auto: 'aspect-video',
+  '16:9': 'aspect-video',
+  '9:16': 'aspect-[9/16]',
+  '4:3': 'aspect-[4/3]',
+  '3:4': 'aspect-[3/4]',
+  '1:1': 'aspect-square',
+};
+
+const POS_CLASS: Record<string, string> = {
+  'top-left': 'object-left-top',
+  top: 'object-top',
+  'top-right': 'object-right-top',
+  left: 'object-left',
+  center: 'object-center',
+  right: 'object-right',
+  'bottom-left': 'object-left-bottom',
+  bottom: 'object-bottom',
+  'bottom-right': 'object-right-bottom',
+};
+
 export const MultiImageField: React.FC<{ value: ManagedImage[]; onChange: (v: ManagedImage[]) => void }> = ({
   value,
   onChange,
@@ -174,12 +195,12 @@ export const MultiImageField: React.FC<{ value: ManagedImage[]; onChange: (v: Ma
             key={`${img.url}-${i}`}
             className="rounded-lg border border-border-crisp overflow-hidden bg-white"
           >
-            <div className="relative aspect-video">
+            <div className={`relative ${RATIO_CLASS[img.ratio] ?? 'aspect-video'}`}>
               <img
                 src={img.url}
                 alt=""
                 referrerPolicy="no-referrer"
-                className="w-full h-full object-cover"
+                className={`w-full h-full object-cover ${POS_CLASS[img.pos] ?? 'object-center'}`}
               />
               {/* 3×3 裁切焦點選擇 */}
               <div className="absolute inset-0 grid grid-cols-3 grid-rows-3">
