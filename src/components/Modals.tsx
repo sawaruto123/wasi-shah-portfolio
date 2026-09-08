@@ -174,13 +174,13 @@ export const Modals: React.FC<ModalsProps> = ({
               )}
             </div>
 
-            <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {projImages.map((img, i) => (
                 <SmartImage
                   key={i}
-                  src={thumbUrl(img, 1600, 900)}
+                  src={thumbUrl(img, 1200, 675)}
                   alt={activeProject.title}
-                  className="w-full max-w-4xl mx-auto aspect-video rounded-2xl border border-border-crisp shadow-lg"
+                  className={`w-full aspect-video rounded-2xl border border-border-crisp shadow-lg ${projImages.length === 1 ? 'sm:col-span-2 sm:max-w-4xl sm:mx-auto' : ''}`}
                   imgClassName="w-full h-full object-cover"
                 />
               ))}
