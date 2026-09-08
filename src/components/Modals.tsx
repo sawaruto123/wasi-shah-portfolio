@@ -191,14 +191,14 @@ export const Modals: React.FC<ModalsProps> = ({
               <h3 className="font-display text-3xl sm:text-4xl font-black uppercase text-ink mb-4">
                 {activeProject.title}
               </h3>
-              <p className="font-body text-base sm:text-lg text-ink-muted leading-relaxed mb-8">
+              <p className="font-body text-base sm:text-lg text-ink-muted leading-relaxed mb-8 whitespace-pre-line">
                 {activeProject.description}
               </p>
 
               {activeProject.detailedDescription && (
                 <div className="p-6 rounded-2xl bg-surface-warm border border-border-crisp mb-8">
                   <span className="font-mono text-xs uppercase tracking-widest text-primary font-bold block mb-2">Details</span>
-                  <p className="font-body text-sm text-ink-muted leading-relaxed">{activeProject.detailedDescription}</p>
+                  <p className="font-body text-sm text-ink-muted leading-relaxed whitespace-pre-line">{activeProject.detailedDescription}</p>
                 </div>
               )}
 
