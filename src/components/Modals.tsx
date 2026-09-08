@@ -97,6 +97,134 @@ export const Modals: React.FC<ModalsProps> = ({
 
   if (!activeProject && !activeFilm && !activeStill) return null;
 
+  // 專案：全螢幕檢視（所有圖片 + 資訊一次顯示）
+  if (activeProject) {
+    return (
+      <div className="fixed inset-0 z-50 overflow-y-auto bg-surface-pure animate-fade-in">
+        <div
+          key={currentId}
+          className="min-h-full flex flex-col animate-fade-in"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          {/* 頂部列 */}
+          <div className="sticky top-0 z-20 flex items-center justify-between gap-3 px-4 sm:px-8 py-4 bg-surface-pure/90 backdrop-blur-md border-b border-border-crisp">
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="font-mono text-xs text-primary font-bold px-3 py-1 bg-primary/10 rounded-full shrink-0">
+                #{activeProject.expNumber}
+              </span>
+              <h3 className="font-display text-xl sm:text-2xl font-black uppercase text-ink truncate">
+                {activeProject.title}
+              </h3>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {hasPrev && (
+                <button
+                  onClick={goPrev}
+                  aria-label="Previous project"
+                  className="w-10 h-10 rounded-full bg-surface-container text-ink hover:bg-primary hover:text-white flex items-center justify-center cursor-pointer border-none transition-colors"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+              )}
+              {hasNext && (
+                <button
+                  onClick={goNext}
+                  aria-label="Next project"
+                  className="w-10 h-10 rounded-full bg-surface-container text-ink hover:bg-primary hover:text-white flex items-center justify-center cursor-pointer border-none transition-colors"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              )}
+              <button
+                onClick={onClose}
+                aria-label="Close"
+                className="w-10 h-10 rounded-full bg-black/60 text-white hover:bg-ink flex items-center justify-center cursor-pointer border-none transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* 內容 */}
+          <div className="flex-1 px-4 sm:px-8 lg:px-12 py-8 max-w-[1720px] w-full mx-auto">
+            <div className="flex flex-wrap items-center gap-2 mb-6">
+              <span className="px-3 py-1 rounded-full bg-white/70 border border-border-crisp font-mono text-xs font-bold uppercase text-primary">
+                {activeProject.categoryBadge}
+              </span>
+              {activeProject.extraBadge && (
+                <span className="px-3 py-1 rounded-full bg-accent-lime text-ink font-mono text-xs font-bold uppercase">
+                  {activeProject.extraBadge}
+                </span>
+              )}
+              {activeProject.tag && (
+                <span className="font-mono text-xs text-ink-muted">{activeProject.tag}</span>
+              )}
+            </div>
+
+            <div className={projImages.length === 1 ? 'grid grid-cols-1' : 'grid grid-cols-1 sm:grid-cols-2 gap-4'}>
+              {projImages.map((img, i) => (
+                <img
+                  key={i}
+                  src={thumbUrl(img, 1400, 1000)}
+                  alt={activeProject.title}
+                  referrerPolicy="no-referrer"
+                  loading="lazy"
+                  decoding="async"
+                  className={`w-full object-cover rounded-2xl border border-border-crisp ${projImages.length === 1 ? 'max-h-[70vh]' : 'aspect-[4/3]'}`}
+                />
+              ))}
+            </div>
+
+            <div className="mt-8 max-w-3xl pb-20">
+              <p className="font-body text-base sm:text-lg text-ink leading-relaxed mb-6">
+                {activeProject.description}
+              </p>
+
+              {activeProject.detailedDescription && (
+                <div className="p-5 rounded-2xl bg-surface-warm border border-border-crisp mb-6">
+                  <span className="font-mono text-xs uppercase text-primary font-bold block mb-2">Details</span>
+                  <p className="font-body text-sm text-ink-muted leading-relaxed">{activeProject.detailedDescription}</p>
+                </div>
+              )}
+
+              <div className="flex flex-wrap items-center gap-2 font-mono text-xs pt-4 border-t border-border-crisp">
+                {activeProject.tech.map((t) => (
+                  <span key={t} className="bg-surface-container text-ink px-3 py-1 rounded-lg">{t}</span>
+                ))}
+              </div>
+
+              {(activeProject.githubUrl || activeProject.websiteUrl) && (
+                <div className="flex flex-wrap gap-3 pt-6">
+                  {activeProject.websiteUrl && (
+                    <a
+                      href={activeProject.websiteUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-white font-mono text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity no-underline"
+                    >
+                      Visit site <ChevronRight className="w-3.5 h-3.5" />
+                    </a>
+                  )}
+                  {activeProject.githubUrl && (
+                    <a
+                      href={activeProject.githubUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-surface-container text-ink font-mono text-xs font-bold uppercase tracking-wider hover:bg-surface-container-high transition-colors no-underline"
+                    >
+                      GitHub <ChevronRight className="w-3.5 h-3.5" />
+                    </a>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in"
