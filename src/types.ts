@@ -17,6 +17,7 @@ export interface Project {
   image: string;
   images?: string[];
   imageRatios?: string[];
+  imagePositions?: string[];
   githubUrl?: string;
   websiteUrl?: string;
   colSpan: '8' | '4';

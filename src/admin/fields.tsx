@@ -102,6 +102,7 @@ export const ImageField: React.FC<{ value: string; onChange: (url: string) => vo
 export interface ManagedImage {
   url: string;
   ratio: string;
+  pos: string;
 }
 
 const IMAGE_RATIOS = [
@@ -111,6 +112,18 @@ const IMAGE_RATIOS = [
   { value: '1:1', label: '1:1' },
   { value: '3:4', label: '3:4' },
   { value: '9:16', label: '9:16' },
+];
+
+const POSITIONS = [
+  { value: 'top-left', label: 'Top left' },
+  { value: 'top', label: 'Top' },
+  { value: 'top-right', label: 'Top right' },
+  { value: 'left', label: 'Left' },
+  { value: 'center', label: 'Center' },
+  { value: 'right', label: 'Right' },
+  { value: 'bottom-left', label: 'Bottom left' },
+  { value: 'bottom', label: 'Bottom' },
+  { value: 'bottom-right', label: 'Bottom right' },
 ];
 
 export const MultiImageField: React.FC<{ value: ManagedImage[]; onChange: (v: ManagedImage[]) => void }> = ({
@@ -130,7 +143,7 @@ export const MultiImageField: React.FC<{ value: ManagedImage[]; onChange: (v: Ma
       const added: ManagedImage[] = [];
       for (const file of files) {
         const url = await uploadImage(file);
-        added.push({ url, ratio: 'auto' });
+        added.push({ url, ratio: 'auto', pos: 'center' });
       }
       onChange([...value, ...added]);
     } catch (err) {
@@ -149,6 +162,10 @@ export const MultiImageField: React.FC<{ value: ManagedImage[]; onChange: (v: Ma
     onChange(value.map((img, i) => (i === index ? { ...img, ratio } : img)));
   };
 
+  const setPos = (index: number, pos: string) => {
+    onChange(value.map((img, i) => (i === index ? { ...img, pos } : img)));
+  };
+
   return (
     <div>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -164,11 +181,34 @@ export const MultiImageField: React.FC<{ value: ManagedImage[]; onChange: (v: Ma
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover"
               />
+              {/* 3×3 裁切焦點選擇 */}
+              <div className="absolute inset-0 grid grid-cols-3 grid-rows-3">
+                {POSITIONS.map((p) => (
+                  <button
+                    key={p.value}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPos(i, p.value);
+                    }}
+                    title={p.label}
+                    className="flex items-center justify-center cursor-pointer border-none bg-transparent p-0"
+                  >
+                    <span
+                      className={`w-2.5 h-2.5 rounded-full border transition-all ${
+                        img.pos === p.value
+                          ? 'bg-primary border-primary scale-125'
+                          : 'bg-white/70 border-white/40'
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
               <button
                 type="button"
                 onClick={() => remove(i)}
                 title="Remove"
-                className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 text-white text-xs leading-none flex items-center justify-center cursor-pointer border-none"
+                className="absolute top-1 right-1 z-10 w-5 h-5 rounded-full bg-black/70 text-white text-xs leading-none flex items-center justify-center cursor-pointer border-none"
               >
                 ✕
               </button>
