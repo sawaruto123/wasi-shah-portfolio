@@ -3,11 +3,11 @@ import React, { useState } from 'react';
 interface SmartImageProps {
   src: string;
   alt?: string;
-  /** 外層容器（尺寸/圓角/邊框等，不包含 aspect） */
+  /** 外層容器（尺寸/定位/圓角/邊框等） */
   className?: string;
   /** 圖片本身的尺寸與效果（預設填滿容器） */
   imgClassName?: string;
-  /** 'auto' = 依原圖方向自動（橫 16:9 / 直 3:4）；或指定 '16:9' | '9:16' | '4:3' | '3:4' | '1:1' */
+  /** 傳入時才套用裁切比例：'auto'（依原圖方向自動 16:9 / 3:4）或 '16:9' | '9:16' | '4:3' | '3:4' | '1:1'。不傳＝不套用，適合卡片用 absolute inset-0 填滿。 */
   ratio?: string;
   /** 裁切焦點：'center' | 'top' | 'bottom' | 'left' | 'right' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' */
   position?: string;
@@ -36,14 +36,15 @@ const POS_CLASS: Record<string, string> = {
 
 /**
  * 圖片 + 載入骨架：圖片尚未載入時顯示脈動佔位，載入完成淡入；失敗時顯示佔位文字。
- * 支援指定裁切比例（ratio）與裁切焦點（position）。
+ * - 卡片用法（不傳 ratio）：直接 absolute inset-0 填滿父容器，無裁切比例。
+ * - 專案全螢幕用法（傳 ratio）：套用指定比例與焦點裁切。
  */
 export const SmartImage: React.FC<SmartImageProps> = ({
   src,
   alt = '',
   className = '',
   imgClassName = 'w-full h-full object-cover',
-  ratio = 'auto',
+  ratio,
   position = 'center',
   loading = 'lazy',
 }) => {
@@ -51,7 +52,12 @@ export const SmartImage: React.FC<SmartImageProps> = ({
   const [error, setError] = useState(false);
   const [detected, setDetected] = useState('aspect-video');
 
-  const aspectClass = ratio !== 'auto' ? RATIO_CLASS[ratio] ?? 'aspect-video' : detected;
+  const hasAspect = ratio !== undefined && ratio !== '' && ratio !== 'none';
+  const aspectClass = hasAspect
+    ? ratio === 'auto'
+      ? detected
+      : RATIO_CLASS[ratio] ?? 'aspect-video'
+    : '';
   const posClass = POS_CLASS[position] ?? 'object-center';
 
   const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -65,7 +71,7 @@ export const SmartImage: React.FC<SmartImageProps> = ({
   };
 
   return (
-    <div className={`relative overflow-hidden bg-surface-container ${aspectClass} ${className}`}>
+    <div className={`overflow-hidden bg-surface-container ${aspectClass} ${className}`}>
       {!loaded && !error && (
         <div className="absolute inset-0 animate-pulse bg-surface-container-high" />
       )}
