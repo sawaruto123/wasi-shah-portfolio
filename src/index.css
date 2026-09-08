@@ -45,21 +45,31 @@ html, body {
   color: #ffffff;
 }
 
+/* 自訂捲軸（WebKit：Chrome / Edge / Safari） */
 ::-webkit-scrollbar {
-  width: 5px;
+  width: 10px;
+  height: 10px;
 }
-
 ::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #4C9FFF, #1B304E);
+  border-radius: 9999px;
+  border: 2px solid rgba(13, 27, 46, 0.85);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #6CB8FF, #2A4A6E);
+}
+::-webkit-scrollbar-corner {
   background: transparent;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 9999px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #0047ff;
+/* 自訂捲軸（Firefox） */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #4C9FFF rgba(255, 255, 255, 0.06);
 }
 
 .hairline-grid {

@@ -133,34 +133,34 @@ export const Modals: React.FC<ModalsProps> = ({
                 {activeProject.title}
               </h3>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
-              {hasPrev && (
-                <button
-                  onClick={goPrev}
-                  aria-label="Previous project"
-                  className="w-9 h-9 rounded-full bg-surface-container text-ink hover:bg-primary hover:text-white flex items-center justify-center cursor-pointer border-none transition-colors"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-              )}
-              {hasNext && (
-                <button
-                  onClick={goNext}
-                  aria-label="Next project"
-                  className="w-9 h-9 rounded-full bg-surface-container text-ink hover:bg-primary hover:text-white flex items-center justify-center cursor-pointer border-none transition-colors"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              )}
-              <button
-                onClick={onClose}
-                aria-label="Close"
-                className="w-9 h-9 rounded-full bg-black/60 text-white hover:bg-ink flex items-center justify-center cursor-pointer border-none transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+            <button
+              onClick={onClose}
+              aria-label="Close"
+              className="w-9 h-9 rounded-full bg-black/60 text-white hover:bg-ink flex items-center justify-center cursor-pointer border-none transition-colors shrink-0"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
+
+          {/* 側邊 prev/next */}
+          {hasPrev && (
+            <button
+              onClick={goPrev}
+              aria-label="Previous project"
+              className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/60 text-white hover:bg-primary flex items-center justify-center cursor-pointer border-none shadow-md transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+          )}
+          {hasNext && (
+            <button
+              onClick={goNext}
+              aria-label="Next project"
+              className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/60 text-white hover:bg-primary flex items-center justify-center cursor-pointer border-none shadow-md transition-colors"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          )}
 
           {/* 內容（可滾動） */}
           <div className="overflow-y-auto overscroll-contain">
