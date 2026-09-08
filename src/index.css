@@ -55,15 +55,22 @@ html, body {
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #4C9FFF, #1B304E);
+  background: linear-gradient(180deg, #4C9FFF, #1B304E, #4C9FFF);
+  background-size: 100% 200%;
+  animation: scrollbarFlow 4s linear infinite;
   border-radius: 9999px;
   border: 2px solid rgba(13, 27, 46, 0.85);
 }
 ::-webkit-scrollbar-thumb:hover {
+  animation-play-state: paused;
   background: linear-gradient(180deg, #6CB8FF, #2A4A6E);
 }
 ::-webkit-scrollbar-corner {
   background: transparent;
+}
+@keyframes scrollbarFlow {
+  from { background-position: 0% 0%; }
+  to { background-position: 0% 200%; }
 }
 
 /* 自訂捲軸（Firefox） */
