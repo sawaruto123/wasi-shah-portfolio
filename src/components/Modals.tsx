@@ -118,13 +118,13 @@ export const Modals: React.FC<ModalsProps> = ({
       >
         <div
           key={currentId}
-          className="modal-enter relative w-full max-w-4xl bg-surface-pure rounded-3xl border border-border-crisp overflow-hidden spatial-card max-h-[90vh] flex flex-col"
+          className="modal-enter relative w-full max-w-6xl bg-surface-pure rounded-3xl border border-border-crisp overflow-hidden spatial-card max-h-[92vh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
           {/* 頂部列 */}
-          <div className="shrink-0 flex items-center justify-between gap-3 px-5 sm:px-7 py-4 border-b border-border-crisp">
+          <div className="shrink-0 flex items-center justify-between gap-3 px-6 sm:px-8 py-5 border-b border-border-crisp">
             <div className="flex items-center gap-3 min-w-0">
               <span className="font-mono text-xs text-primary font-bold px-3 py-1 bg-primary/10 rounded-full shrink-0">
                 #{activeProject.expNumber}
@@ -164,7 +164,7 @@ export const Modals: React.FC<ModalsProps> = ({
 
           {/* 內容（可滾動） */}
           <div className="overflow-y-auto overscroll-contain">
-            <div className="p-5 sm:p-7">
+            <div className="p-6 sm:p-8">
               <div className="flex flex-wrap items-center gap-2 mb-5">
                 <span className="px-3 py-1 rounded-full bg-white/70 border border-border-crisp font-mono text-xs font-bold uppercase text-primary">
                   {activeProject.categoryBadge}
