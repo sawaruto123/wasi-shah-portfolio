@@ -109,23 +109,27 @@ export const Modals: React.FC<ModalsProps> = ({
 
   if (!activeProject && !activeFilm && !activeStill) return null;
 
-  // 專案：全螢幕檢視（所有圖片 + 資訊一次顯示）
+  // 專案：卡片檢視（置中卡片，所有圖片 + 資訊）
   if (activeProject) {
     return (
-      <div className="fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-surface-pure animate-fade-in">
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in"
+        onClick={onClose}
+      >
         <div
           key={currentId}
-          className="min-h-full flex flex-col animate-fade-in"
+          className="modal-enter relative w-full max-w-4xl bg-surface-pure rounded-3xl border border-border-crisp overflow-hidden spatial-card max-h-[90vh] flex flex-col"
+          onClick={(e) => e.stopPropagation()}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
           {/* 頂部列 */}
-          <div className="sticky top-0 z-20 flex items-center justify-between gap-3 px-4 sm:px-8 py-3 bg-surface-pure/85 backdrop-blur-xl border-b border-white/10">
+          <div className="shrink-0 flex items-center justify-between gap-3 px-5 sm:px-7 py-4 border-b border-border-crisp">
             <div className="flex items-center gap-3 min-w-0">
               <span className="font-mono text-xs text-primary font-bold px-3 py-1 bg-primary/10 rounded-full shrink-0">
                 #{activeProject.expNumber}
               </span>
-              <h3 className="font-display text-xl sm:text-2xl font-black uppercase text-ink truncate">
+              <h3 className="font-display text-xl font-black uppercase text-ink truncate">
                 {activeProject.title}
               </h3>
             </div>
@@ -134,7 +138,7 @@ export const Modals: React.FC<ModalsProps> = ({
                 <button
                   onClick={goPrev}
                   aria-label="Previous project"
-                  className="w-10 h-10 rounded-full bg-white/10 text-ink hover:bg-primary hover:text-white flex items-center justify-center cursor-pointer border-none transition-colors"
+                  className="w-9 h-9 rounded-full bg-surface-container text-ink hover:bg-primary hover:text-white flex items-center justify-center cursor-pointer border-none transition-colors"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
@@ -143,7 +147,7 @@ export const Modals: React.FC<ModalsProps> = ({
                 <button
                   onClick={goNext}
                   aria-label="Next project"
-                  className="w-10 h-10 rounded-full bg-white/10 text-ink hover:bg-primary hover:text-white flex items-center justify-center cursor-pointer border-none transition-colors"
+                  className="w-9 h-9 rounded-full bg-surface-container text-ink hover:bg-primary hover:text-white flex items-center justify-center cursor-pointer border-none transition-colors"
                 >
                   <ChevronRight className="w-5 h-5" />
                 </button>
@@ -151,76 +155,73 @@ export const Modals: React.FC<ModalsProps> = ({
               <button
                 onClick={onClose}
                 aria-label="Close"
-                className="w-10 h-10 rounded-full bg-white/10 text-ink hover:bg-primary hover:text-white flex items-center justify-center cursor-pointer border-none transition-colors"
+                className="w-9 h-9 rounded-full bg-black/60 text-white hover:bg-ink flex items-center justify-center cursor-pointer border-none transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
           </div>
 
-          {/* 內容 */}
-          <div className="flex-1 px-4 sm:px-8 lg:px-12 py-8 max-w-[1720px] w-full mx-auto">
-            <div className="flex flex-wrap items-center gap-2 mb-6">
-              <span className="px-3 py-1 rounded-full bg-white/70 border border-border-crisp font-mono text-xs font-bold uppercase text-primary">
-                {activeProject.categoryBadge}
-              </span>
-              {activeProject.extraBadge && (
-                <span className="px-3 py-1 rounded-full bg-accent-lime text-ink font-mono text-xs font-bold uppercase">
-                  {activeProject.extraBadge}
+          {/* 內容（可滾動） */}
+          <div className="overflow-y-auto overscroll-contain">
+            <div className="p-5 sm:p-7">
+              <div className="flex flex-wrap items-center gap-2 mb-5">
+                <span className="px-3 py-1 rounded-full bg-white/70 border border-border-crisp font-mono text-xs font-bold uppercase text-primary">
+                  {activeProject.categoryBadge}
                 </span>
-              )}
-              {activeProject.tag && (
-                <span className="font-mono text-xs text-ink-muted">{activeProject.tag}</span>
-              )}
-            </div>
+                {activeProject.extraBadge && (
+                  <span className="px-3 py-1 rounded-full bg-accent-lime text-ink font-mono text-xs font-bold uppercase">
+                    {activeProject.extraBadge}
+                  </span>
+                )}
+                {activeProject.tag && (
+                  <span className="font-mono text-xs text-ink-muted">{activeProject.tag}</span>
+                )}
+              </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
-              {projImages.map((img, i) => (
-                <SmartImage
-                  key={i}
-                  src={thumbUrl(img, 1200)}
-                  alt={activeProject.title}
-                  ratio={activeProject.imageRatios?.[i] ?? 'auto'}
-                  position={activeProject.imagePositions?.[i] ?? 'center'}
-                  className={`relative w-full rounded-2xl border border-border-crisp shadow-lg ${projImages.length === 1 ? 'sm:col-span-2 sm:max-w-4xl' : ''}`}
-                />
-              ))}
-            </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start mb-6">
+                {projImages.map((img, i) => (
+                  <SmartImage
+                    key={i}
+                    src={thumbUrl(img, 1000)}
+                    alt={activeProject.title}
+                    ratio={activeProject.imageRatios?.[i] ?? 'auto'}
+                    position={activeProject.imagePositions?.[i] ?? 'center'}
+                    className={`relative w-full rounded-2xl border border-border-crisp ${projImages.length === 1 ? 'sm:col-span-2' : ''}`}
+                  />
+                ))}
+              </div>
 
-            <div className="mt-10 max-w-4xl pb-24">
-              <h3 className="font-display text-3xl sm:text-4xl font-black uppercase text-ink mb-4">
-                {activeProject.title}
-              </h3>
-              <p className="font-body text-base sm:text-lg text-ink-muted leading-relaxed mb-8 whitespace-pre-line">
+              <p className="font-body text-base text-ink-muted leading-relaxed mb-5 whitespace-pre-line">
                 {activeProject.description}
               </p>
 
               {activeProject.detailedDescription && (
-                <div className="p-6 rounded-2xl bg-surface-warm border border-border-crisp mb-8">
+                <div className="p-5 rounded-2xl bg-surface-warm border border-border-crisp mb-5">
                   <span className="font-mono text-xs uppercase tracking-widest text-primary font-bold block mb-2">Details</span>
                   <p className="font-body text-sm text-ink-muted leading-relaxed whitespace-pre-line">{activeProject.detailedDescription}</p>
                 </div>
               )}
 
               {activeProject.tech.length > 0 && (
-                <div className="mb-8">
-                  <span className="font-mono text-xs uppercase tracking-widest text-primary font-bold block mb-3">Tech stack</span>
+                <div className="mb-5">
+                  <span className="font-mono text-xs uppercase tracking-widest text-primary font-bold block mb-2">Tech stack</span>
                   <div className="flex flex-wrap gap-2">
                     {activeProject.tech.map((t) => (
-                      <span key={t} className="bg-surface-container text-ink px-3.5 py-1.5 rounded-lg font-mono text-xs">{t}</span>
+                      <span key={t} className="bg-surface-container text-ink px-3 py-1.5 rounded-lg font-mono text-xs">{t}</span>
                     ))}
                   </div>
                 </div>
               )}
 
               {(activeProject.githubUrl || activeProject.websiteUrl) && (
-                <div className="flex flex-wrap gap-3 pt-6 border-t border-border-crisp">
+                <div className="flex flex-wrap gap-3 pt-4 border-t border-border-crisp">
                   {activeProject.websiteUrl && (
                     <a
                       href={activeProject.websiteUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-primary text-white font-mono text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity no-underline"
+                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white font-mono text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity no-underline"
                     >
                       <ExternalLink className="w-4 h-4" /> Visit site
                     </a>
@@ -230,7 +231,7 @@ export const Modals: React.FC<ModalsProps> = ({
                       href={activeProject.githubUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-surface-container text-ink font-mono text-xs font-bold uppercase tracking-wider hover:bg-surface-container-high transition-colors no-underline"
+                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container text-ink font-mono text-xs font-bold uppercase tracking-wider hover:bg-surface-container-high transition-colors no-underline"
                     >
                       <Github className="w-4 h-4" /> GitHub
                     </a>
