@@ -13,6 +13,7 @@ import type {
   StillCapture,
   CommercialEngagement,
   SiteSettings,
+  PhotoEvent,
 } from '../types';
 
 export interface ContentValue {
@@ -20,6 +21,7 @@ export interface ContentValue {
   films: FilmRecord[];
   stills: StillCapture[];
   engagements: CommercialEngagement[];
+  photoEvents: PhotoEvent[];
   settings: SiteSettings;
   loading: boolean;
   source: 'supabase' | 'fallback';
@@ -31,6 +33,7 @@ const ContentContext = createContext<ContentValue>({
   films: FILM_RECORDS,
   stills: STILL_CAPTURES,
   engagements: COMMERCIAL_ENGAGEMENTS,
+  photoEvents: [],
   settings: DEFAULT_SETTINGS,
   loading: false,
   source: 'fallback',
@@ -72,7 +75,15 @@ const mapStill = (r: any): StillCapture => ({
   image: r.image,
   beforeImage: r.before_image ?? undefined,
   category: r.category === 'event' ? 'event' : 'daily',
+  eventId: r.event_id ?? undefined,
   accentColor: r.accent_color ?? undefined,
+});
+
+const mapEvent = (r: any): PhotoEvent => ({
+  id: r.id,
+  title: r.title,
+  description: r.description,
+  sortOrder: r.sort_order,
 });
 
 const mapEngagement = (r: any): CommercialEngagement => ({
@@ -101,6 +112,7 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [films, setFilms] = useState<FilmRecord[]>(FILM_RECORDS);
   const [stills, setStills] = useState<StillCapture[]>(STILL_CAPTURES);
   const [engagements, setEngagements] = useState<CommercialEngagement[]>(COMMERCIAL_ENGAGEMENTS);
+  const [photoEvents, setPhotoEvents] = useState<PhotoEvent[]>([]);
   const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState<boolean>(isSupabaseConfigured);
   const [source, setSource] = useState<'supabase' | 'fallback'>(isSupabaseConfigured ? 'supabase' : 'fallback');
@@ -112,12 +124,13 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
       return;
     }
     try {
-      const [p, f, s, e, st] = await Promise.all([
+      const [p, f, s, e, st, pe] = await Promise.all([
         supabase.from('projects').select('*').eq('published', true).order('sort_order'),
         supabase.from('films').select('*').eq('published', true).order('sort_order'),
         supabase.from('stills').select('*').eq('published', true).order('sort_order'),
         supabase.from('engagements').select('*').order('sort_order'),
         supabase.from('site_settings').select('*'),
+        supabase.from('photo_events').select('*').order('sort_order'),
       ]);
 
       let anyLive = false;
@@ -141,6 +154,9 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (!st.error && st.data && st.data.length > 0) {
         setSettings(buildSettings(st.data));
         anyLive = true;
+      }
+      if (!pe.error && pe.data) {
+        setPhotoEvents(pe.data.map(mapEvent));
       }
 
       setSource(anyLive ? 'supabase' : 'fallback');
@@ -178,8 +194,8 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [settings.profile.favicon]);
 
   const value = useMemo<ContentValue>(
-    () => ({ projects, films, stills, engagements, settings, loading, source, refresh }),
-    [projects, films, stills, engagements, settings, loading, source, refresh]
+    () => ({ projects, films, stills, engagements, photoEvents, settings, loading, source, refresh }),
+    [projects, films, stills, engagements, photoEvents, settings, loading, source, refresh]
   );
 
   return <ContentContext.Provider value={value}>{children}</ContentContext.Provider>;

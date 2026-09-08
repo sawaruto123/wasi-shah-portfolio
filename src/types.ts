@@ -40,6 +40,13 @@ export interface FilmRecord {
   format: string;
 }
 
+export interface PhotoEvent {
+  id: string;
+  title: string;
+  description: string;
+  sortOrder: number;
+}
+
 export interface StillCapture {
   id: string;
   title: string;
@@ -47,6 +54,7 @@ export interface StillCapture {
   image: string;
   beforeImage?: string;
   category: 'daily' | 'event';
+  eventId?: string;
   accentColor?: string;
 }
 

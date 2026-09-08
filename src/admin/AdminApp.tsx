@@ -4,19 +4,21 @@ import type { Session } from '@supabase/supabase-js';
 import { ProjectsManager } from './ProjectsManager';
 import { FilmsManager } from './FilmsManager';
 import { StillsManager } from './StillsManager';
+import { PhotoEventsManager } from './PhotoEventsManager';
 import { EngagementsManager } from './EngagementsManager';
 import { SettingsManager } from './SettingsManager';
 import { MessagesManager } from './MessagesManager';
 import { ThemeToggle } from '../lib/theme';
 import { Field, TextInput, Button } from './fields';
 
-type Tab = 'messages' | 'projects' | 'films' | 'stills' | 'engagements' | 'settings';
+type Tab = 'messages' | 'projects' | 'films' | 'stills' | 'photoEvents' | 'engagements' | 'settings';
 
 const TABS: Array<{ id: Tab; label: string }> = [
   { id: 'messages', label: 'Messages' },
   { id: 'projects', label: 'Projects' },
   { id: 'films', label: 'Films' },
   { id: 'stills', label: 'Stills' },
+  { id: 'photoEvents', label: 'Photo Events' },
   { id: 'engagements', label: 'Engagements' },
   { id: 'settings', label: 'Settings' },
 ];
@@ -128,6 +130,7 @@ export const AdminApp: React.FC = () => {
           {tab === 'projects' && <ProjectsManager />}
           {tab === 'films' && <FilmsManager />}
           {tab === 'stills' && <StillsManager />}
+          {tab === 'photoEvents' && <PhotoEventsManager />}
           {tab === 'engagements' && <EngagementsManager />}
           {tab === 'settings' && <SettingsManager />}
         </div>

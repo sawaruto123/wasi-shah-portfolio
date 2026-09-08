@@ -10,9 +10,10 @@ interface RoomCinemaProps {
 }
 
 export const RoomCinema: React.FC<RoomCinemaProps> = ({ onSelectFilm, onSelectStill }) => {
-  const { films, stills, engagements } = useContent();
+  const { films, stills, engagements, photoEvents } = useContent();
   const dailyStills = stills.filter((s) => s.category !== 'event');
   const eventStills = stills.filter((s) => s.category === 'event');
+  const unassignedEventStills = eventStills.filter((s) => !s.eventId);
 
   const renderStill = (still: StillCapture) => (
     <button
@@ -125,13 +126,39 @@ export const RoomCinema: React.FC<RoomCinemaProps> = ({ onSelectFilm, onSelectSt
         )}
       </div>
 
-      {/* 活動攝影（Event） */}
+      {/* 活動攝影（Event）— 依活動分組 */}
       <div>
         <h3 className="font-display text-xl font-bold uppercase text-ink mb-1">Event</h3>
-        <p className="font-mono text-[11px] text-ink-muted mb-4">Event photography work.</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {eventStills.map(renderStill)}
-        </div>
+        <p className="font-mono text-[11px] text-ink-muted mb-6">Event photography work.</p>
+
+        {photoEvents.map((ev) => {
+          const images = eventStills.filter((s) => s.eventId === ev.id);
+          if (images.length === 0) return null;
+          return (
+            <div key={ev.id} className="mb-10">
+              <div className="flex items-baseline gap-3 mb-1">
+                <h4 className="font-display text-lg font-bold uppercase text-ink">{ev.title}</h4>
+                <span className="font-mono text-[10px] text-ink-muted">{images.length} photo{images.length === 1 ? '' : 's'}</span>
+              </div>
+              {ev.description && (
+                <p className="font-body text-sm text-ink-muted mb-4">{ev.description}</p>
+              )}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                {images.map(renderStill)}
+              </div>
+            </div>
+          );
+        })}
+
+        {unassignedEventStills.length > 0 && (
+          <div className="mb-10">
+            <h4 className="font-display text-lg font-bold uppercase text-ink mb-4">Other</h4>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              {unassignedEventStills.map(renderStill)}
+            </div>
+          </div>
+        )}
+
         {eventStills.length === 0 && (
           <p className="font-mono text-xs text-ink-muted">No event photos yet.</p>
         )}

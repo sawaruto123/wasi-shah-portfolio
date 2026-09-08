@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useCollection } from './useCollection';
 import { Field, TextInput, Toggle, ImageField, Modal, Button, inputCls } from './fields';
-import { slugify } from './helpers';
+
+const newId = () => `still-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 
 const empty = {
   id: '',
@@ -11,6 +12,7 @@ const empty = {
   image: '',
   before_image: '',
   category: 'daily',
+  event_id: null,
   accent_color: '',
   published: true,
   sort_order: 0,
@@ -18,6 +20,7 @@ const empty = {
 
 export const StillsManager: React.FC = () => {
   const { rows, reload, loading, error } = useCollection<any>('stills');
+  const { rows: events } = useCollection<any>('photo_events');
   const [editing, setEditing] = useState<any | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -29,8 +32,9 @@ export const StillsManager: React.FC = () => {
     setSaving(true);
     const row = {
       ...editing,
-      id: editing.id || slugify(editing.title || 'still'),
+      id: editing.id || newId(),
       before_image: editing.before_image || null,
+      event_id: editing.event_id || null,
       accent_color: editing.accent_color || null,
     };
     const { error: err } = await supabase.from('stills').upsert(row);
@@ -136,6 +140,22 @@ export const StillsManager: React.FC = () => {
                 <option value="event">Event (活動攝影)</option>
               </select>
             </Field>
+            {editing.category === 'event' && (
+              <Field label="Event (活動，把照片歸到同一個活動下)">
+                <select
+                  value={editing.event_id ?? ''}
+                  onChange={(e) => setEditing({ ...editing, event_id: e.target.value || null })}
+                  className={inputCls}
+                >
+                  <option value="">— None —</option>
+                  {events.map((ev: any) => (
+                    <option key={ev.id} value={ev.id}>
+                      {ev.title}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            )}
             <Field label="Image (after / 完成品)">
               <ImageField value={editing.image} onChange={(url) => setEditing({ ...editing, image: url })} />
             </Field>
