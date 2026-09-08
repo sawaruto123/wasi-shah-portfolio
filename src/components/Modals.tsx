@@ -3,6 +3,7 @@ import { X, Play, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Project, FilmRecord, StillCapture } from '../types';
 import { BeforeAfter } from './BeforeAfter';
 import { thumbUrl } from '../lib/image';
+import { SmartImage } from './SmartImage';
 
 interface ModalsProps {
   activeProject: Project | null;
@@ -164,14 +165,12 @@ export const Modals: React.FC<ModalsProps> = ({
 
             <div className="flex flex-col gap-4">
               {projImages.map((img, i) => (
-                <img
+                <SmartImage
                   key={i}
                   src={thumbUrl(img, 1600, 1000)}
                   alt={activeProject.title}
-                  referrerPolicy="no-referrer"
-                  loading="lazy"
-                  decoding="async"
-                  className="w-full object-cover rounded-2xl border border-border-crisp"
+                  className="w-full min-h-[280px] rounded-2xl border border-border-crisp"
+                  imgClassName="w-full h-auto block"
                 />
               ))}
             </div>

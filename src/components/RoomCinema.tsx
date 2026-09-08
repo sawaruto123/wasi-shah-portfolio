@@ -2,6 +2,7 @@ import React from 'react';
 import { Play } from 'lucide-react';
 import { useContent } from '../lib/content';
 import { thumbUrl } from '../lib/image';
+import { SmartImage } from './SmartImage';
 import { FilmRecord, StillCapture } from '../types';
 
 interface RoomCinemaProps {
@@ -21,13 +22,11 @@ export const RoomCinema: React.FC<RoomCinemaProps> = ({ onSelectFilm, onSelectSt
       onClick={() => onSelectStill(still)}
       className="group relative aspect-square rounded-2xl overflow-hidden cursor-pointer border-none p-0"
     >
-      <img
+      <SmartImage
         src={thumbUrl(still.image, 500, 500)}
         alt={still.title || 'Photo'}
-        referrerPolicy="no-referrer"
-        loading="lazy"
-        decoding="async"
-        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+        className="absolute inset-0"
+        imgClassName="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
       {still.beforeImage && (
