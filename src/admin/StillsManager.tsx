@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useCollection } from './useCollection';
-import { Field, TextInput, Toggle, ImageField, Modal, Button } from './fields';
+import { Field, TextInput, Toggle, ImageField, Modal, Button, inputCls } from './fields';
 import { slugify } from './helpers';
 
 const empty = {
@@ -9,6 +9,8 @@ const empty = {
   title: '',
   focal_length: '',
   image: '',
+  before_image: '',
+  category: 'daily',
   accent_color: '',
   published: true,
   sort_order: 0,
@@ -28,6 +30,7 @@ export const StillsManager: React.FC = () => {
     const row = {
       ...editing,
       id: editing.id || slugify(editing.title || 'still'),
+      before_image: editing.before_image || null,
       accent_color: editing.accent_color || null,
     };
     const { error: err } = await supabase.from('stills').upsert(row);
@@ -79,7 +82,10 @@ export const StillsManager: React.FC = () => {
             </div>
             <div className="p-3">
               <div className="font-bold text-sm text-ink truncate">{row.title}</div>
-              <div className="font-mono text-[10px] text-ink-muted">{row.focal_length}</div>
+              <div className="font-mono text-[10px] text-ink-muted">
+                {row.focal_length} · {row.category === 'event' ? 'Event' : 'Daily'}
+                {row.before_image ? ' · B/A' : ''}
+              </div>
               <div className="flex gap-2 mt-2">
                 <Button variant="ghost" className="flex-1" onClick={() => openEdit(row)}>
                   Edit
@@ -120,8 +126,24 @@ export const StillsManager: React.FC = () => {
                 />
               </Field>
             </div>
-            <Field label="Image">
+            <Field label="Category">
+              <select
+                value={editing.category ?? 'daily'}
+                onChange={(e) => setEditing({ ...editing, category: e.target.value })}
+                className={inputCls}
+              >
+                <option value="daily">Daily (日常隨拍)</option>
+                <option value="event">Event (活動攝影)</option>
+              </select>
+            </Field>
+            <Field label="Image (after / 完成品)">
               <ImageField value={editing.image} onChange={(url) => setEditing({ ...editing, image: url })} />
+            </Field>
+            <Field label="Before image (原圖，用於前後對比，可選)">
+              <ImageField
+                value={editing.before_image ?? ''}
+                onChange={(url) => setEditing({ ...editing, before_image: url })}
+              />
             </Field>
             <div className="flex items-center justify-between gap-4">
               <Field label="Sort order">

@@ -70,6 +70,8 @@ const mapStill = (r: any): StillCapture => ({
   title: r.title,
   focalLength: r.focal_length,
   image: r.image,
+  beforeImage: r.before_image ?? undefined,
+  category: r.category === 'event' ? 'event' : 'daily',
   accentColor: r.accent_color ?? undefined,
 });
 

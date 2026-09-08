@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { X, Play, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Project, FilmRecord, StillCapture } from '../types';
+import { BeforeAfter } from './BeforeAfter';
 
 interface ModalsProps {
   activeProject: Project | null;
@@ -241,12 +242,21 @@ export const Modals: React.FC<ModalsProps> = ({
         {activeStill && (
           <div key={currentId} className={`overflow-y-auto ${slideClass}`}>
             <div className="relative w-full max-h-[65vh] bg-black flex items-center justify-center">
-              <img
-                src={activeStill.image}
-                alt={activeStill.title}
-                referrerPolicy="no-referrer"
-                className="max-h-[65vh] w-auto object-contain"
-              />
+              {activeStill.beforeImage ? (
+                <BeforeAfter
+                  before={activeStill.beforeImage}
+                  after={activeStill.image}
+                  alt={activeStill.title}
+                  className="w-full max-h-[65vh] aspect-[4/3]"
+                />
+              ) : (
+                <img
+                  src={activeStill.image}
+                  alt={activeStill.title}
+                  referrerPolicy="no-referrer"
+                  className="max-h-[65vh] w-auto object-contain"
+                />
+              )}
             </div>
             <div className="p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
@@ -254,7 +264,7 @@ export const Modals: React.FC<ModalsProps> = ({
                   {activeStill.title}
                 </h3>
                 <p className="font-mono text-xs text-ink-muted">
-                  Location: Hong Kong SAR
+                  {activeStill.beforeImage ? 'Drag to compare before / after · ' : ''}Location: Hong Kong SAR
                 </p>
               </div>
               <span className="font-mono text-xs bg-accent-lime text-ink font-bold px-3 py-1.5 rounded-xl">

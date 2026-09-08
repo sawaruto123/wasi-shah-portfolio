@@ -45,6 +45,8 @@ export interface StillCapture {
   title: string;
   focalLength: string;
   image: string;
+  beforeImage?: string;
+  category: 'daily' | 'event';
   accentColor?: string;
 }
 

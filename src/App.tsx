@@ -320,7 +320,8 @@ export default function App() {
                   data-room-scroll={i}
                   className="room-scroll h-full overflow-y-auto overflow-x-hidden overscroll-contain"
                 >
-                  {renderRoom(room.id)}
+                  {/* 只渲染目前與相鄰的房間內容，避免一次載入所有圖片造成 lag */}
+                  {Math.abs(i - activeIndex) <= 1 ? renderRoom(room.id) : null}
                 </div>
               </div>
             </div>

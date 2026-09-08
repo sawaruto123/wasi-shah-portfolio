@@ -10,6 +10,35 @@ interface RoomCinemaProps {
 
 export const RoomCinema: React.FC<RoomCinemaProps> = ({ onSelectFilm, onSelectStill }) => {
   const { films, stills, engagements } = useContent();
+  const dailyStills = stills.filter((s) => s.category !== 'event');
+  const eventStills = stills.filter((s) => s.category === 'event');
+
+  const renderStill = (still: StillCapture) => (
+    <button
+      key={still.id}
+      onClick={() => onSelectStill(still)}
+      className="group relative aspect-square rounded-2xl overflow-hidden cursor-pointer border-none p-0"
+    >
+      <img
+        src={still.image}
+        alt={still.title}
+        referrerPolicy="no-referrer"
+        loading="lazy"
+        decoding="async"
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+      {still.beforeImage && (
+        <span className="absolute top-2 right-2 px-2 py-1 rounded-full bg-primary text-white font-mono text-[9px] font-bold uppercase pointer-events-none">
+          B/A
+        </span>
+      )}
+      <span className="absolute bottom-2 inset-x-2 text-white font-mono text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">
+        {still.title}
+      </span>
+    </button>
+  );
+
   return (
     <section
       id="room-cinema"
@@ -83,31 +112,28 @@ export const RoomCinema: React.FC<RoomCinemaProps> = ({ onSelectFilm, onSelectSt
         </div>
       </div>
 
-      {/* 攝影（無框影像網格） */}
-      <div>
-        <h3 className="font-display text-xl font-bold uppercase text-ink mb-4">Photography</h3>
+      {/* 日常隨拍（Daily） */}
+      <div className="mb-12">
+        <h3 className="font-display text-xl font-bold uppercase text-ink mb-1">Daily</h3>
+        <p className="font-mono text-[11px] text-ink-muted mb-4">Random shots from everyday life.</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {stills.map((still) => (
-            <button
-              key={still.id}
-              onClick={() => onSelectStill(still)}
-              className="group relative aspect-square rounded-2xl overflow-hidden cursor-pointer border-none p-0"
-            >
-              <img
-                src={still.image}
-                alt={still.title}
-                referrerPolicy="no-referrer"
-                loading="lazy"
-                decoding="async"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <span className="absolute bottom-2 inset-x-2 text-white font-mono text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">
-                {still.title}
-              </span>
-            </button>
-          ))}
+          {dailyStills.map(renderStill)}
         </div>
+        {dailyStills.length === 0 && (
+          <p className="font-mono text-xs text-ink-muted">No daily photos yet.</p>
+        )}
+      </div>
+
+      {/* 活動攝影（Event） */}
+      <div>
+        <h3 className="font-display text-xl font-bold uppercase text-ink mb-1">Event</h3>
+        <p className="font-mono text-[11px] text-ink-muted mb-4">Event photography work.</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {eventStills.map(renderStill)}
+        </div>
+        {eventStills.length === 0 && (
+          <p className="font-mono text-xs text-ink-muted">No event photos yet.</p>
+        )}
       </div>
     </section>
   );
