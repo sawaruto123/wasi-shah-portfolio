@@ -113,6 +113,7 @@ export const StillsManager: React.FC = () => {
               <TextInput
                 value={editing.title}
                 onChange={(e) => setEditing({ ...editing, title: e.target.value })}
+                placeholder="Optional"
               />
             </Field>
             <div className="grid grid-cols-2 gap-4">

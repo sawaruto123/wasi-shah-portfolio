@@ -262,7 +262,7 @@ export const Modals: React.FC<ModalsProps> = ({
             <div className="p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <h3 className="font-display text-2xl font-bold uppercase text-ink mb-1">
-                  {activeStill.title}
+                  {activeStill.title || 'Photography'}
                 </h3>
                 <p className="font-mono text-xs text-ink-muted">
                   {activeStill.beforeImage ? 'Drag to compare before / after · ' : ''}Location: Hong Kong SAR

@@ -23,7 +23,7 @@ export const RoomCinema: React.FC<RoomCinemaProps> = ({ onSelectFilm, onSelectSt
     >
       <img
         src={thumbUrl(still.image, 500, 500)}
-        alt={still.title}
+        alt={still.title || 'Photo'}
         referrerPolicy="no-referrer"
         loading="lazy"
         decoding="async"
@@ -35,9 +35,11 @@ export const RoomCinema: React.FC<RoomCinemaProps> = ({ onSelectFilm, onSelectSt
           B/A
         </span>
       )}
-      <span className="absolute bottom-2 inset-x-2 text-white font-mono text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">
-        {still.title}
-      </span>
+      {still.title && (
+        <span className="absolute bottom-2 inset-x-2 text-white font-mono text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">
+          {still.title}
+        </span>
+      )}
     </button>
   );
 
