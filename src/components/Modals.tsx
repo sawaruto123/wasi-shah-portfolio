@@ -180,8 +180,8 @@ export const Modals: React.FC<ModalsProps> = ({
                   key={i}
                   src={thumbUrl(img, 1200)}
                   alt={activeProject.title}
-                  className={`w-full min-h-[220px] rounded-2xl border border-border-crisp shadow-lg ${projImages.length === 1 ? 'sm:col-span-2 sm:max-w-4xl sm:mx-auto' : ''}`}
-                  imgClassName="w-full h-auto block"
+                  autoAspect
+                  className={`w-full rounded-2xl border border-border-crisp shadow-lg ${projImages.length === 1 ? 'sm:col-span-2 sm:max-w-4xl sm:mx-auto' : ''}`}
                 />
               ))}
             </div>
