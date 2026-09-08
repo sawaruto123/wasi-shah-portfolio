@@ -162,16 +162,16 @@ export const Modals: React.FC<ModalsProps> = ({
               )}
             </div>
 
-            <div className={projImages.length === 1 ? 'grid grid-cols-1' : 'grid grid-cols-1 sm:grid-cols-2 gap-4'}>
+            <div className="flex flex-col gap-4">
               {projImages.map((img, i) => (
                 <img
                   key={i}
-                  src={thumbUrl(img, 1400, 1000)}
+                  src={thumbUrl(img, 1600, 1000)}
                   alt={activeProject.title}
                   referrerPolicy="no-referrer"
                   loading="lazy"
                   decoding="async"
-                  className={`w-full object-cover rounded-2xl border border-border-crisp ${projImages.length === 1 ? 'max-h-[70vh]' : 'aspect-[4/3]'}`}
+                  className="w-full object-cover rounded-2xl border border-border-crisp"
                 />
               ))}
             </div>
