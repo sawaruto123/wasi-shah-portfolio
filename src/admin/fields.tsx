@@ -99,7 +99,21 @@ export const ImageField: React.FC<{ value: string; onChange: (url: string) => vo
   );
 };
 
-export const MultiImageField: React.FC<{ value: string[]; onChange: (urls: string[]) => void }> = ({
+export interface ManagedImage {
+  url: string;
+  ratio: string;
+}
+
+const IMAGE_RATIOS = [
+  { value: 'auto', label: 'Auto' },
+  { value: '16:9', label: '16:9' },
+  { value: '4:3', label: '4:3' },
+  { value: '1:1', label: '1:1' },
+  { value: '3:4', label: '3:4' },
+  { value: '9:16', label: '9:16' },
+];
+
+export const MultiImageField: React.FC<{ value: ManagedImage[]; onChange: (v: ManagedImage[]) => void }> = ({
   value,
   onChange,
 }) => {
@@ -113,12 +127,12 @@ export const MultiImageField: React.FC<{ value: string[]; onChange: (urls: strin
     setUploading(true);
     setError(null);
     try {
-      const urls: string[] = [];
+      const added: ManagedImage[] = [];
       for (const file of files) {
         const url = await uploadImage(file);
-        urls.push(url);
+        added.push({ url, ratio: 'auto' });
       }
-      onChange([...value, ...urls]);
+      onChange([...value, ...added]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed');
     } finally {
@@ -131,34 +145,53 @@ export const MultiImageField: React.FC<{ value: string[]; onChange: (urls: strin
     onChange(value.filter((_, i) => i !== index));
   };
 
+  const setRatio = (index: number, ratio: string) => {
+    onChange(value.map((img, i) => (i === index ? { ...img, ratio } : img)));
+  };
+
   return (
     <div>
-      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-        {value.map((url, i) => (
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {value.map((img, i) => (
           <div
-            key={`${url}-${i}`}
-            className="relative rounded-lg overflow-hidden border border-border-crisp aspect-square"
+            key={`${img.url}-${i}`}
+            className="rounded-lg border border-border-crisp overflow-hidden bg-white"
           >
-            <img
-              src={url}
-              alt=""
-              referrerPolicy="no-referrer"
-              className="w-full h-full object-cover"
-            />
-            <button
-              type="button"
-              onClick={() => remove(i)}
-              title="Remove"
-              className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 text-white text-xs leading-none flex items-center justify-center cursor-pointer border-none"
-            >
-              ✕
-            </button>
+            <div className="relative aspect-video">
+              <img
+                src={img.url}
+                alt=""
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => remove(i)}
+                title="Remove"
+                className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 text-white text-xs leading-none flex items-center justify-center cursor-pointer border-none"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-2">
+              <select
+                value={img.ratio}
+                onChange={(e) => setRatio(i, e.target.value)}
+                className="w-full px-2 py-1 rounded-md border border-border-crisp bg-white text-xs text-ink"
+              >
+                {IMAGE_RATIOS.map((r) => (
+                  <option key={r.value} value={r.value}>
+                    {r.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         ))}
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className="aspect-square rounded-lg border-2 border-dashed border-border-crisp flex flex-col items-center justify-center gap-1 text-ink-muted hover:bg-surface-warm transition-colors cursor-pointer bg-transparent"
+          className="aspect-video rounded-lg border-2 border-dashed border-border-crisp flex flex-col items-center justify-center gap-1 text-ink-muted hover:bg-surface-warm transition-colors cursor-pointer bg-transparent"
         >
           <span className="text-xl leading-none">+</span>
           <span className="text-[9px] font-bold uppercase">

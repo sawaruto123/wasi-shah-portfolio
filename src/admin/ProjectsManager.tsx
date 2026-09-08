@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useCollection } from './useCollection';
-import { Field, TextInput, TextArea, Toggle, ImageField, MultiImageField, Modal, Button } from './fields';
+import { Field, TextInput, TextArea, Toggle, ImageField, MultiImageField, Modal, Button, type ManagedImage } from './fields';
 import { slugify } from './helpers';
 
 const CATEGORIES = ['ai', 'code', 'fintech'];
@@ -30,7 +30,7 @@ export const ProjectsManager: React.FC = () => {
   const { rows, reload, loading, error } = useCollection<any>('projects');
   const [editing, setEditing] = useState<any | null>(null);
   const [techText, setTechText] = useState('');
-  const [imagesList, setImagesList] = useState<string[]>([]);
+  const [imagesList, setImagesList] = useState<ManagedImage[]>([]);
   const [saving, setSaving] = useState(false);
 
   const openNew = () => {
@@ -41,19 +41,28 @@ export const ProjectsManager: React.FC = () => {
   const openEdit = (row: any) => {
     setEditing({ ...row });
     setTechText((row.tech ?? []).join(', '));
-    setImagesList((row.images ?? []).filter((u: string) => u && u !== row.image));
+    setImagesList(
+      (row.images ?? [])
+        .map((u: string, idx: number) => ({
+          url: u,
+          ratio: (row.image_ratios ?? [])[idx] ?? 'auto',
+        }))
+        .filter((m: ManagedImage) => m.url && m.url !== row.image)
+    );
   };
 
   const save = async () => {
     if (!editing || !supabase) return;
     setSaving(true);
     const tech = techText.split(',').map((s) => s.trim()).filter(Boolean);
+    const allImages: ManagedImage[] = [{ url: editing.image, ratio: 'auto' }, ...imagesList].filter((m) => m.url);
     const row = {
       ...editing,
       id: editing.id || slugify(editing.title || 'project'),
       exp_number: editing.exp_number || String(rows.length + 1).padStart(2, '0'),
       tech,
-      images: [editing.image, ...imagesList].filter(Boolean),
+      images: allImages.map((m) => m.url),
+      image_ratios: allImages.map((m) => m.ratio),
       github_url: editing.github_url || null,
       website_url: editing.website_url || null,
     };

@@ -180,7 +180,7 @@ export const Modals: React.FC<ModalsProps> = ({
                   key={i}
                   src={thumbUrl(img, 1200)}
                   alt={activeProject.title}
-                  autoAspect
+                  ratio={activeProject.imageRatios?.[i] ?? 'auto'}
                   className={`w-full rounded-2xl border border-border-crisp shadow-lg ${projImages.length === 1 ? 'sm:col-span-2 sm:max-w-4xl sm:mx-auto' : ''}`}
                 />
               ))}

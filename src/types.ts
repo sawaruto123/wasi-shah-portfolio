@@ -16,6 +16,7 @@ export interface Project {
   extraBadge?: string;
   image: string;
   images?: string[];
+  imageRatios?: string[];
   githubUrl?: string;
   websiteUrl?: string;
   colSpan: '8' | '4';

@@ -7,39 +7,48 @@ interface SmartImageProps {
   className?: string;
   /** 圖片本身的尺寸與效果（預設填滿容器） */
   imgClassName?: string;
-  /** 依原圖方向自動套用 16:9（橫）或 9:16（直） */
-  autoAspect?: boolean;
+  /** 'auto' = 依原圖方向自動（橫 16:9 / 直 3:4）；或指定 '16:9' | '9:16' | '4:3' | '3:4' | '1:1' */
+  ratio?: string;
   loading?: 'lazy' | 'eager';
 }
 
+const RATIO_CLASS: Record<string, string> = {
+  '16:9': 'aspect-video',
+  '9:16': 'aspect-[9/16]',
+  '4:3': 'aspect-[4/3]',
+  '3:4': 'aspect-[3/4]',
+  '1:1': 'aspect-square',
+};
+
 /**
  * 圖片 + 載入骨架：圖片尚未載入時顯示脈動佔位，載入完成淡入；失敗時顯示佔位文字。
- * autoAspect：偵測原圖是橫式或直式，自動套用 16:9 / 9:16 比例。
  */
 export const SmartImage: React.FC<SmartImageProps> = ({
   src,
   alt = '',
   className = '',
   imgClassName = 'w-full h-full object-cover',
-  autoAspect = false,
+  ratio = 'auto',
   loading = 'lazy',
 }) => {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
-  const [aspect, setAspect] = useState('aspect-video');
+  const [detected, setDetected] = useState('aspect-video');
+
+  const aspectClass = ratio !== 'auto' ? RATIO_CLASS[ratio] ?? 'aspect-video' : detected;
 
   const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    if (autoAspect) {
+    if (ratio === 'auto') {
       const img = e.currentTarget;
       if (img.naturalWidth && img.naturalHeight) {
-        setAspect(img.naturalWidth >= img.naturalHeight ? 'aspect-video' : 'aspect-[9/16]');
+        setDetected(img.naturalWidth >= img.naturalHeight ? 'aspect-video' : 'aspect-[3/4]');
       }
     }
     setLoaded(true);
   };
 
   return (
-    <div className={`relative overflow-hidden bg-surface-container ${autoAspect ? aspect : ''} ${className}`}>
+    <div className={`relative overflow-hidden bg-surface-container ${aspectClass} ${className}`}>
       {!loaded && !error && (
         <div className="absolute inset-0 animate-pulse bg-surface-container-high" />
       )}
