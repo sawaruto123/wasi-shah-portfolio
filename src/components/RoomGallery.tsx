@@ -1,12 +1,60 @@
 import React from 'react';
 import { useContent } from '../lib/content';
 import { thumbUrl } from '../lib/image';
+import { useImageTone } from '../lib/useImageTone';
 import { SmartImage } from './SmartImage';
 import { Project } from '../types';
 
 interface RoomGalleryProps {
   onSelectProject: (project: Project) => void;
 }
+
+const ProjectCard: React.FC<{ project: Project; onSelect: () => void }> = ({ project, onSelect }) => {
+  const src = thumbUrl(project.image, 700, 450);
+  const tone = useImageTone(src);
+  const dark = tone === 'dark'; // dark image → bright text
+
+  return (
+    <article
+      onClick={onSelect}
+      className="group relative rounded-3xl overflow-hidden spatial-card cursor-pointer"
+    >
+      <div className="relative w-full h-64 overflow-hidden">
+        <SmartImage
+          src={src}
+          alt={project.title}
+          className="absolute inset-0"
+          imgClassName="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+        />
+        {/* 底部漸層遮罩：讓底部標題文字永遠可讀 */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0D1B2E]/85 via-transparent to-transparent" />
+
+        <span
+          className={`absolute top-3 left-4 font-display text-lg font-black ${dark ? 'text-white/90' : 'text-black/75'}`}
+        >
+          #{project.expNumber}
+        </span>
+
+        {(project.images?.length ?? 0) > 1 && (
+          <span
+            className={`absolute top-3 right-3 px-2 py-1 rounded-full font-mono text-[9px] font-bold ${dark ? 'bg-black/55 text-white' : 'bg-white/75 text-black'}`}
+          >
+            {project.images!.length} photos
+          </span>
+        )}
+
+        <div className="absolute bottom-3 inset-x-4">
+          <h3 className="font-display text-lg font-bold text-white leading-tight">
+            {project.title}
+          </h3>
+          <span className="font-mono text-[10px] uppercase tracking-wider text-white/80">
+            {project.tag}
+          </span>
+        </div>
+      </div>
+    </article>
+  );
+};
 
 export const RoomGallery: React.FC<RoomGalleryProps> = ({ onSelectProject }) => {
   const { projects } = useContent();
@@ -30,37 +78,7 @@ export const RoomGallery: React.FC<RoomGalleryProps> = ({ onSelectProject }) => 
       {/* 影像卡浮動網格 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {projects.map((project) => (
-          <article
-            key={project.id}
-            onClick={() => onSelectProject(project)}
-            className="group relative rounded-3xl overflow-hidden spatial-card cursor-pointer"
-          >
-            <div className="relative w-full h-64 overflow-hidden">
-              <SmartImage
-                src={thumbUrl(project.image, 700, 450)}
-                alt={project.title}
-                className="absolute inset-0"
-                imgClassName="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#11263F]/85 via-[#11263F]/10 to-transparent" />
-              <span className="absolute top-3 left-4 font-display text-lg font-black text-white/80">
-                #{project.expNumber}
-              </span>
-              {(project.images?.length ?? 0) > 1 && (
-                <span className="absolute top-3 right-3 px-2 py-1 rounded-full bg-black/50 text-white font-mono text-[9px] font-bold">
-                  {project.images!.length} photos
-                </span>
-              )}
-              <div className="absolute bottom-3 inset-x-4">
-                <h3 className="font-display text-lg font-bold text-white leading-tight">
-                  {project.title}
-                </h3>
-                <span className="font-mono text-[10px] uppercase tracking-wider text-white/70">
-                  {project.tag}
-                </span>
-              </div>
-            </div>
-          </article>
+          <ProjectCard key={project.id} project={project} onSelect={() => onSelectProject(project)} />
         ))}
       </div>
     </section>
