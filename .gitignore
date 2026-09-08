@@ -10,4 +10,5 @@ coverage/
 .supabase-admin-password.txt
 supabase/.temp/
 .vercel
+.firecrawl-key
 shot-*.png
