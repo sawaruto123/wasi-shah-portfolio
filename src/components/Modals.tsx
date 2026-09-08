@@ -182,7 +182,7 @@ export const Modals: React.FC<ModalsProps> = ({
                   alt={activeProject.title}
                   ratio={activeProject.imageRatios?.[i] ?? 'auto'}
                   position={activeProject.imagePositions?.[i] ?? 'center'}
-                  className={`w-full rounded-2xl border border-border-crisp shadow-lg ${projImages.length === 1 ? 'sm:col-span-2 sm:max-w-4xl sm:mx-auto' : ''}`}
+                  className={`w-full rounded-2xl border border-border-crisp shadow-lg ${projImages.length === 1 ? 'sm:col-span-2 sm:max-w-4xl' : ''}`}
                 />
               ))}
             </div>
