@@ -1,5 +1,6 @@
 import React from 'react';
 import { useContent } from '../lib/content';
+import { thumbUrl } from '../lib/image';
 import { Project } from '../types';
 
 interface RoomGalleryProps {
@@ -35,7 +36,7 @@ export const RoomGallery: React.FC<RoomGalleryProps> = ({ onSelectProject }) => 
           >
             <div className="relative w-full h-64 overflow-hidden">
               <img
-                src={project.image}
+                src={thumbUrl(project.image, 700, 450)}
                 alt={project.title}
                 referrerPolicy="no-referrer"
                 loading="lazy"

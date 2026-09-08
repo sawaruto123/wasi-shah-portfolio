@@ -1,6 +1,7 @@
 import React from 'react';
 import { Play } from 'lucide-react';
 import { useContent } from '../lib/content';
+import { thumbUrl } from '../lib/image';
 import { FilmRecord, StillCapture } from '../types';
 
 interface RoomCinemaProps {
@@ -20,7 +21,7 @@ export const RoomCinema: React.FC<RoomCinemaProps> = ({ onSelectFilm, onSelectSt
       className="group relative aspect-square rounded-2xl overflow-hidden cursor-pointer border-none p-0"
     >
       <img
-        src={still.image}
+        src={thumbUrl(still.image, 500, 500)}
         alt={still.title}
         referrerPolicy="no-referrer"
         loading="lazy"
@@ -66,7 +67,7 @@ export const RoomCinema: React.FC<RoomCinemaProps> = ({ onSelectFilm, onSelectSt
           >
             <div className="relative w-full aspect-[16/9] overflow-hidden">
               <img
-                src={film.image}
+                src={thumbUrl(film.image, 900, 506)}
                 alt={film.title}
                 referrerPolicy="no-referrer"
                 loading="lazy"

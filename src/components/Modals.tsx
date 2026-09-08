@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { X, Play, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Project, FilmRecord, StillCapture } from '../types';
 import { BeforeAfter } from './BeforeAfter';
+import { thumbUrl } from '../lib/image';
 
 interface ModalsProps {
   activeProject: Project | null;
@@ -135,7 +136,7 @@ export const Modals: React.FC<ModalsProps> = ({
           <div key={currentId} className={`overflow-y-auto ${slideClass}`}>
             <div className="relative w-full h-80 sm:h-96 bg-black">
               <img
-                src={activeProject.image}
+                src={thumbUrl(activeProject.image, 1600, 1000)}
                 alt={activeProject.title}
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover"
@@ -193,7 +194,7 @@ export const Modals: React.FC<ModalsProps> = ({
           <div key={currentId} className={`overflow-y-auto ${slideClass}`}>
             <div className="relative w-full aspect-[16/9] bg-black flex items-center justify-center">
               <img
-                src={activeFilm.image}
+                src={thumbUrl(activeFilm.image, 1600, 900)}
                 alt={activeFilm.title}
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover opacity-85"
@@ -244,14 +245,14 @@ export const Modals: React.FC<ModalsProps> = ({
             <div className="relative w-full max-h-[65vh] bg-black flex items-center justify-center">
               {activeStill.beforeImage ? (
                 <BeforeAfter
-                  before={activeStill.beforeImage}
-                  after={activeStill.image}
+                  before={thumbUrl(activeStill.beforeImage, 1400, 1050)}
+                  after={thumbUrl(activeStill.image, 1400, 1050)}
                   alt={activeStill.title}
                   className="w-full max-h-[65vh] aspect-[4/3]"
                 />
               ) : (
                 <img
-                  src={activeStill.image}
+                  src={thumbUrl(activeStill.image, 1600)}
                   alt={activeStill.title}
                   referrerPolicy="no-referrer"
                   className="max-h-[65vh] w-auto object-contain"
