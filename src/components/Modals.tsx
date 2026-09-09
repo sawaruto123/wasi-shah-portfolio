@@ -165,7 +165,7 @@ export const Modals: React.FC<ModalsProps> = ({
                   {activeProject.categoryBadge}
                 </span>
                 {activeProject.extraBadge && (
-                  <span className="px-3 py-1 rounded-full bg-accent-lime text-ink font-mono text-xs font-bold uppercase">
+                  <span className="px-3 py-1 rounded-full bg-accent-lime text-black font-mono text-xs font-bold uppercase">
                     {activeProject.extraBadge}
                   </span>
                 )}
@@ -332,7 +332,7 @@ export const Modals: React.FC<ModalsProps> = ({
                 <h3 className="font-display text-3xl font-black uppercase text-ink">
                   {activeFilm.title}
                 </h3>
-                <span className="font-mono text-xs bg-accent-lime text-ink font-bold px-3 py-1 rounded-full">
+                <span className="font-mono text-xs bg-accent-lime text-black font-bold px-3 py-1 rounded-full">
                   {activeFilm.releaseYear}
                 </span>
               </div>
@@ -377,7 +377,7 @@ export const Modals: React.FC<ModalsProps> = ({
                   {activeStill.beforeImage ? 'Drag to compare before / after · ' : ''}Location: Hong Kong SAR
                 </p>
               </div>
-              <span className="font-mono text-xs bg-accent-lime text-ink font-bold px-3 py-1.5 rounded-xl">
+              <span className="font-mono text-xs bg-accent-lime text-black font-bold px-3 py-1.5 rounded-xl">
                 {activeStill.focalLength}
               </span>
             </div>
