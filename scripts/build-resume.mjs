@@ -29,39 +29,38 @@ const experience = [
   {
     company: 'Behance Co Limited', role: 'Adobe Ambassador', date: 'May 2025 \u2013 Present',
     bullets: [
-      ['Brand Representation', 'Liaise between vendor and prospective students and parents; drive outreach via social media and events.'],
-      ['Content Creation', 'Produce blogs, videos, workshop and instructional materials; deliver workshops and presentations.'],
+      ['Brand Representation', 'Liaise between vendor and [X]+ prospective students and parents; drive outreach via social media and events.'],
+      ['Content Creation', 'Produce [X]+ videos, blogs and workshop kits; deliver workshops and presentations.'],
       ['Event Coordination', 'Plan and run online and offline events; build relationships with industry professionals.'],
     ],
   },
   {
     company: 'Virtual Academy International', role: 'Marketing & Teacher', date: 'Jun 2024 \u2013 Present',
     bullets: [
-      ['Campaign Execution', 'Research markets and plan and execute marketing campaigns; manage social media.'],
-      ['Teaching', 'Deliver engaging online lessons, adapting content to diverse learning needs.'],
+      ['Campaign Execution', 'Research markets, plan and execute [X] campaigns; manage social media accounts.'],
+      ['Teaching', 'Deliver engaging online lessons to [X]+ students, adapting content to diverse needs.'],
     ],
   },
   {
     company: 'moji Corporation Limited', role: 'Creative Intern (APAC)', date: 'Sep 2024 \u2013 Jul 2025',
     bullets: [
-      ['Design Execution', 'Collaborate on design concepts and visual content for digital campaigns.'],
-      ['Production Support', 'Edit and retouch photos; support video production; contribute to brainstorming.'],
+      ['Design Execution', 'Produce [X]+ campaign visuals and retouch [X]+ photos for digital campaigns.'],
+      ['Production Support', 'Support video production; contribute to design brainstorming.'],
     ],
   },
   {
     company: 'Seaman Paper Asia', role: 'Graphic Trainee', date: 'Jun 2024 \u2013 Aug 2024',
     bullets: [
-      ['Graphic Design', 'Handle day-to-day design and coordinate with departments for marketing materials.'],
-      ['Research & Support', 'Assist marketing research and assess product ink coverage; support ad hoc projects.'],
+      ['Graphic Design', 'Handle day-to-day design and coordinate across departments for marketing materials.'],
     ],
   },
 ];
 
 const projects = [
   ['Real-time Avatar Overlay', 'Electron + MediaPipe app that tracks facial landmarks in real time to drive an avatar, captured in OBS.'],
-  ['Cash Finance System', 'React + Supabase user app and admin console; RLS, edge functions, HK MPF, bilingual UI.'],
+  ['Cash Finance System', 'React + Supabase user app and admin console; 6 tables, 2 edge functions, RLS, HK MPF, bilingual.'],
   ['Gold Finder', 'Godot 2D platformer, published on itch.io and exported to HTML5.'],
-  ['Obsidian Automation', 'PowerShell / WPF task widget and markdown-based expense tracker.'],
+  ['Obsidian Automation', '2 PowerShell / WPF tools: an always-on-top task widget and a markdown expense tracker.'],
 ];
 
 const education = [
@@ -85,8 +84,8 @@ function bulletParagraph(boldText, text) {
 
 function sectionTitle(t) {
   return new Paragraph({
-    spacing: { before: 220, after: 80 },
-    children: [new TextRun({ text: t.toUpperCase(), bold: true, font: bodyFont, size: 24, color: blue })],
+    spacing: { before: 160, after: 60 },
+    children: [new TextRun({ text: t.toUpperCase(), bold: true, font: bodyFont, size: 23, color: blue })],
     border: { bottom: { color: blue, size: 6, style: BorderStyle.SINGLE } },
   });
 }
@@ -120,7 +119,7 @@ async function buildDocx() {
       default: { document: { run: { font: bodyFont, size: 21, color: '333333' } } },
     },
     sections: [{
-      properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 900, bottom: 900, left: 1000, right: 1000 } } },
+      properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 720, bottom: 720, left: 1000, right: 1000 } } },
       children: [
         // HEADER
         new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: head.name, bold: true, font: bodyFont, size: 40, color: '333333' })] }),
