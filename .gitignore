@@ -12,3 +12,4 @@ supabase/.temp/
 .vercel
 .firecrawl-key
 shot-*.png
+*.docx
