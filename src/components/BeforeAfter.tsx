@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { SmartImage } from './SmartImage';
 
 interface BeforeAfterProps {
   before: string;
@@ -54,26 +55,20 @@ export const BeforeAfter: React.FC<BeforeAfterProps> = ({
       }}
     >
       {/* After（底層，完成品） */}
-      <img
+      <SmartImage
         src={after}
         alt={alt}
-        referrerPolicy="no-referrer"
-        draggable={false}
-        loading="lazy"
-        decoding="async"
-        className="w-full h-full object-cover block pointer-events-none"
+        className="absolute inset-0"
+        imgClassName="w-full h-full object-cover pointer-events-none"
       />
 
-      {/* Before（上層，依分割線裁切） */}
+      {/* Before（上層，依分隔線裁切） */}
       <div className="absolute inset-0" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
-        <img
+        <SmartImage
           src={before}
           alt=""
-          referrerPolicy="no-referrer"
-          draggable={false}
-          loading="lazy"
-          decoding="async"
-          className="w-full h-full object-cover block pointer-events-none"
+          className="absolute inset-0"
+          imgClassName="w-full h-full object-cover pointer-events-none"
         />
       </div>
 

@@ -300,11 +300,11 @@ export const Modals: React.FC<ModalsProps> = ({
                 <VideoPlayer url={activeFilm.video} title={activeFilm.title} />
               ) : (
                 <div className="relative w-full aspect-[16/9] flex items-center justify-center">
-                  <img
+                  <SmartImage
                     src={thumbUrl(activeFilm.image, 1600, 900)}
                     alt={activeFilm.title}
-                    referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover opacity-85"
+                    className="absolute inset-0"
+                    imgClassName="w-full h-full object-cover opacity-85"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40" />
 
@@ -360,11 +360,11 @@ export const Modals: React.FC<ModalsProps> = ({
                   className="w-full max-h-[65vh] aspect-[4/3]"
                 />
               ) : (
-                <img
+                <SmartImage
                   src={thumbUrl(activeStill.image, 1600)}
                   alt={activeStill.title}
-                  referrerPolicy="no-referrer"
-                  className="max-h-[65vh] w-auto object-contain"
+                  className="w-full max-h-[65vh] aspect-[4/3]"
+                  imgClassName="w-full h-full object-contain"
                 />
               )}
             </div>
