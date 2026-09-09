@@ -304,7 +304,7 @@ export default function App() {
     <div className="relative min-h-screen text-ink selection:bg-primary selection:text-white">
       {/* 世界背景：網格 + 3D 走廊 */}
       <div className="fixed inset-0 z-0 hairline-grid pointer-events-none" />
-      <SpatialCanvas onScrollProgress={handleScrollProgress} lightAngle={lightAngle} darkMode={dark} bgOpacity={bgOpacity} onReady={handleWorldReady} />
+      <SpatialCanvas onScrollProgress={handleScrollProgress} lightAngle={lightAngle} darkMode={dark} bgOpacity={bgOpacity} paused={!!(activeProject || activeFilm || activeStill)} onReady={handleWorldReady} />
 
       {/* 滾動長度：每個房間一屏，滾動即飛越世界 */}
       <div style={{ height: `${ROOM_COUNT * 100}vh` }} aria-hidden="true" />

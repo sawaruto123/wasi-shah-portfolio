@@ -11,6 +11,7 @@ interface SpatialCanvasProps {
   lightAngle?: number;
   darkMode?: boolean;
   bgOpacity?: number;
+  paused?: boolean;
   onReady?: () => void;
 }
 
@@ -155,9 +156,15 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
   onScrollProgress,
   darkMode = false,
   bgOpacity = 1,
+  paused = false,
   onReady,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const pausedRef = useRef(paused);
+
+  useEffect(() => {
+    pausedRef.current = paused;
+  }, [paused]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -457,6 +464,7 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
 
     const animate = () => {
       animId = requestAnimationFrame(animate);
+      if (pausedRef.current) return; // 暫停時（modal 開啟等）跳過渲染，省 GPU
       const elapsed = clock.getElapsedTime();
       const p = scrollProgress;
 
