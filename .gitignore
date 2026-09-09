@@ -13,3 +13,4 @@ supabase/.temp/
 .firecrawl-key
 shot-*.png
 *.docx
+*Resume*.html
