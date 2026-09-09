@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { RATIO_CLASS, POS_CLASS } from '../lib/aspect';
 
 interface SmartImageProps {
   src: string;
@@ -14,30 +15,11 @@ interface SmartImageProps {
   loading?: 'lazy' | 'eager';
 }
 
-const RATIO_CLASS: Record<string, string> = {
-  '16:9': 'aspect-video',
-  '9:16': 'aspect-[9/16]',
-  '4:3': 'aspect-[4/3]',
-  '3:4': 'aspect-[3/4]',
-  '1:1': 'aspect-square',
-};
-
-const POS_CLASS: Record<string, string> = {
-  'top-left': 'object-left-top',
-  top: 'object-top',
-  'top-right': 'object-right-top',
-  left: 'object-left',
-  center: 'object-center',
-  right: 'object-right',
-  'bottom-left': 'object-left-bottom',
-  bottom: 'object-bottom',
-  'bottom-right': 'object-right-bottom',
-};
-
 /**
- * 圖片 + 載入骨架：圖片尚未載入時顯示脈動佔位，載入完成淡入；失敗時顯示佔位文字。
- * - 卡片用法（不傳 ratio）：直接 absolute inset-0 填滿父容器，無裁切比例。
- * - 專案全螢幕用法（傳 ratio）：套用指定比例與焦點裁切。
+ * 圖片 + 載入骨架：
+ * - 未載入時顯示脈動佔位，載入完成淡入；失敗顯示佔位文字。
+ * - card 用法（不傳 ratio）→ absolute inset-0 填滿父容器。
+ * - 專案用法（傳 ratio='auto'）→ 先探測原圖方向，再套用 16:9 / 3:4，避免佈局跳動。
  */
 export const SmartImage: React.FC<SmartImageProps> = ({
   src,
@@ -52,6 +34,23 @@ export const SmartImage: React.FC<SmartImageProps> = ({
   const [error, setError] = useState(false);
   const [detected, setDetected] = useState('aspect-video');
 
+  // 載入時先探測原圖方向，讓骨架比例一開始就正確（避免 16:9 → 3:4 跳動）
+  useEffect(() => {
+    if (ratio !== 'auto' || !src) return;
+    let alive = true;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      if (alive && img.naturalWidth && img.naturalHeight) {
+        setDetected(img.naturalWidth >= img.naturalHeight ? 'aspect-video' : 'aspect-[3/4]');
+      }
+    };
+    img.src = src;
+    return () => {
+      alive = false;
+    };
+  }, [ratio, src]);
+
   const hasAspect = ratio !== undefined && ratio !== '' && ratio !== 'none';
   const aspectClass = hasAspect
     ? ratio === 'auto'
@@ -59,16 +58,6 @@ export const SmartImage: React.FC<SmartImageProps> = ({
       : RATIO_CLASS[ratio] ?? 'aspect-video'
     : '';
   const posClass = POS_CLASS[position] ?? 'object-center';
-
-  const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    if (ratio === 'auto') {
-      const img = e.currentTarget;
-      if (img.naturalWidth && img.naturalHeight) {
-        setDetected(img.naturalWidth >= img.naturalHeight ? 'aspect-video' : 'aspect-[3/4]');
-      }
-    }
-    setLoaded(true);
-  };
 
   return (
     <div className={`overflow-hidden bg-surface-container ${aspectClass} ${className}`}>
@@ -86,7 +75,7 @@ export const SmartImage: React.FC<SmartImageProps> = ({
           referrerPolicy="no-referrer"
           loading={loading}
           decoding="async"
-          onLoad={handleLoad}
+          onLoad={() => setLoaded(true)}
           onError={() => setError(true)}
           className={`transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'} ${posClass} ${imgClassName}`}
         />

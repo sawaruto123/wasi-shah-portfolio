@@ -1,4 +1,5 @@
 import React from 'react';
+import { getVideoEmbed } from '../lib/video';
 
 interface VideoPlayerProps {
   url: string;
@@ -10,14 +11,15 @@ interface VideoPlayerProps {
  * 智慧影片播放器：YouTube / Vimeo 用 iframe 嵌入，直接影片檔用 <video>。
  */
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({ url, className = '', title = 'Video' }) => {
-  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
-  const vimeo = url.match(/vimeo\.com\/(\d+)/);
+  const embed = getVideoEmbed(url);
 
-  if (yt) {
+  if (!embed) return null;
+
+  if (embed.type === 'youtube' || embed.type === 'vimeo') {
     return (
       <div className={`relative w-full aspect-video ${className}`}>
         <iframe
-          src={`https://www.youtube.com/embed/${yt[1]}`}
+          src={embed.src}
           className="absolute inset-0 w-full h-full"
           allow="autoplay; fullscreen; picture-in-picture"
           allowFullScreen
@@ -27,22 +29,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ url, className = '', t
     );
   }
 
-  if (vimeo) {
-    return (
-      <div className={`relative w-full aspect-video ${className}`}>
-        <iframe
-          src={`https://player.vimeo.com/video/${vimeo[1]}`}
-          className="absolute inset-0 w-full h-full"
-          allow="autoplay; fullscreen"
-          allowFullScreen
-          title={title}
-        />
-      </div>
-    );
-  }
-
   return (
-    <video src={url} controls preload="metadata" className={`w-full ${className}`}>
+    <video src={embed.src} controls preload="metadata" className={`w-full ${className}`}>
       Your browser does not support the video tag.
     </video>
   );

@@ -34,7 +34,6 @@ export const Modals: React.FC<ModalsProps> = ({
   onShowToast,
 }) => {
   const [dir, setDir] = useState(0);
-  const [imgIdx, setImgIdx] = useState(0);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
   // 目前開啟的列表與索引（關閉時為空，安全）
@@ -91,11 +90,6 @@ export const Modals: React.FC<ModalsProps> = ({
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   });
-
-  // 切換專案/照片時重設圖片索引
-  useEffect(() => {
-    setImgIdx(0);
-  }, [currentId]);
 
   // modal 開啟時鎖定背景捲動，避免背後的網站被捲走
   useEffect(() => {
@@ -297,116 +291,6 @@ export const Modals: React.FC<ModalsProps> = ({
           </div>
         )}
 
-        {/* Project Inspection Modal */}
-        {activeProject && (
-          <div key={currentId} className={`overflow-y-auto ${slideClass}`}>
-            <div className="relative w-full h-80 sm:h-96 bg-black">
-              <img
-                src={thumbUrl(projImages[imgIdx] ?? activeProject.image, 1600, 1000)}
-                alt={activeProject.title}
-                referrerPolicy="no-referrer"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute top-4 left-4 flex gap-2">
-                <span className="px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-primary font-mono text-xs font-bold uppercase border border-black/10">
-                  {activeProject.categoryBadge}
-                </span>
-                {activeProject.extraBadge && (
-                  <span className="px-3 py-1 rounded-full bg-accent-lime text-ink font-mono text-xs font-bold uppercase">
-                    {activeProject.extraBadge}
-                  </span>
-                )}
-              </div>
-              {projImages.length > 1 && (
-                <>
-                  <button
-                    onClick={() => setImgIdx((i) => (i - 1 + projImages.length) % projImages.length)}
-                    aria-label="Previous image"
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 text-white flex items-center justify-center cursor-pointer border-none hover:bg-black/70 transition-colors"
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => setImgIdx((i) => (i + 1) % projImages.length)}
-                    aria-label="Next image"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 text-white flex items-center justify-center cursor-pointer border-none hover:bg-black/70 transition-colors"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-                  <div className="absolute bottom-3 inset-x-0 flex justify-center gap-1.5">
-                    {projImages.map((_, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setImgIdx(i)}
-                        aria-label={`Image ${i + 1}`}
-                        className={`w-2 h-2 rounded-full cursor-pointer border-none transition-colors ${i === imgIdx ? 'bg-white' : 'bg-white/40'}`}
-                      />
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-
-            <div className="p-8">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-display text-3xl font-black uppercase text-ink">
-                  {activeProject.title}
-                </h3>
-                <span className="font-mono text-xs text-primary font-bold px-3 py-1 bg-primary/10 rounded-full">
-                  #{activeProject.expNumber}
-                </span>
-              </div>
-
-              <p className="font-body text-base text-ink leading-relaxed mb-4">
-                {activeProject.description}
-              </p>
-
-              {activeProject.detailedDescription && (
-                <div className="p-5 rounded-2xl bg-surface-warm border border-black/5 mb-6">
-                  <span className="font-mono text-xs uppercase text-primary font-bold block mb-2">
-                    Details
-                  </span>
-                  <p className="font-body text-sm text-ink-muted leading-relaxed">
-                    {activeProject.detailedDescription}
-                  </p>
-                </div>
-              )}
-
-              <div className="flex flex-wrap items-center gap-2 font-mono text-xs pt-4 border-t border-border-crisp">
-                {activeProject.tech.map((t) => (
-                  <span key={t} className="bg-surface-container text-ink px-3 py-1 rounded-lg">
-                    {t}
-                  </span>
-                ))}
-              </div>
-
-              {(activeProject.githubUrl || activeProject.websiteUrl) && (
-                <div className="flex flex-wrap gap-3 pt-4">
-                  {activeProject.websiteUrl && (
-                    <a
-                      href={activeProject.websiteUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-white font-mono text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity no-underline"
-                    >
-                      Visit site <ChevronRight className="w-3.5 h-3.5" />
-                    </a>
-                  )}
-                  {activeProject.githubUrl && (
-                    <a
-                      href={activeProject.githubUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-surface-container text-ink font-mono text-xs font-bold uppercase tracking-wider hover:bg-surface-container-high transition-colors no-underline"
-                    >
-                      GitHub <ChevronRight className="w-3.5 h-3.5" />
-                    </a>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
 
         {/* Film Player Modal */}
         {activeFilm && (

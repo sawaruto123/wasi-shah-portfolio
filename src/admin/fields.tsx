@@ -1,5 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { uploadImage, uploadVideo } from './helpers';
+import { RATIO_CLASS, POS_CLASS } from '../lib/aspect';
+import { getVideoEmbed } from '../lib/video';
 
 export const inputCls =
   'w-full px-3 py-2 rounded-lg border border-border-crisp bg-white text-sm text-ink focus:outline-none focus:ring-2 focus:ring-primary/40';
@@ -125,27 +127,6 @@ const POSITIONS = [
   { value: 'bottom', label: 'Bottom' },
   { value: 'bottom-right', label: 'Bottom right' },
 ];
-
-const RATIO_CLASS: Record<string, string> = {
-  auto: 'aspect-video',
-  '16:9': 'aspect-video',
-  '9:16': 'aspect-[9/16]',
-  '4:3': 'aspect-[4/3]',
-  '3:4': 'aspect-[3/4]',
-  '1:1': 'aspect-square',
-};
-
-const POS_CLASS: Record<string, string> = {
-  'top-left': 'object-left-top',
-  top: 'object-top',
-  'top-right': 'object-right-top',
-  left: 'object-left',
-  center: 'object-center',
-  right: 'object-right',
-  'bottom-left': 'object-left-bottom',
-  bottom: 'object-bottom',
-  'bottom-right': 'object-right-bottom',
-};
 
 export const MultiImageField: React.FC<{ value: ManagedImage[]; onChange: (v: ManagedImage[]) => void }> = ({
   value,
@@ -297,9 +278,6 @@ export const VideoField: React.FC<{ value: string; onChange: (url: string) => vo
     }
   };
 
-  const isYouTube = /youtube\.com|youtu\.be/.test(value);
-  const isVimeo = /vimeo\.com/.test(value);
-
   return (
     <div>
       <div className="flex gap-2">
@@ -318,23 +296,25 @@ export const VideoField: React.FC<{ value: string; onChange: (url: string) => vo
         </button>
         <input ref={fileRef} type="file" accept="video/*" className="hidden" onChange={handleFile} />
       </div>
-      {value && (
-        <div className="mt-2 max-w-md">
-          {isYouTube || isVimeo ? (
-            <iframe
-              src={isYouTube
-                ? `https://www.youtube.com/embed/${(value.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/) ?? [])[1] ?? ''}`
-                : `https://player.vimeo.com/video/${(value.match(/vimeo\.com\/(\d+)/) ?? [])[1] ?? ''}`}
-              className="w-full aspect-video rounded-lg border border-border-crisp"
-              allow="autoplay; fullscreen"
-              allowFullScreen
-              title="video preview"
-            />
-          ) : (
-            <video src={value} controls preload="metadata" className="w-full rounded-lg border border-border-crisp" />
-          )}
-        </div>
-      )}
+      {value && (() => {
+        const embed = getVideoEmbed(value);
+        if (!embed) return null;
+        return (
+          <div className="mt-2 max-w-md">
+            {embed.type === 'youtube' || embed.type === 'vimeo' ? (
+              <iframe
+                src={embed.src}
+                className="w-full aspect-video rounded-lg border border-border-crisp"
+                allow="autoplay; fullscreen"
+                allowFullScreen
+                title="video preview"
+              />
+            ) : (
+              <video src={embed.src} controls preload="metadata" className="w-full rounded-lg border border-border-crisp" />
+            )}
+          </div>
+        );
+      })()}
       {error && <p className="text-red-600 text-xs mt-1">{error}</p>}
     </div>
   );
