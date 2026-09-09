@@ -19,6 +19,20 @@ export function uploadImage(file: File): Promise<string> {
   return uploadBlob(file, ext);
 }
 
+/** Uploads a video file to the public Supabase Storage bucket, returns its public URL. */
+export async function uploadVideo(file: File): Promise<string> {
+  if (!supabase) throw new Error('Supabase is not configured');
+  const ext = file.name.split('.').pop() || 'mp4';
+  const name = `cms/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext.toLowerCase()}`;
+  const { error } = await supabase.storage.from('videos').upload(name, file, {
+    cacheControl: '3600',
+    upsert: false,
+  });
+  if (error) throw new Error(error.message);
+  const { data } = supabase.storage.from('videos').getPublicUrl(name);
+  return data.publicUrl;
+}
+
 /** Generates a URL-safe id from a title. */
 export function slugify(input: string): string {
   const base = input

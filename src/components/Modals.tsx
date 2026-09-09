@@ -4,6 +4,7 @@ import { Project, FilmRecord, StillCapture } from '../types';
 import { BeforeAfter } from './BeforeAfter';
 import { thumbUrl } from '../lib/image';
 import { SmartImage } from './SmartImage';
+import { VideoPlayer } from './VideoPlayer';
 
 interface ModalsProps {
   activeProject: Project | null;
@@ -178,6 +179,12 @@ export const Modals: React.FC<ModalsProps> = ({
                   <span className="font-mono text-xs text-ink-muted">{activeProject.tag}</span>
                 )}
               </div>
+
+              {activeProject.video && (
+                <div className="mb-6">
+                  <VideoPlayer url={activeProject.video} title={activeProject.title} />
+                </div>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start mb-6">
                 {projImages.map((img, i) => (
@@ -404,14 +411,27 @@ export const Modals: React.FC<ModalsProps> = ({
         {/* Film Player Modal */}
         {activeFilm && (
           <div key={currentId} className={`overflow-y-auto ${slideClass}`}>
-            <div className="relative w-full aspect-[16/9] bg-black flex items-center justify-center">
-              <img
-                src={thumbUrl(activeFilm.image, 1600, 900)}
-                alt={activeFilm.title}
-                referrerPolicy="no-referrer"
-                className="w-full h-full object-cover opacity-85"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40" />
+            <div className="relative bg-black">
+              {activeFilm.video ? (
+                <VideoPlayer url={activeFilm.video} title={activeFilm.title} />
+              ) : (
+                <div className="relative w-full aspect-[16/9] flex items-center justify-center">
+                  <img
+                    src={thumbUrl(activeFilm.image, 1600, 900)}
+                    alt={activeFilm.title}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover opacity-85"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40" />
+
+                  {/* Play Icon */}
+                  <div className="absolute flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center shadow-2xl">
+                      <Play className="w-8 h-8 fill-current ml-1" />
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="absolute top-4 left-4 flex gap-2">
                 <span className="px-3 py-1 rounded-full bg-white/90 backdrop-blur-md text-ink font-mono text-xs font-bold uppercase">
@@ -420,13 +440,6 @@ export const Modals: React.FC<ModalsProps> = ({
                 <span className="px-3 py-1 rounded-full bg-primary text-white font-mono text-xs font-bold uppercase">
                   {activeFilm.badge}
                 </span>
-              </div>
-
-              {/* Play Icon */}
-              <div className="absolute flex items-center justify-center">
-                <div className="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center shadow-2xl">
-                  <Play className="w-8 h-8 fill-current ml-1" />
-                </div>
               </div>
             </div>
 

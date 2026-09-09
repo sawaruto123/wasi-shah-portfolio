@@ -18,6 +18,7 @@ export interface Project {
   images?: string[];
   imageRatios?: string[];
   imagePositions?: string[];
+  video?: string;
   githubUrl?: string;
   websiteUrl?: string;
   colSpan: '8' | '4';
@@ -40,6 +41,7 @@ export interface FilmRecord {
   duration: string;
   badge: string;
   image: string;
+  video?: string;
   description: string;
   creditsRole: string;
   format: string;

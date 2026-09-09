@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useCollection } from './useCollection';
-import { Field, TextInput, TextArea, Toggle, ImageField, MultiImageField, Modal, Button, type ManagedImage } from './fields';
+import { Field, TextInput, TextArea, Toggle, ImageField, MultiImageField, VideoField, Modal, Button, type ManagedImage } from './fields';
 import { slugify } from './helpers';
 
 const CATEGORIES = ['ai', 'code', 'fintech'];
@@ -16,6 +16,7 @@ const empty = {
   extra_badge: '',
   image: '',
   images: [] as string[],
+  video: '',
   github_url: '',
   website_url: '',
   col_span: '4',
@@ -208,6 +209,10 @@ export const ProjectsManager: React.FC = () => {
 
             <Field label="More images (upload)">
               <MultiImageField value={imagesList} onChange={setImagesList} />
+            </Field>
+
+            <Field label="Demo video (upload / YouTube / Vimeo, optional)">
+              <VideoField value={editing.video ?? ''} onChange={(url) => setEditing({ ...editing, video: url })} />
             </Field>
 
             <div className="grid grid-cols-2 gap-4">

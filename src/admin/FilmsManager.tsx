@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useCollection } from './useCollection';
-import { Field, TextInput, TextArea, Toggle, ImageField, Modal, Button } from './fields';
+import { Field, TextInput, TextArea, Toggle, ImageField, VideoField, Modal, Button } from './fields';
 import { slugify } from './helpers';
 
 const empty = {
@@ -11,6 +11,7 @@ const empty = {
   duration: '',
   badge: '',
   image: '',
+  video: '',
   description: '',
   credits_role: '',
   format: '',
@@ -125,6 +126,9 @@ export const FilmsManager: React.FC = () => {
             </div>
             <Field label="Image">
               <ImageField value={editing.image} onChange={(url) => setEditing({ ...editing, image: url })} />
+            </Field>
+            <Field label="Video (upload or YouTube/Vimeo link)">
+              <VideoField value={editing.video ?? ''} onChange={(url) => setEditing({ ...editing, video: url })} />
             </Field>
             <Field label="Description">
               <TextArea

@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { uploadImage } from './helpers';
+import { uploadImage, uploadVideo } from './helpers';
 
 export const inputCls =
   'w-full px-3 py-2 rounded-lg border border-border-crisp bg-white text-sm text-ink focus:outline-none focus:ring-2 focus:ring-primary/40';
@@ -268,6 +268,73 @@ export const MultiImageField: React.FC<{ value: ManagedImage[]; onChange: (v: Ma
         className="hidden"
         onChange={handleFiles}
       />
+      {error && <p className="text-red-600 text-xs mt-1">{error}</p>}
+    </div>
+  );
+};
+
+export const VideoField: React.FC<{ value: string; onChange: (url: string) => void }> = ({
+  value,
+  onChange,
+}) => {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setError(null);
+    try {
+      const url = await uploadVideo(file);
+      onChange(url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Upload failed');
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  };
+
+  const isYouTube = /youtube\.com|youtu\.be/.test(value);
+  const isVimeo = /vimeo\.com/.test(value);
+
+  return (
+    <div>
+      <div className="flex gap-2">
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="https://… or upload a video"
+          className={inputCls}
+        />
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          className="px-3 py-2 rounded-lg border border-border-crisp bg-surface-warm text-xs font-bold uppercase whitespace-nowrap text-ink hover:bg-surface-container"
+        >
+          {uploading ? 'Uploading…' : 'Upload'}
+        </button>
+        <input ref={fileRef} type="file" accept="video/*" className="hidden" onChange={handleFile} />
+      </div>
+      {value && (
+        <div className="mt-2 max-w-md">
+          {isYouTube || isVimeo ? (
+            <iframe
+              src={isYouTube
+                ? `https://www.youtube.com/embed/${(value.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/) ?? [])[1] ?? ''}`
+                : `https://player.vimeo.com/video/${(value.match(/vimeo\.com\/(\d+)/) ?? [])[1] ?? ''}`}
+              className="w-full aspect-video rounded-lg border border-border-crisp"
+              allow="autoplay; fullscreen"
+              allowFullScreen
+              title="video preview"
+            />
+          ) : (
+            <video src={value} controls preload="metadata" className="w-full rounded-lg border border-border-crisp" />
+          )}
+        </div>
+      )}
       {error && <p className="text-red-600 text-xs mt-1">{error}</p>}
     </div>
   );
