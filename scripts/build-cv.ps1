@@ -4,19 +4,15 @@ $word.Visible = $false
 $doc = $word.Documents.Add()
 $sel = $word.Selection
 
-# ---- page: A4, margins ----
 $doc.PageSetup.PaperSize = 7
 $doc.PageSetup.TopMargin = 30
 $doc.PageSetup.BottomMargin = 30
 $doc.PageSetup.LeftMargin = 43
 $doc.PageSetup.RightMargin = 43
-$contentWidth = 595.276 - 86  # A4 width - margins
+$contentWidth = 595.276 - 86
 
-# ---- colors ----
-$blue = 11891758   # RGB(46,116,181) = #2E74B5
+$blue = 11891758   # RGB(46,116,181)
 $dark = 0
-
-# ---- special chars ----
 $em = [string][char]0x2014
 $en = [string][char]0x2013
 $bullet = [string][char]0x2022
@@ -35,10 +31,9 @@ function Line($text,$size,$bold,$italic,$color,$align,$after){
   $sel.TypeText($text); $sel.TypeParagraph()
 }
 function Section($text){
-  SetFont 13.5 $true $false $blue 'Calibri'
-  $sel.ParagraphFormat.Alignment=0; $sel.ParagraphFormat.SpaceBefore=8; $sel.ParagraphFormat.SpaceAfter=1
+  SetFont 13 $true $false $blue 'Calibri'
+  $sel.ParagraphFormat.Alignment=0; $sel.ParagraphFormat.SpaceBefore=7; $sel.ParagraphFormat.SpaceAfter=1
   $sel.TypeText($text); $sel.TypeParagraph()
-  # thin blue rule
   $sel.ParagraphFormat.Borders.Item(-3).LineStyle=1
   $sel.ParagraphFormat.Borders.Item(-3).LineWidth=4
   $sel.ParagraphFormat.Borders.Item(-3).Color=$blue
@@ -46,7 +41,7 @@ function Section($text){
 }
 function Entry($company,$role,$date,$duties){
   SetFont 10.5 $true $false $dark 'Calibri'
-  $sel.ParagraphFormat.Alignment=0; $sel.ParagraphFormat.SpaceBefore=6; $sel.ParagraphFormat.SpaceAfter=0
+  $sel.ParagraphFormat.Alignment=0; $sel.ParagraphFormat.SpaceBefore=5; $sel.ParagraphFormat.SpaceAfter=0
   $sel.ParagraphFormat.TabStops.Add($contentWidth,2)
   $sel.TypeText("$company`t$date"); $sel.TypeParagraph()
   SetFont 10.5 $false $true $dark 'Calibri'
@@ -61,9 +56,9 @@ function Bullet($text){
   $sel.ParagraphFormat.Alignment=0; $sel.ParagraphFormat.LeftIndent=16; $sel.ParagraphFormat.SpaceAfter=0
   $sel.TypeText("$bullet  "+$text); $sel.TypeParagraph()
 }
-function SkillGroup($text){  # blue subheading in skills
-  SetFont 11 $true $false $blue 'Calibri'
-  $sel.ParagraphFormat.Alignment=0; $sel.ParagraphFormat.SpaceBefore=6; $sel.ParagraphFormat.SpaceAfter=0
+function SkillGroup($text){
+  SetFont 10.5 $true $false $blue 'Calibri'
+  $sel.ParagraphFormat.Alignment=0; $sel.ParagraphFormat.SpaceBefore=5; $sel.ParagraphFormat.SpaceAfter=0
   $sel.TypeText($text); $sel.TypeParagraph()
 }
 function Skill($name,$desc){
@@ -77,98 +72,80 @@ function Skill($name,$desc){
 }
 function Proj($name,$desc){
   SetFont 10.5 $true $false $dark 'Calibri'
-  $sel.ParagraphFormat.Alignment=0; $sel.ParagraphFormat.SpaceBefore=5; $sel.ParagraphFormat.SpaceAfter=0
+  $sel.ParagraphFormat.Alignment=0; $sel.ParagraphFormat.SpaceBefore=4; $sel.ParagraphFormat.SpaceAfter=0
   $sel.TypeText($name); $sel.TypeParagraph()
   Bullet $desc
 }
 
 # ===================== HEADER =====================
 SetFont 19 $true $false $dark 'Calibri'
-$sel.ParagraphFormat.Alignment=1; $sel.ParagraphFormat.SpaceAfter=2
+$sel.ParagraphFormat.Alignment=1; $sel.ParagraphFormat.SpaceAfter=1
 $sel.TypeText("Syed Wasi Shah ($cn)"); $sel.TypeParagraph()
 
-# QR code
 $shape = $doc.InlineShapes.AddPicture("<home>\Downloads\image1.png")
-$shape.Height = 54; $shape.Width = 54
-$sel.ParagraphFormat.Alignment=1; $sel.ParagraphFormat.SpaceAfter=2
+$shape.Height = 44; $shape.Width = 44
+$sel.ParagraphFormat.Alignment=1; $sel.ParagraphFormat.SpaceAfter=1
 $sel.TypeParagraph()
 
 Line "+852 9899 2944  $dot  syedwasi983@gmail.com  $dot  wasi-shah-portfolio.vercel.app" 9 $false $false $dark 1 0
-Line "NATIVE-CANTONESE  $pipe  ENGLISH  $pipe  FILMMAKER  $pipe  MOTION DESIGNER  $pipe  GRAPHIC DESIGNER  $pipe  CREATIVE DEVELOPER" 8.5 $false $false $blue 1 6
-
-# thin rule under header (blue)
+Line "NATIVE-CANTONESE  $pipe  ENGLISH  $pipe  FILMMAKER  $pipe  MOTION DESIGNER  $pipe  GRAPHIC DESIGNER  $pipe  CREATIVE DEVELOPER" 8.5 $false $false $blue 1 5
 $sel.ParagraphFormat.Borders.Item(-3).LineStyle=1
 $sel.ParagraphFormat.Borders.Item(-3).LineWidth=6
 $sel.ParagraphFormat.Borders.Item(-3).Color=$blue
 
 # ===================== PROFILE =====================
 Section 'PROFILE'
-Line "A team player who is patient, creative and adaptable with experience in various extracurricular activities and projects. A self-disciplined and independent worker who believes in research-based methodology and aims to facilitate task execution efficiently." 10 $false $false $dark 0 2
-Line "A multidisciplinary creator telling stories for the digital world $em cutting films, designing brand systems, building interactive tools, and shipping real products." 10 $false $false $dark 0 2
+Line "A patient, creative and adaptable team player with experience across marketing, teaching, and creative production. A self-disciplined, research-based independent worker who ships real products $em from films and design systems to interactive tools." 10 $false $false $dark 0 2
 Line "Languages: Cantonese (Native) $dot English (Native) $dot Mandarin (Fluent)" 10 $false $false $dark 0 2
 
 # ===================== EXPERIENCE =====================
 Section 'WORK EXPERIENCE'
-Entry 'Seaman Paper Asia' 'Graphic Part Time Trainee' "June 2024 $en August 2024" @(
- 'Assist in handling day-to-day graphic design work as assigned by Senior Graphic Designer',
- 'Coordinate with various internal departments for marketing materials',
- 'Assist in marketing research',
- 'Assist in assessing ink coverage of TP products',
- 'Support ad hoc projects as required'
+Entry 'Behance Co Limited' 'Adobe Ambassador' "May 2025 $en Present" @(
+ 'Liaise between vendor and prospective students/parents; outreach via social media and events',
+ 'Create blogs, videos, workshop & instructional content; deliver workshops and presentations',
+ 'Plan and run online/offline events; build relationships with professionals and alumni'
 )
-Entry 'Virtual Academy International' 'Marketing Part Time & Teacher' "June 2024 $en Current" @(
- 'Research target markets',
- 'Plan and execute marketing campaigns',
- 'Manage social media accounts',
+Entry 'Virtual Academy International' 'Marketing Part Time & Teacher' "June 2024 $en Present" @(
+ 'Research target markets; plan and execute marketing campaigns; manage social media',
  'Deliver engaging online lessons, adapting content to diverse learning needs'
 )
 Entry 'moji Corporation Limited' 'Creative Intern (APAC)' "September 2024 $en July 2025" @(
- 'Collaborate with the creative team to develop innovative design concepts',
- 'Assist in creating visual content for digital marketing campaigns',
- 'Participate in brainstorming sessions for upcoming projects',
- 'Edit and retouch photos for promotional materials',
- 'Support the production of video content as needed'
+ 'Collaborate on design concepts and visual content for digital campaigns',
+ 'Edit and retouch photos; support video production; participate in brainstorming'
 )
-Entry 'Behance Co Limited' 'Adobe Ambassador' "May 2025 $en Current" @(
- 'Representation: Liaise between vendor and prospective students/parents',
- 'Outreach and Recruitment: Engage potential students via social media and events',
- 'Content Creation: Develop blogs, videos, and promotional materials',
- 'Workshop Content Creation: Design instructional materials and presentations',
- 'Workshop Teaching: Deliver content, encourage participation, and support students',
- 'Event Coordination: Plan and execute online/offline events',
- 'Networking: Build relationships with industry professionals and alumni'
+Entry 'Seaman Paper Asia' 'Graphic Part Time Trainee' "June 2024 $en August 2024" @(
+ 'Handle day-to-day graphic design; coordinate with departments for marketing materials',
+ 'Assist marketing research and assess product ink coverage; support ad hoc projects'
 )
 
 # ===================== PROFESSIONAL SKILLS =====================
 Section 'PROFESSIONAL SKILLS'
-SkillGroup 'Video Editing & Motion Graphics'
-Skill 'Adobe Premiere Pro (Mastery)' 'Comprehensive command of video editing, including advanced color grading, sound design, effects integration, and animation.'
-Skill 'Adobe After Effects (Mastery)' 'Expert proficiency in motion graphics, visual effects, compositing, and dynamic animation.'
-Skill 'Blender (Basic)' 'Fundamental 3D modeling, texturing, rigging, and animation for video and motion graphics integration.'
+SkillGroup 'Video & Motion'
+Skill 'Adobe Premiere Pro (Mastery)' 'Advanced editing, color grading, sound design, effects, and animation.'
+Skill 'Adobe After Effects (Mastery)' 'Motion graphics, compositing, and dynamic animation.'
+Skill 'Blender (Basic)' '3D modeling, texturing, rigging, and animation.'
 SkillGroup 'Graphic Design'
-Skill 'Adobe Photoshop (Proficiency)' 'Image editing, retouching, layer management, and digital asset creation.'
-Skill 'Adobe Illustrator (Proficiency)' 'Vector tools for logo design, typography, iconography, and scalable illustrations.'
+Skill 'Adobe Photoshop (Proficiency)' 'Image editing, retouching, and digital asset creation.'
+Skill 'Adobe Illustrator (Proficiency)' 'Logo design, typography, iconography, and vector illustration.'
 SkillGroup 'Web & Development'
-Skill 'JavaScript / TypeScript / React' 'Interactive web apps, including this Three.js portfolio and the Cash finance system.'
+Skill 'JavaScript / TypeScript / React / Three.js' 'Interactive web apps and 3D worlds.'
 Skill 'Supabase / Postgres / REST' 'Backend, RLS, edge functions, image & video optimization.'
-Skill 'Python' 'Data manipulation (Pandas, NumPy) and web development (Flask, Django).'
-Skill 'PowerShell / WPF / Godot' 'Desktop tools and a Godot platformer; HTML/CSS, Electron, MediaPipe.'
+Skill 'PowerShell / WPF / Godot / Python' 'Desktop tools, a Godot platformer, and automation.'
 SkillGroup 'AI & Automation'
-Skill 'ComfyUI / Midjourney / CrewAI' 'Custom Stable Diffusion workflows and agentic task orchestration.'
-SkillGroup 'Productivity & Collaboration'
-Skill 'MS Office & Google Suite' 'Document, spreadsheet, and presentation creation with consistent quality.'
+Skill 'ComfyUI / Midjourney / CrewAI' 'Custom Stable Diffusion workflows and agentic orchestration.'
+SkillGroup 'Productivity'
+Skill 'MS Office & Google Suite' 'Documents, spreadsheets, and presentations.'
 
 # ===================== SELECTED PROJECTS =====================
 Section 'SELECTED PROJECTS'
-Proj 'Face Overlay $em Real-time streaming overlay (Electron + MediaPipe)' 'Tracks facial landmarks in real time, drives an avatar, captured in OBS.'
-Proj 'Cash $em Personal finance system (React + TypeScript + Supabase)' 'User app + admin console; 6 tables, RLS, edge functions; HK MPF; bilingual UI.'
-Proj 'Gold Finder $em 2D platformer (Godot)' 'Hand-built platformer published on itch.io, exported to HTML5.'
-Proj 'Obsidian Tasks Widget & Expense Tracker (PowerShell + WPF)' 'Always-on-top task widget and markdown-based expense logger.'
-Proj 'Portfolio World $em this site (React + Three.js + Tailwind + Supabase)' 'Space-themed 3D world with CMS, security headers, and SEO.'
+Proj "Face Overlay $em streaming avatar (Electron + MediaPipe)" 'Real-time facial tracking that drives an avatar, captured in OBS.'
+Proj "Cash $em finance system (React + TypeScript + Supabase)" 'User app + admin console; RLS, edge functions, HK MPF, bilingual.'
+Proj "Gold Finder $em 2D platformer (Godot)" 'Published on itch.io, exported to HTML5.'
+Proj "Obsidian Tools & Portfolio World" 'PowerShell/WPF task widget & expense tracker; and this 3D site with CMS.'
 
 # ===================== EDUCATION =====================
 Section 'EDUCATION'
-Entry 'Hong Kong Metropolitan University' 'BSc Computer Science' "September 2024 $en Current" @(
+Entry 'Hong Kong Metropolitan University' 'BSc Computer Science' "September 2024 $en Present" @(
  'Coursework: Object-Oriented Programming (Java), Discrete Mathematics, Computer Architecture, Linear Algebra'
 )
 Entry 'Carmel Bunnan Tong Memorial Secondary School' 'Secondary Education' "September 2018 $en May 2024" @(
