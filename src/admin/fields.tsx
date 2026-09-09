@@ -89,12 +89,22 @@ export const ImageField: React.FC<{ value: string; onChange: (url: string) => vo
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
       </div>
       {value && (
-        <img
-          src={value}
-          alt="preview"
-          referrerPolicy="no-referrer"
-          className="mt-2 h-20 w-32 object-cover rounded-lg border border-border-crisp"
-        />
+        <div className="relative mt-2 inline-block">
+          <img
+            src={value}
+            alt="preview"
+            referrerPolicy="no-referrer"
+            className="h-20 w-32 object-cover rounded-lg border border-border-crisp"
+          />
+          <button
+            type="button"
+            onClick={() => onChange('')}
+            title="Remove image"
+            className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-black/70 text-white text-xs leading-none flex items-center justify-center cursor-pointer border-none hover:bg-red-600"
+          >
+            ✕
+          </button>
+        </div>
       )}
       {error && <p className="text-red-600 text-xs mt-1">{error}</p>}
     </div>
@@ -300,7 +310,7 @@ export const VideoField: React.FC<{ value: string; onChange: (url: string) => vo
         const embed = getVideoEmbed(value);
         if (!embed) return null;
         return (
-          <div className="mt-2 max-w-md">
+          <div className="relative mt-2 max-w-md">
             {embed.type === 'youtube' || embed.type === 'vimeo' ? (
               <iframe
                 src={embed.src}
@@ -312,6 +322,14 @@ export const VideoField: React.FC<{ value: string; onChange: (url: string) => vo
             ) : (
               <video src={embed.src} controls preload="metadata" className="w-full rounded-lg border border-border-crisp" />
             )}
+            <button
+              type="button"
+              onClick={() => onChange('')}
+              title="Remove video"
+              className="absolute top-1 right-1 z-10 w-6 h-6 rounded-full bg-black/70 text-white text-xs leading-none flex items-center justify-center cursor-pointer border-none hover:bg-red-600"
+            >
+              ✕
+            </button>
           </div>
         );
       })()}
