@@ -36,7 +36,11 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[120] bg-black/95 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[120] backdrop-blur-xl animate-fade-in"
+      style={{
+        background:
+          'radial-gradient(ellipse 120% 80% at 50% -10%, rgba(19,42,71,0.94) 0%, rgba(13,27,46,0.95) 55%, rgba(5,10,20,0.97) 100%)',
+      }}
       onClick={onClose}
     >
       {/* image fills the whole screen (tiny padding only) */}
@@ -46,7 +50,7 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
           src={thumbUrl(images[index], 2400)}
           alt={alt}
           referrerPolicy="no-referrer"
-          className="max-h-full max-w-full object-contain"
+          className="max-h-full max-w-full object-contain rounded-lg shadow-[0_20px_60px_rgba(0,0,0,0.6)]"
         />
       </div>
 
