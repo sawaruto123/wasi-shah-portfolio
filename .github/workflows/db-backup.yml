@@ -1,0 +1,41 @@
+name: Database backup
+
+# Automated Supabase Postgres backup (free tier has no PITR).
+# Runs weekly and can be triggered manually. The dump is kept as a
+# workflow artifact for 90 days — download it from the run page to restore.
+
+on:
+  schedule:
+    - cron: '0 3 * * 0' # Sundays, 03:00 UTC
+  workflow_dispatch:
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Dump database
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          STAMP="$(date -u +%Y-%m-%d)"
+          pg_dump \
+            -h aws-0-ap-southeast-1.pooler.supabase.com \
+            -p 5432 \
+            -U postgres.nkjvfhzfyfdybtynrzxa \
+            -d postgres \
+            --no-owner --no-privileges \
+            --format=custom \
+            -f "supabase-backup-${STAMP}.dump"
+          ls -lh supabase-backup-*.dump
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-backup
+          path: supabase-backup-*.dump
+          retention-days: 90
+          if-no-files-found: error
