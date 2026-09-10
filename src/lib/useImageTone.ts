@@ -1,44 +1,98 @@
 import { useEffect, useState } from 'react';
 
+type Tone = 'dark' | 'light';
+
 /**
  * 偵測圖片整體亮度 → 'dark'（圖偏暗，用亮字）或 'light'（圖偏亮，用暗字）。
- * 用小 canvas 取樣平均亮度。跨域圖片若無法讀取（taint），回退為 'dark'。
+ *
+ * 重點：`getImageData` 是同步的 GPU→CPU 回讀，會阻塞主執行緒（實測單張 ~20ms）。
+ * 專案卡片一多，進場時就會一次爆出上百毫秒的卡頓。所以這裡：
+ *   1. 結果依 URL 快取（同一張圖只算一次）
+ *   2. 一次只處理一張，並排在瀏覽器空檔（requestIdleCallback）
+ * 這樣即使第一次進站，也不會在捲動或房間進場時卡住。
  */
-export function useImageTone(src: string): 'dark' | 'light' {
-  const [tone, setTone] = useState<'dark' | 'light'>('dark');
+const cache = new Map<string, Tone>();
+const waiters = new Map<string, Set<(t: Tone) => void>>();
+const queue: string[] = [];
+let pumping = false;
+
+const idle = (fn: () => void) => {
+  const w = window as Window & {
+    requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+  };
+  if (typeof w.requestIdleCallback === 'function') w.requestIdleCallback(fn, { timeout: 900 });
+  else window.setTimeout(fn, 80);
+};
+
+function sample(src: string, done: (t: Tone) => void) {
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => {
+    let tone: Tone = 'dark';
+    try {
+      const c = document.createElement('canvas');
+      c.width = 24;
+      c.height = 24;
+      const ctx = c.getContext('2d', { willReadFrequently: true });
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, 24, 24);
+        const d = ctx.getImageData(0, 0, 24, 24).data;
+        let sum = 0;
+        for (let i = 0; i < d.length; i += 4) {
+          sum += 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
+        }
+        tone = sum / (d.length / 4) > 140 ? 'light' : 'dark';
+      }
+    } catch {
+      /* 跨域 taint → 保持 dark */
+    }
+    done(tone);
+  };
+  img.onerror = () => done('dark');
+  img.src = src;
+}
+
+function pump() {
+  if (pumping) return;
+  const next = queue.shift();
+  if (!next) return;
+  pumping = true;
+  sample(next, (tone) => {
+    cache.set(next, tone);
+    waiters.get(next)?.forEach((fn) => fn(tone));
+    waiters.delete(next);
+    pumping = false;
+    idle(pump); // 讓出一個空檔再處理下一張，避免連續回讀擠在一起
+  });
+}
+
+export function useImageTone(src: string): Tone {
+  const [tone, setTone] = useState<Tone>(() => (src ? cache.get(src) ?? 'dark' : 'dark'));
 
   useEffect(() => {
     if (!src) return;
+    const hit = cache.get(src);
+    if (hit) {
+      setTone(hit);
+      return;
+    }
     let alive = true;
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      if (!alive) return;
-      try {
-        const c = document.createElement('canvas');
-        const w = 24;
-        const h = 24;
-        c.width = w;
-        c.height = h;
-        const ctx = c.getContext('2d', { willReadFrequently: true });
-        if (!ctx) return;
-        ctx.drawImage(img, 0, 0, w, h);
-        const data = ctx.getImageData(0, 0, w, h).data;
-        let sum = 0;
-        let count = 0;
-        for (let i = 0; i < data.length; i += 4) {
-          sum += 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2];
-          count++;
-        }
-        const avg = sum / count;
-        setTone(avg > 140 ? 'light' : 'dark');
-      } catch {
-        /* cross-origin taint → keep 'dark' */
-      }
+    const cb = (t: Tone) => {
+      if (alive) setTone(t);
     };
-    img.src = src;
+    let set = waiters.get(src);
+    if (!set) {
+      set = new Set();
+      waiters.set(src, set);
+    }
+    set.add(cb);
+    if (!queue.includes(src)) {
+      queue.push(src);
+      idle(pump);
+    }
     return () => {
       alive = false;
+      set!.delete(cb);
     };
   }, [src]);
 

@@ -20,7 +20,15 @@ export function prefetchImages(urls: string[], concurrency = 4): () => void {
         active--;
         pump();
       };
-      img.onload = done;
+      // 先解碼，不只是下載。否則第一次繪製時才在主執行緒解碼，
+      // 進到該房間的瞬間就會卡（實測原生解碼佔了 1.7 秒）。
+      img.onload = () => {
+        if (typeof img.decode === 'function') {
+          img.decode().catch(() => {}).then(done, done);
+        } else {
+          done();
+        }
+      };
       img.onerror = done;
       img.src = url;
     }

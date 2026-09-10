@@ -208,7 +208,8 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     composer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     composer.setSize(width, height);
     composer.addPass(new RenderPass(scene, camera));
-    composer.addPass(new UnrealBloomPass(new THREE.Vector2(width, height), dark ? 0.38 : 0.32, 0.6, dark ? 0.78 : 0.85));
+    const bloomPass = new UnrealBloomPass(new THREE.Vector2(width, height), dark ? 0.38 : 0.32, 0.6, dark ? 0.78 : 0.85);
+    composer.addPass(bloomPass);
     composer.addPass(new OutputPass());
 
     // 主光（黑洞背光）
@@ -427,12 +428,18 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     let scrollProgress = 0;
     let scrollRaf = 0;
     let roomScrollEl: HTMLElement | null = null;
+    // 捲動中旗標：讓 3D 暫時讓出 GPU（見 animate）
+    let scrolling = false;
+    let scrollIdleTimer = 0;
     const isActiveRoom = (el: HTMLElement) => {
       const wrapper = el.parentElement?.parentElement;
       return !!wrapper && wrapper.classList.contains('opacity-100');
     };
     const readScroll = () => {
       scrollRaf = 0;
+      scrolling = true;
+      window.clearTimeout(scrollIdleTimer);
+      scrollIdleTimer = window.setTimeout(() => { scrolling = false; }, 180);
       const total = document.documentElement.scrollHeight - window.innerHeight;
       const roomProgress = total > 0 ? Math.min(Math.max(window.scrollY / total, 0), 1) : 0;
 
@@ -475,11 +482,23 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     const clock = new THREE.Clock();
     let animId: number;
     let readyFired = false;
+    let skipNextFrame = false;
     const tmpVec = new THREE.Vector3();
 
     const animate = () => {
       animId = requestAnimationFrame(animate);
       if (pausedRef.current) return; // 暫停時（modal 開啟等）跳過渲染，省 GPU
+
+      // 捲動中：關掉 bloom 並隔 frame 渲染，把 GPU 讓給內容捲動。
+      // 實測瓶頸在 GPU（主執行緒 idle），這是捲動卡頓的主因。
+      if (scrolling) {
+        if (bloomPass.enabled) bloomPass.enabled = false;
+        skipNextFrame = !skipNextFrame;
+        if (skipNextFrame) return;
+      } else if (!bloomPass.enabled) {
+        bloomPass.enabled = true;
+      }
+
       const elapsed = clock.getElapsedTime();
       const p = scrollProgress;
 
@@ -551,6 +570,7 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     return () => {
       cancelAnimationFrame(animId);
       cancelAnimationFrame(scrollRaf);
+      window.clearTimeout(scrollIdleTimer);
       if (hasFinePointer) window.removeEventListener('mousemove', handleMouseMove);
       else window.removeEventListener('deviceorientation', handleOrientation);
       window.removeEventListener('click', handleClick);
