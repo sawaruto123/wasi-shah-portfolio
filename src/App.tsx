@@ -20,6 +20,8 @@ import { OnboardingGuide } from './components/OnboardingGuide';
 import { useTheme } from './lib/theme';
 import { useBgOpacity } from './lib/bgOpacity';
 import { useContent } from './lib/content';
+import { prefetchImages } from './lib/prefetch';
+import { thumbUrl } from './lib/image';
 import { Eye, EyeOff, ArrowLeft, ArrowRight, Sun } from 'lucide-react';
 
 const ROOM_COUNT = ROOMS.length;
@@ -65,6 +67,17 @@ export default function App() {
   useEffect(() => {
     document.documentElement.style.setProperty('--light-angle', `${lightAngle}deg`);
   }, [lightAngle]);
+
+  // 背景預抓重點房間（Films / Archive）的圖片，利用載入畫面或其他分頁的空檔先下載，
+  // 等使用者滑到該房間時就已經快取好，不會邊捲邊等。
+  useEffect(() => {
+    const urls = [
+      ...films.map((f) => thumbUrl(f.image, 720, 405)),
+      ...stills.map((s) => thumbUrl(s.image, 300, 300)),
+      ...projects.map((p) => thumbUrl(p.image, 700, 450)),
+    ];
+    return prefetchImages(urls, 4);
+  }, [films, stills, projects]);
 
   // 載入完成判定：字體 + 3D 世界都就緒，且至少展示 1.2 秒
   const tryFinish = useCallback(() => {
