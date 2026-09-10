@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+
+Sitemap: https://wasi-shah-portfolio.vercel.app/sitemap.xml
 
 # LLM crawlers are welcome — see /llms.txt
