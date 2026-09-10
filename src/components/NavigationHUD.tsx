@@ -24,6 +24,7 @@ export const NavigationHUD: React.FC<NavigationHUDProps> = ({
         {/* Brand Wordmark & Monogram */}
         <button
           onClick={() => onNavigate('room-nexus')}
+          data-tour="brand"
           className="flex items-center gap-2.5 shrink-0 group text-left cursor-pointer bg-transparent border-none p-0"
         >
           <div className="w-9 h-9 rounded-xl overflow-hidden bg-ink text-white flex items-center justify-center font-mono font-bold text-xs tracking-wider group-hover:bg-primary transition-colors">
@@ -54,7 +55,7 @@ export const NavigationHUD: React.FC<NavigationHUDProps> = ({
         </div>
 
         {/* Quick Navigation Links */}
-        <nav className="hidden md:flex items-center gap-1 font-mono text-xs font-semibold uppercase text-ink-muted">
+        <nav data-tour="hud-nav" className="hidden md:flex items-center gap-1 font-mono text-xs font-semibold uppercase text-ink-muted">
           <button
             onClick={() => onNavigate('room-nexus')}
             className={`px-3 py-1.5 rounded-xl transition-colors cursor-pointer ${
@@ -109,10 +110,11 @@ export const NavigationHUD: React.FC<NavigationHUDProps> = ({
 
         {/* Action Button */}
         <div className="flex items-center gap-2 shrink-0">
-          <BgOpacityControl />
-          <ThemeToggle />
+          <div data-tour="bg" className="flex"><BgOpacityControl /></div>
+          <div data-tour="theme" className="flex"><ThemeToggle /></div>
           <button
             onClick={() => onNavigate('room-dispatch')}
+            data-tour="connect"
             className="group inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 rounded-xl bg-primary text-white font-mono text-xs font-bold uppercase tracking-wider whitespace-nowrap shadow-[0_4px_16px_rgba(0,71,255,0.3)] hover:bg-ink hover:shadow-none hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border-none"
           >
             <span>Connect</span>

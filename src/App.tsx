@@ -373,6 +373,7 @@ export default function App() {
       {/* 只顯示 3D 世界的開關 */}
       <button
         onClick={() => setWorldOnly((v) => !v)}
+        data-tour="world"
         className="fixed bottom-5 right-5 z-50 hidden md:inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-ink text-white font-mono text-xs font-bold uppercase tracking-wider shadow-lg hover:bg-primary transition-colors cursor-pointer border-none"
         title={worldOnly ? '回到網站' : '只顯示 3D 世界'}
       >
@@ -385,6 +386,7 @@ export default function App() {
         onClick={() => scrollToRoom(activeIndex - 1)}
         disabled={activeIndex <= 0}
         aria-label="上一段"
+        data-tour="arrow-prev"
         className="fixed left-4 top-1/2 -translate-y-1/2 z-40 w-11 h-11 rounded-full bg-white/85 backdrop-blur-md border border-border-crisp shadow-lg text-ink hover:bg-primary hover:text-white transition-colors cursor-pointer border-none flex items-center justify-center disabled:opacity-30 disabled:cursor-default"
       >
         <ArrowLeft className="w-5 h-5" />
@@ -393,6 +395,7 @@ export default function App() {
         onClick={() => scrollToRoom(activeIndex + 1)}
         disabled={activeIndex >= ROOM_COUNT - 1}
         aria-label="下一段"
+        data-tour="arrow-next"
         className="fixed right-4 top-1/2 -translate-y-1/2 z-40 w-11 h-11 rounded-full bg-white/85 backdrop-blur-md border border-border-crisp shadow-lg text-ink hover:bg-primary hover:text-white transition-colors cursor-pointer border-none flex items-center justify-center disabled:opacity-30 disabled:cursor-default"
       >
         <ArrowRight className="w-5 h-5" />
@@ -401,6 +404,7 @@ export default function App() {
       {/* 光線方向（360° 旋鈕） */}
       <div
         ref={dialRef}
+        data-tour="dial"
         className="fixed bottom-5 left-5 z-40 hidden md:block w-14 h-14 rounded-full bg-white/85 backdrop-blur-md border border-border-crisp shadow-lg cursor-grab select-none touch-none"
         onPointerDown={(e) => {
           draggingRef.current = true;
@@ -420,6 +424,7 @@ export default function App() {
 
       {/* 手機底部導覽列：點擊直接切換房間（最可靠的到達方式） */}
       <nav
+        data-tour="bottom-nav"
         className="fixed bottom-0 inset-x-0 z-40 md:hidden flex items-stretch bg-white/90 border-t border-border-crisp shadow-[0_-4px_20px_rgba(0,0,0,0.10)]"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
@@ -456,7 +461,7 @@ export default function App() {
       />
       <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
       <CookieConsent />
-      <OnboardingGuide />
+      <OnboardingGuide onTravel={scrollToRoom} />
 
       {/* 載入畫面 */}
       <div

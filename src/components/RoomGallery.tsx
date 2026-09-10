@@ -17,6 +17,7 @@ const ProjectCard: React.FC<{ project: Project; onSelect: () => void }> = ({ pro
   return (
     <article
       onClick={onSelect}
+      data-tour="card"
       className="group relative rounded-3xl overflow-hidden spatial-card cursor-pointer"
     >
       <div className="relative w-full h-64 overflow-hidden">
