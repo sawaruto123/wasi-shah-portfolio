@@ -199,10 +199,9 @@ export const DEFAULT_SETTINGS: SiteSettings = {
     whatsapp: '85298992944',
     location: 'Hong Kong SAR · HKT (UTC+8)',
     socials: [
-      { name: 'GitHub', url: 'https://github.com' },
-      { name: 'LinkedIn', url: 'https://linkedin.com' },
-      { name: 'Vimeo', url: 'https://vimeo.com' },
-      { name: 'Instagram', url: 'https://instagram.com' },
+      { name: 'GitHub', url: 'https://github.com/sawaruto123' },
+      { name: 'LinkedIn', url: 'https://www.linkedin.com/in/wasi-syed-2b1a9630b' },
+      { name: 'Instagram', url: 'https://www.instagram.com/motioncraft_hodr' },
     ],
   },
   hero: {
