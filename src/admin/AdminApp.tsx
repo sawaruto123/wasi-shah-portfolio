@@ -5,6 +5,7 @@ import { ProjectsManager } from './ProjectsManager';
 import { FilmsManager } from './FilmsManager';
 import { StillsManager } from './StillsManager';
 import { PhotoEventsManager } from './PhotoEventsManager';
+import { ErrorsManager } from './ErrorsManager';
 import { EngagementsManager } from './EngagementsManager';
 import { SettingsManager } from './SettingsManager';
 import { MessagesManager } from './MessagesManager';
@@ -12,7 +13,7 @@ import { ThemeToggle } from '../lib/theme';
 import { Field, TextInput, Button } from './fields';
 import { Eye, EyeOff } from 'lucide-react';
 
-type Tab = 'messages' | 'projects' | 'films' | 'stills' | 'photoEvents' | 'engagements' | 'settings';
+type Tab = 'messages' | 'projects' | 'films' | 'stills' | 'photoEvents' | 'engagements' | 'settings' | 'errors';
 
 const TABS: Array<{ id: Tab; label: string }> = [
   { id: 'messages', label: 'Messages' },
@@ -22,6 +23,7 @@ const TABS: Array<{ id: Tab; label: string }> = [
   { id: 'photoEvents', label: 'Photo Events' },
   { id: 'engagements', label: 'Engagements' },
   { id: 'settings', label: 'Settings' },
+  { id: 'errors', label: 'Errors' },
 ];
 
 export const AdminApp: React.FC = () => {
@@ -134,6 +136,7 @@ export const AdminApp: React.FC = () => {
           {tab === 'photoEvents' && <PhotoEventsManager />}
           {tab === 'engagements' && <EngagementsManager />}
           {tab === 'settings' && <SettingsManager />}
+          {tab === 'errors' && <ErrorsManager />}
         </div>
       </main>
     </div>

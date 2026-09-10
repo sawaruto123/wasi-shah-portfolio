@@ -21,11 +21,15 @@ Date: 2026 · Method: `vibe-code-check` skill (investigate → report → fix �
 | 12 | Deps | Hallucinated packages | **PASS** — react, three, lucide-react, tailwind only |
 | 13 | Completeness | Real backend end-to-end (contact, CMS CRUD, media upload) | **PASS** — ImageKit upload verified live (200 + CDN URL) |
 
+## Monitoring & backups (now set up)
+
+- **Database backups** — `.github/workflows/db-backup.yml` runs `pg_dump` (version-matched `postgres:17` client) **weekly**, plus a manual trigger, and stores the dump as a **90-day artifact**. Secret: `SUPABASE_DB_PASSWORD`. Verified: run `34447064288` succeeded (244 KB dump).
+- **Error observability** — uncaught errors, unhandled promise rejections, and React crashes are written to the Supabase **`client_errors`** table (RLS: public insert, admin read) and viewable in the CMS → **Errors** tab.
+
 ## Left for a human (can't be done from code)
 
-1. **Database backups** — Supabase **free tier has no automated backups/PITR**. Either upgrade to Pro (7-day PITR) or run a scheduled `pg_dump` export. *Risk: total data loss on a bad migration.*
-2. **Error observability** — errors currently go to `console.error` only (no aggregation). Consider a free Sentry project or a Vercel log drain if you want to see runtime errors.
-3. **ImageKit upload testing** — verify a real upload through the **live** CMS (`/admin`) once, since local `vite dev` can't run `/api/upload`.
+1. **Verify a real upload** through the **live** CMS (`/admin` → any image field) once — local `vite dev` can't run `/api/upload`.
+2. **(Optional) Backup retention** — Actions artifacts expire after 90 days. For longer/off-site retention, add another destination (private repo or storage bucket).
 
 ## Notes
 - New third parties in the stack: **ImageKit** (media CDN), **YouTube/Vimeo** (video embeds) — reflected in `/privacy`.

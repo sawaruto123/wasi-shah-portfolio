@@ -5,7 +5,12 @@ import { ContentProvider } from './lib/content.tsx';
 import { NotFound } from './components/NotFound.tsx';
 import { PrivacyPolicy } from './components/PrivacyPolicy.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
+import { reportError } from './lib/errorLog';
 import './index.css';
+
+// Capture uncaught errors so they land in the client_errors table, not just the console.
+window.addEventListener('error', (e) => reportError(e.error ?? e.message, 'window'));
+window.addEventListener('unhandledrejection', (e) => reportError((e as PromiseRejectionEvent).reason, 'promise'));
 
 // 只有到 /admin 才載入 CMS 的程式碼（大幅縮小首頁 bundle）
 const AdminApp = lazy(() =>
