@@ -2,11 +2,13 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { SlidersHorizontal } from 'lucide-react';
 
 const STORAGE_KEY = 'ws-bg-opacity';
+/** 預設背景不透明度（3D 世界預設透出 75%） */
+export const DEFAULT_BG_OPACITY = 0.75;
 
-let current = 0.75;
+let current = DEFAULT_BG_OPACITY;
 try {
   const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) current = Math.min(1, Math.max(0.2, parseFloat(saved) || 0.75));
+  if (saved) current = Math.min(1, Math.max(0.2, parseFloat(saved) || DEFAULT_BG_OPACITY));
 } catch { /* ignore */ }
 
 const listeners = new Set<(v: number) => void>();
@@ -70,10 +72,10 @@ export const BgOpacityControl: React.FC = () => {
             style={{ ['--fill' as any]: `${((bgOpacity - 0.2) / 0.8) * 100}%` }}
           />
           <button
-            onClick={() => setBgOpacity(1)}
+            onClick={() => setBgOpacity(DEFAULT_BG_OPACITY)}
             className="mt-2 w-full px-2 py-1.5 rounded-lg bg-surface-warm text-ink font-mono text-[10px] font-bold uppercase tracking-wider hover:bg-surface-container transition-colors cursor-pointer border-none"
           >
-            Reset 100%
+            Reset {Math.round(DEFAULT_BG_OPACITY * 100)}%
           </button>
         </div>
       )}

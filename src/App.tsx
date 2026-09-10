@@ -35,6 +35,10 @@ export default function App() {
   const zRef = useRef<HTMLSpanElement | null>(null);  const [warpKey, setWarpKey] = useState<number>(0);
   const [worldOnly, setWorldOnly] = useState<boolean>(false);
   const [lightAngle, setLightAngle] = useState<number>(135);
+  // 導覽是否已結束：結束後才顯示 cookie 橫幅，避免兩個浮層互相擋住點擊
+  const [tourDone, setTourDone] = useState<boolean>(() => {
+    try { return !!localStorage.getItem('ws-onboarded'); } catch { return true; }
+  });
   const [loading, setLoading] = useState<boolean>(true);
 
   // Modal & toast state
@@ -460,8 +464,8 @@ export default function App() {
         onShowToast={showToast}
       />
       <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
-      <CookieConsent />
-      <OnboardingGuide onTravel={scrollToRoom} />
+      <OnboardingGuide onTravel={scrollToRoom} onDone={() => setTourDone(true)} />
+      {tourDone && <CookieConsent />}
 
       {/* 載入畫面 */}
       <div

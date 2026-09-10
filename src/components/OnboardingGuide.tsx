@@ -58,7 +58,7 @@ const PC_STEPS: Step[] = [
   {
     target: '[data-tour="dial"]',
     room: 2,
-    place: 'right',
+    place: 'top',
     icon: <Sun className="w-5 h-5" />,
     title: 'Aim the light',
     desc: 'Drag this dial around to move the ambient light through the scene — the cards catch it as it turns.',
@@ -88,6 +88,7 @@ const PC_STEPS: Step[] = [
     desc: 'The Connect button takes you to the contact room — or you can click anywhere in the world to send a ripple through space.',
   },
   {
+    room: 0,
     icon: <Layers className="w-5 h-5" />,
     title: "You're all set",
     desc: 'That’s the full tour. Everything else is self-explanatory — go explore, and try clicking the stars.',
@@ -133,6 +134,7 @@ const MOBILE_STEPS: Step[] = [
     desc: 'Tap a card to open it, then swipe left / right to flip through the images.',
   },
   {
+    room: 0,
     icon: <Layers className="w-5 h-5" />,
     title: "You're all set",
     desc: 'That’s the tour. Swipe up and down to travel, and tap the world to make ripples.',
@@ -141,14 +143,19 @@ const MOBILE_STEPS: Step[] = [
 
 interface OnboardingGuideProps {
   onTravel?: (roomIndex: number) => void;
+  /** Called once the tour finishes or is skipped, so the cookie banner can run after it. */
+  onDone?: () => void;
 }
 
-export const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ onTravel }) => {
+export const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ onTravel, onDone }) => {
   const [visible, setVisible] = useState(false);
   const [step, setStep] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const rectKeyRef = useRef('');
+  const tipRef = useRef<HTMLDivElement>(null);
+  const [tipH, setTipH] = useState(190);
+  const tipHRef = useRef(190);
 
   useEffect(() => {
     try {
@@ -163,7 +170,9 @@ export const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ onTravel }) =>
 
   const finish = () => {
     try { localStorage.setItem(STORAGE_KEY, '1'); } catch { /* ignore */ }
+    onTravel?.(0); // 導覽結束一律回到首頁（World 房間）
     setVisible(false);
+    onDone?.();
   };
   const next = () => (step >= steps.length - 1 ? finish() : setStep(step + 1));
   const prev = () => setStep((s) => Math.max(0, s - 1));
@@ -194,6 +203,15 @@ export const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ onTravel }) =>
       if (key !== rectKeyRef.current) {
         rectKeyRef.current = key;
         setRect(r);
+      }
+      // 量一下卡片實際高度，才能在畫面內夾住位置
+      const t = tipRef.current;
+      if (t) {
+        const h = t.offsetHeight;
+        if (h && h !== tipHRef.current) {
+          tipHRef.current = h;
+          setTipH(h);
+        }
       }
       raf = requestAnimationFrame(tick);
     };
@@ -227,19 +245,27 @@ export const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ onTravel }) =>
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const TW = Math.min(340, vw - 24);
+  const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+
   let tipStyle: React.CSSProperties = { left: '50%', top: '50%', transform: 'translate(-50%,-50%)' };
   if (rect) {
     const place = current.place || 'bottom';
-    const cx = Math.max(12, Math.min(vw - TW - 12, rect.left + rect.width / 2 - TW / 2));
+    let left = clamp(rect.left + rect.width / 2 - TW / 2, 12, Math.max(12, vw - TW - 12));
+    let top = rect.bottom + 16;
     if (place === 'top') {
-      tipStyle = { left: cx, top: Math.max(12, rect.top - 16), transform: 'translateY(-100%)' };
+      top = rect.top - 16 - tipH;
     } else if (place === 'left') {
-      tipStyle = { left: Math.max(12, rect.left - 16), top: rect.top + rect.height / 2, transform: 'translate(-100%,-50%)' };
+      left = rect.left - 16 - TW;
+      top = rect.top + rect.height / 2 - tipH / 2;
     } else if (place === 'right') {
-      tipStyle = { left: Math.min(vw - TW - 12, rect.right + 16), top: rect.top + rect.height / 2, transform: 'translateY(-50%)' };
-    } else {
-      tipStyle = { left: cx, top: Math.min(vh - 210, rect.bottom + 16) };
+      left = rect.right + 16;
+      top = rect.top + rect.height / 2 - tipH / 2;
     }
+    // 一律夾在畫面內：否則靠邊的元素會把卡片（連 Next 按鈕）推出畫面而點不到
+    tipStyle = {
+      left: clamp(left, 12, Math.max(12, vw - TW - 12)),
+      top: clamp(top, 12, Math.max(12, vh - tipH - 12)),
+    };
   }
 
   return (
@@ -267,6 +293,7 @@ export const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ onTravel }) =>
       {/* 說明卡 */}
       <div className="fixed z-[96]" style={tipStyle}>
         <div
+          ref={tipRef}
           className="glass-card rounded-2xl border border-border-crisp shadow-2xl p-5 modal-enter"
           style={{ width: TW }}
         >
