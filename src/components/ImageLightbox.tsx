@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { thumbUrl } from '../lib/image';
 
@@ -34,7 +35,7 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
     return () => window.removeEventListener('keydown', onKey);
   });
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-[120] backdrop-blur-xl animate-fade-in"
       style={{
@@ -101,6 +102,7 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
           {index + 1} / {n}
         </span>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
