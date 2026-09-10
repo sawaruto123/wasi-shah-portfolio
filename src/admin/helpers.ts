@@ -1,16 +1,27 @@
-// CMS media uploads now go to ImageKit (free tier, no card) via /api/upload.
-// The ImageKit private key stays on the server (Vercel function).
+import { supabase } from '../lib/supabase';
+
+// CMS media uploads go to ImageKit (free tier, no card) via /api/upload.
+// The ImageKit private key stays on the server (Vercel function); the caller
+// must be an authenticated Supabase user (the admin).
 
 /** Uploads a blob to ImageKit through the /api/upload function; returns its public URL. */
 export async function uploadBlob(blob: Blob, ext: string): Promise<string> {
   const name = `asset-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext.toLowerCase()}`;
-  const res = await fetch('/api/upload', {
-    method: 'POST',
-    headers: { 'x-file-name': name },
-    body: blob,
-  });
+
+  let token: string | undefined;
+  try {
+    const { data } = (await supabase?.auth.getSession()) ?? { data: { session: null } };
+    token = data.session?.access_token;
+  } catch {
+    /* not signed in */
+  }
+
+  const headers: Record<string, string> = { 'x-file-name': name };
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const res = await fetch('/api/upload', { method: 'POST', headers, body: blob });
   if (!res.ok) {
-    let msg = 'Upload failed';
+    let msg = res.status === 401 ? 'Sign in required to upload' : 'Upload failed';
     try {
       const e = await res.json();
       msg = e.error || msg;

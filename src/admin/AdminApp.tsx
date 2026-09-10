@@ -10,6 +10,7 @@ import { SettingsManager } from './SettingsManager';
 import { MessagesManager } from './MessagesManager';
 import { ThemeToggle } from '../lib/theme';
 import { Field, TextInput, Button } from './fields';
+import { Eye, EyeOff } from 'lucide-react';
 
 type Tab = 'messages' | 'projects' | 'films' | 'stills' | 'photoEvents' | 'engagements' | 'settings';
 
@@ -142,6 +143,7 @@ export const AdminApp: React.FC = () => {
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -178,14 +180,25 @@ function Login() {
             />
           </Field>
           <Field label="Password">
-            <TextInput
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              autoComplete="current-password"
-              required
-            />
+            <div className="relative">
+              <TextInput
+                type={showPw ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                autoComplete="current-password"
+                required
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPw((v) => !v)}
+                aria-label={showPw ? 'Hide password' : 'Show password'}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-ink-muted hover:text-ink cursor-pointer border-none bg-transparent"
+              >
+                {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </Field>
         </div>
 
