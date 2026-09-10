@@ -13,29 +13,28 @@ jobs:
   dump:
     runs-on: ubuntu-latest
     steps:
-      - name: Install PostgreSQL client
-        run: sudo apt-get update && sudo apt-get install -y postgresql-client
-
+      # Use the postgres:17 image so the client version matches the server
+      # (Supabase runs Postgres 17; the runner's default pg_dump 16 refuses).
       - name: Dump database
         env:
           PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: |
           set -euo pipefail
-          STAMP="$(date -u +%Y-%m-%d)"
-          pg_dump \
-            -h aws-0-ap-southeast-1.pooler.supabase.com \
-            -p 5432 \
-            -U postgres.nkjvfhzfyfdybtynrzxa \
-            -d postgres \
-            --no-owner --no-privileges \
-            --format=custom \
-            -f "supabase-backup-${STAMP}.dump"
-          ls -lh supabase-backup-*.dump
+          docker run --rm -e PGPASSWORD -v "$PWD:/out" postgres:17 \
+            pg_dump \
+              -h aws-0-ap-southeast-1.pooler.supabase.com \
+              -p 5432 \
+              -U postgres.nkjvfhzfyfdybtynrzxa \
+              -d postgres \
+              --no-owner --no-privileges \
+              --format=custom \
+              -f /out/supabase-backup.dump
+          ls -lh supabase-backup.dump
 
       - name: Upload backup artifact
         uses: actions/upload-artifact@v4
         with:
           name: supabase-backup
-          path: supabase-backup-*.dump
+          path: supabase-backup.dump
           retention-days: 90
           if-no-files-found: error
