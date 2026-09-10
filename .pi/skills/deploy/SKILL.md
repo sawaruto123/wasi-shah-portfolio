@@ -5,7 +5,7 @@ description: Build, commit, and push the portfolio to GitHub (triggers Vercel au
 
 # Deploy
 
-Run all commands from the project root (`<repo root>`).
+Run all commands from the repository root — this file lives at `<repo>/.pi/skills/deploy/SKILL.md`, so the root is three levels up.
 
 ## Steps
 

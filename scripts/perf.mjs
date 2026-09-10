@@ -1,7 +1,13 @@
 /**
  * Real-Chrome scroll profiler for the portfolio.
- * Uses CDP Performance.getMetrics to break main-thread time into
- * script / layout / style during a scroll of a room's inner scroller.
+ *
+ * Two modes of truth:
+ *  - "cold": every scenario reloads the page first, so we measure the FIRST
+ *    scroll a real visitor experiences (warm-up can't hide a hitch).
+ *  - "warm": the second pass, to confirm steady-state smoothness.
+ *
+ * Uses CDP Performance.getMetrics for the main-thread breakdown and the
+ * V8 CPU profiler for the top self-time functions.
  *
  * Usage: node scripts/perf.mjs [url] [roomIndex]
  */
@@ -25,7 +31,12 @@ const chrome = spawn(CHROME, [
   '--window-size=1440,900',
   '--no-first-run',
   '--no-default-browser-check',
-  '--disable-features=Translate,MediaRouter',
+  // headless tabs otherwise throttle rAF in the background, which shows up as
+  // fake 1000ms "jank" frames and makes every FPS number meaningless
+  '--disable-background-timer-throttling',
+  '--disable-backgrounding-occluded-windows',
+  '--disable-renderer-backgrounding',
+  '--disable-features=Translate,MediaRouter,CalculateNativeWinOcclusion',
   '--enable-unsafe-swiftshader',
   'about:blank',
 ], { stdio: 'ignore' });
@@ -50,7 +61,7 @@ class CDP {
     });
   }
   on(m, fn) { const a = this.handlers.get(m) || []; a.push(fn); this.handlers.set(m, a); }
-  waitEvent(m, ms = 20000) {
+  waitEvent(m, ms = 25000) {
     return new Promise((resolve, reject) => {
       const t = setTimeout(() => reject(new Error(`timeout ${m}`)), ms);
       const fn = (p) => { clearTimeout(t); const a = this.handlers.get(m) || []; this.handlers.set(m, a.filter((h) => h !== fn)); resolve(p); };
@@ -58,6 +69,20 @@ class CDP {
     });
   }
 }
+
+const HELPERS = `(()=>{
+  window.__goto=(i)=>{const t=document.documentElement.scrollHeight-window.innerHeight;window.scrollTo(0,t*(i/(${ROOM_COUNT}-1)));};
+  window.__activeScroller=()=>{const a=[...document.querySelectorAll('[data-room-scroll]')];
+    return a.find((el)=>{const w=el.parentElement&&el.parentElement.parentElement;return w&&w.classList.contains('opacity-100');})||a[0]||null;};
+  window.__startFrames=()=>{window.__frames=[];let last=performance.now();
+    window.__raf=requestAnimationFrame(function s(){const n=performance.now();window.__frames.push(n-last);last=n;
+      window.__raf=requestAnimationFrame(s);});return 'ok';};
+  window.__stopFrames=()=>{cancelAnimationFrame(window.__raf);return window.__frames||[];};
+  'ok';})()`;
+
+const SET_CSS = (css) => `(()=>{let s=document.getElementById('perf-ov');
+  if(!s){s=document.createElement('style');s.id='perf-ov';document.head.appendChild(s);}
+  s.textContent=${JSON.stringify(css)};return 'ok';})()`;
 
 async function main() {
   let version;
@@ -72,7 +97,6 @@ async function main() {
   const { targetId } = await cdp.send('Target.createTarget', { url: 'about:blank' });
   const { sessionId } = await cdp.send('Target.attachToTarget', { targetId, flatten: true });
   const S = (m, p) => cdp.send(m, p, sessionId);
-
   await S('Page.enable'); await S('Runtime.enable'); await S('Performance.enable');
 
   const evalJs = async (expression, awaitPromise = false) => {
@@ -90,25 +114,10 @@ async function main() {
   await loaded;
   await evalJs(`localStorage.setItem('ws-onboarded','1');localStorage.setItem('ws-cookie-consent','1');'ok'`);
   const re = cdp.waitEvent('Page.loadEventFired');
-  await S('Page.reload');
-  await re;
-  await sleep(4000);
+  await S('Page.reload'); await re;
+  await sleep(4500);
 
   const gpu = await evalJs(`(()=>{const c=document.createElement('canvas');const gl=c.getContext('webgl');const e=gl&&gl.getExtension('WEBGL_debug_renderer_info');return e?gl.getParameter(e.UNMASKED_RENDERER_WEBGL):'?';})()`);
-
-  await evalJs(`(()=>{
-    window.__goto=(i)=>{const t=document.documentElement.scrollHeight-window.innerHeight;window.scrollTo(0,t*(i/(${ROOM_COUNT}-1)));};
-    window.__activeScroller=()=>{const a=[...document.querySelectorAll('[data-room-scroll]')];
-      return a.find((el)=>{const w=el.parentElement&&el.parentElement.parentElement;return w&&w.classList.contains('opacity-100');})||a[0]||null;};
-    window.__measure=(ms)=>new Promise((resolve)=>{
-      const el=window.__activeScroller(); if(!el) return resolve({error:'no scroller'});
-      const max=el.scrollHeight-el.clientHeight; el.scrollTop=0;
-      const frames=[]; let last=performance.now(); const start=last;
-      const step=()=>{const now=performance.now(); frames.push(now-last); last=now;
-        const t=Math.min((now-start)/ms,1); el.scrollTop=max*t;
-        if(t<1) requestAnimationFrame(step); else resolve({frames,max});};
-      requestAnimationFrame(step);});
-    'ok';})()`);
 
   const stats = (frames) => {
     const f = frames.slice(3).sort((a, b) => a - b);
@@ -120,80 +129,66 @@ async function main() {
     };
   };
 
-  const topFunctions = (profile) => {
-    const byId = new Map(profile.nodes.map((n) => [n.id, n]));
-    const self = new Map();
-    (profile.samples || []).forEach((id, i) => {
-      const n = byId.get(id);
-      if (!n) return;
-      const cf = n.callFrame;
-      const file = (cf.url || '').split('/').pop() || '(inline)';
-      const key = `${cf.functionName || '(anonymous)'}  ${file}:${cf.lineNumber + 1}`;
-      self.set(key, (self.get(key) || 0) + (profile.timeDeltas[i] || 0));
-    });
-    return [...self.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 15)
-      .map(([k, us]) => ({ function: k, ms: +(us / 1000).toFixed(1) }));
-  };
-
-  const scenarios = [
-    ['baseline', ''],
-    ['baseline (again)', ''],
-    ['tilt will-change off', '.tilt-3d{will-change:auto!important}'],
-    ['content-visibility off', '.cv-auto{content-visibility:visible!important}'],
-    ['grain+lightwash off', '.film-grain,.light-wash{display:none!important}'],
-    ['baseline (final)', ''],
-  ];
-
-  const rows = [];
-
-  // ── CPU profile of the FIRST arrival at this room (cold) ────────
-  await S('Profiler.enable');
-  await S('Profiler.setSamplingInterval', { interval: 150 });
-  await S('Profiler.start');
-  await evalJs(`window.__goto(${ROOM_INDEX});'ok'`);
-  await sleep(2800);
-  const cold = (await S('Profiler.stop')).profile;
-  console.log('\nTOP SELF-TIME: FIRST ARRIVAL (cold):');
-  console.table(topFunctions(cold));
-  for (const [label, css] of scenarios) {
-    await evalJs(`(()=>{let s=document.getElementById('perf-ov');if(!s){s=document.createElement('style');s.id='perf-ov';document.head.appendChild(s);}s.textContent=${JSON.stringify(css)};return 'ok';})()`);
+  // 每個情境都重新載入頁面 → 量到的都是「訪客的第一次捲動」
+  const runScenario = async (label, css) => {
+    const rl = cdp.waitEvent('Page.loadEventFired');
+    await S('Page.reload');
+    await rl;
+    await sleep(4500); // 世界啟動 + 背景預抓
+    await evalJs(SET_CSS(css));
+    await evalJs(HELPERS);
     await evalJs(`window.__goto(${ROOM_INDEX});'ok'`);
-    await sleep(3200); // let room-entry animations finish
-    await evalJs(`window.__measure(900)`, true); // warm-up pass
-    await sleep(500);
+    await sleep(2600); // 房間掛載完成
     const m0 = await metrics();
-    const r = await evalJs(`window.__measure(2200)`, true);
+    await evalJs(`window.__startFrames();'ok'`);
+    // 真正的滾動手勢（瀏覽器原生處理，不是 JS 設 scrollTop）
+    const gesture = S('Input.synthesizeScrollGesture', {
+      x: 720, y: 430, xDistance: 0, yDistance: -1500, speed: 800, gestureSourceType: 'mouse',
+    }).catch(() => {});
+    await sleep(2400);
+    const frames = await evalJs(`window.__stopFrames()`, false);
     const m1 = await metrics();
-    if (r.error) { rows.push({ label, error: r.error }); continue; }
+    await gesture;
+    if (!frames || !frames.length) return { label, error: 'no frames' };
     const d = (k) => +(((m1[k] || 0) - (m0[k] || 0)) * 1000).toFixed(1);
-    rows.push({
+    return {
       label,
-      ...stats(r.frames),
+      ...stats(frames),
       scriptMs: d('ScriptDuration'),
       styleMs: d('RecalcStyleDuration'),
       layoutMs: d('LayoutDuration'),
       layoutCount: Math.round((m1.LayoutCount || 0) - (m0.LayoutCount || 0)),
       styleCount: Math.round((m1.RecalcStyleCount || 0) - (m0.RecalcStyleCount || 0)),
-      taskMs: d('TaskDuration'),
-    });
-  }
+    };
+  };
+
+  const scenarios = [
+    ['baseline (cold first scroll)', ''],
+    ['content-visibility off', '.cv-auto{content-visibility:visible!important}'],
+    ['no LQIP placeholders', '.cv-auto{content-visibility:visible!important} .blur-md{display:none!important}'],
+    ['no per-card hover transform', '.cv-auto{content-visibility:visible!important} [class*="group-hover:scale"]{transition:none!important}'],
+    ['no spatial-card shadows', '.spatial-card{box-shadow:none!important}'],
+  ];
+
+  const rows = [];
+  for (const [label, css] of scenarios) rows.push(await runScenario(label, css));
 
   console.log('\nGPU:', gpu);
-  console.log('room index:', ROOM_INDEX, '| scroll window 2.2s\n');
+  console.log('room index:', ROOM_INDEX, '| each row = FRESH page load, first scroll (2.4s)\n');
   console.table(rows);
 
-  // ── CPU profile of a baseline scroll ───────────────────────────
-  await evalJs(`(()=>{const s=document.getElementById('perf-ov');if(s)s.textContent='';return 'ok';})()`);
+  // ── CPU profile of the cold first scroll (baseline) ──────────────
+  const rl = cdp.waitEvent('Page.loadEventFired');
+  await S('Page.reload'); await rl;
+  await sleep(4500);
+  await evalJs(HELPERS);
   await evalJs(`window.__goto(${ROOM_INDEX});'ok'`);
-  await sleep(3200);
-  await evalJs(`window.__measure(900)`, true);
-  await sleep(400);
+  await sleep(2600);
   await S('Profiler.enable');
   await S('Profiler.setSamplingInterval', { interval: 150 });
   await S('Profiler.start');
-  await evalJs(`window.__measure(2500)`, true);
+  await S('Input.synthesizeScrollGesture', { x: 720, y: 430, xDistance: 0, yDistance: -1500, speed: 800, gestureSourceType: 'mouse' }).catch(() => {});
+  await sleep(2400);
   const { profile } = await S('Profiler.stop');
 
   const byId = new Map(profile.nodes.map((n) => [n.id, n]));
@@ -206,12 +201,9 @@ async function main() {
     const key = `${cf.functionName || '(anonymous)'}  ${file}:${cf.lineNumber + 1}`;
     self.set(key, (self.get(key) || 0) + (profile.timeDeltas[i] || 0));
   });
-  const top = [...self.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 15)
-    .map(([k, us]) => ({ function: k, ms: +(us / 1000).toFixed(1) }));
-  console.log('\nTOP SELF-TIME DURING SCROLL (baseline):');
-  console.table(top);
+  console.log('\nTOP SELF-TIME: COLD FIRST SCROLL');
+  console.table([...self.entries()].sort((a, b) => b[1] - a[1]).slice(0, 14)
+    .map(([k, us]) => ({ function: k, ms: +(us / 1000).toFixed(1) })));
 
   ws.close(); chrome.kill();
   try { rmSync(userDir, { recursive: true, force: true }); } catch { /* ignore */ }

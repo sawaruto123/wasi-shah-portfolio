@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { tinyUrl } from './image';
 
 type Tone = 'dark' | 'light';
 
@@ -49,7 +50,9 @@ function sample(src: string, done: (t: Tone) => void) {
     done(tone);
   };
   img.onerror = () => done('dark');
-  img.src = src;
+  // 只抓極小的縮圖來算平均亮度：亮度平均值幾乎不變，
+  // 但不用為了一張 700px 的卡片去解碼整張原圖（那才是 getImageData 慢的原因）。
+  img.src = tinyUrl(src, 32);
 }
 
 function pump() {

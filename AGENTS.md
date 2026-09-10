@@ -19,9 +19,9 @@ npm run build      # production build (must exit 0 before pushing)
 
 ## Supabase
 
-- URL + anon key in `.env.local` (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`). Project ref: `nkjvfhzfyfdybtynrzxa`.
+- URL + anon key in `.env.local` (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`). The project ref is the subdomain of `VITE_SUPABASE_URL` (and is hardcoded in `scripts/run-sql.ps1`).
 - **Run SQL migrations:** `powershell -File scripts/run-sql.ps1 -File supabase/migrations/<file>.sql` (Management API + Windows Credential Manager token "Supabase CLI:supabase").
-- RLS: public can read published rows; only authenticated (admin) can write. Admin credentials are kept out of this repo.
+- RLS: public can read published rows; only authenticated (admin) can write. The admin account credentials are deliberately **not** in this repo — keep them in your local password manager.
 - Content is fetched with `Cache-Control: no-cache` (see `src/lib/supabase.ts` + `content.tsx`) because PostgREST responses lack cache headers.
 
 ## Key files
@@ -45,4 +45,5 @@ npm run build      # production build (must exit 0 before pushing)
 
 - `web.mjs` — Firecrawl search/scrape: `node scripts/web.mjs search <q>` | `scrape <url>` (key in `.firecrawl-key`)
 - `run-sql.ps1` — run migrations against Supabase
-- `game-shot.mjs`, `screenshot.mjs`, etc. — headless Chrome (Chrome at `C:\Program Files\Google\Chrome\Application\chrome.exe`) for screenshots/checks; they can hang — don't over-rely on them.
+- `setup-imagekit.ps1` — one-time ImageKit media-pipeline setup wizard
+- `perf.mjs` — real-Chrome (CDP) profiler: measures frame times, the main-thread breakdown, and a CPU profile while scrolling a room. `node scripts/perf.mjs <url> <roomIndex>` (room 3 = Films).
