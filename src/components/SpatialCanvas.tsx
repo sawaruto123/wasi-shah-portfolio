@@ -193,7 +193,7 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
       return;
     }
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = dark ? 0.7 : 1.0;
@@ -205,7 +205,7 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     pmrem.dispose();
 
     const composer = new EffectComposer(renderer);
-    composer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    composer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     composer.setSize(width, height);
     composer.addPass(new RenderPass(scene, camera));
     composer.addPass(new UnrealBloomPass(new THREE.Vector2(width, height), dark ? 0.38 : 0.32, 0.6, dark ? 0.78 : 0.85));
