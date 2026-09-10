@@ -67,7 +67,7 @@ export const SmartImage: React.FC<SmartImageProps> = ({
       {!loaded && !error && hasTiny && (
         <div
           aria-hidden="true"
-          className="absolute inset-0 scale-110 blur-2xl"
+          className="absolute inset-0 scale-105 blur-md"
           style={{ backgroundImage: `url("${tiny}")`, backgroundSize: 'cover', backgroundPosition: 'center' }}
         />
       )}

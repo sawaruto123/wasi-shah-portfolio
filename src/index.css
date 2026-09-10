@@ -34,10 +34,19 @@ html, body {
   margin: 0;
   padding: 0;
   background-color: #0D1B2E;
-  background-image: radial-gradient(ellipse 120% 80% at 50% -10%, #132a47 0%, #0D1B2E 55%, #060d18 100%);
-  background-attachment: fixed;
   color: #EAF2FB;
   font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* 背景漸層改用 fixed 圖層。
+   原本的 background-attachment:fixed 會強制每次捲動都重繪整個視窗（捲動卡頓主因）。 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(ellipse 120% 80% at 50% -10%, #132a47 0%, #0D1B2E 55%, #060d18 100%);
 }
 
 ::selection {
@@ -114,8 +123,7 @@ html {
 
 /* 全螢幕環境光（從光源方向掃過、漸淡） */
 .light-wash {
-  background: linear-gradient(var(--light-angle, 135deg), rgba(110, 170, 255, 0.10) 0%, rgba(0, 0, 0, 0) 50%);
-  mix-blend-mode: screen;
+  background: linear-gradient(var(--light-angle, 135deg), rgba(110, 170, 255, 0.13) 0%, rgba(0, 0, 0, 0) 50%);
 }
 
 /* 漂浮動畫（幾何生物 / chips / 面板） */
@@ -277,11 +285,11 @@ html {
 .room-enter .spatial-card:nth-child(7) { animation-delay: 0.96s; }
 .room-enter .spatial-card:nth-child(8) { animation-delay: 1.12s; }
 
-/* 底片顆粒（約 5% 不透明度） */
+/* 底片顆粒（約 4% 不透明度）。
+   不用 mix-blend-mode: overlay—它會讓整個視窗每 frame 重新混合，捲動時很貴。 */
 .film-grain {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  opacity: 0.05;
-  mix-blend-mode: overlay;
+  opacity: 0.04;
 }
 @keyframes grainShift {
   0% { transform: translate(0, 0); }
@@ -364,8 +372,7 @@ html.dark .hairline-grid {
 
 /* 暗色環境光：只用頂部藍光提亮，不再壓暗底部 */
 html.dark .light-wash {
-  background: linear-gradient(var(--light-angle, 135deg), rgba(95, 176, 255, 0.10) 0%, rgba(0, 0, 0, 0) 55%);
-  mix-blend-mode: screen;
+  background: linear-gradient(var(--light-angle, 135deg), rgba(95, 176, 255, 0.13) 0%, rgba(0, 0, 0, 0) 55%);
 }
 
 html.dark .spatial-card {

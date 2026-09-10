@@ -26,9 +26,9 @@ export const RoomCinema: React.FC<RoomCinemaProps> = ({ onSelectFilm, onSelectSt
         src={thumbUrl(still.image, 300, 300)}
         alt={still.title || 'Photo'}
         className="absolute inset-0"
-        imgClassName="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+        imgClassName="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       {still.beforeImage && (
         <span className="absolute top-2 right-2 px-2 py-1 rounded-full bg-primary text-white font-mono text-[9px] font-bold uppercase pointer-events-none">
           B/A
