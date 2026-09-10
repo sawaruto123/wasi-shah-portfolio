@@ -23,7 +23,7 @@ export const RoomCinema: React.FC<RoomCinemaProps> = ({ onSelectFilm, onSelectSt
       className="group relative aspect-square rounded-2xl overflow-hidden cursor-pointer border-none p-0 cv-auto"
     >
       <SmartImage
-        src={thumbUrl(still.image, 420, 420)}
+        src={thumbUrl(still.image, 300, 300)}
         alt={still.title || 'Photo'}
         className="absolute inset-0"
         imgClassName="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
@@ -69,7 +69,7 @@ export const RoomCinema: React.FC<RoomCinemaProps> = ({ onSelectFilm, onSelectSt
           >
             <div className="relative w-full aspect-[16/9] overflow-hidden cv-auto">
               <SmartImage
-                src={thumbUrl(film.image, 900, 506)}
+                src={thumbUrl(film.image, 720, 405)}
                 alt={film.title}
                 className="absolute inset-0"
                 imgClassName="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"

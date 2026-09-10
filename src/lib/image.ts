@@ -22,3 +22,22 @@ export function thumbUrl(url: string, width = 800, height?: number): string {
   }
   return url;
 }
+
+/**
+ * Tiny blurred placeholder (LQIP) URL for transformable hosts, so a low-res
+ * version paints instantly while the fuller image loads. Returns the same URL
+ * for local/unknown sources (caller then falls back to a skeleton).
+ */
+export function tinyUrl(url: string, width = 24): string {
+  if (!url) return url;
+  if (url.includes('ik.imagekit.io')) {
+    return `${url}${url.includes('?') ? '&' : '?'}tr=w-${width},q-40`;
+  }
+  if (url.includes('supabase.co/storage/v1/object/public/')) {
+    return `${url}${url.includes('?') ? '&' : '?'}width=${width}&resize=contain&quality=40`;
+  }
+  if (url.includes('googleusercontent.com')) {
+    return `${url}=w${width}`;
+  }
+  return url;
+}

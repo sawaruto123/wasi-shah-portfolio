@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { RATIO_CLASS, POS_CLASS } from '../lib/aspect';
+import { tinyUrl } from '../lib/image';
 
 interface SmartImageProps {
   src: string;
@@ -58,10 +59,19 @@ export const SmartImage: React.FC<SmartImageProps> = ({
       : RATIO_CLASS[ratio] ?? 'aspect-video'
     : '';
   const posClass = POS_CLASS[position] ?? 'object-center';
+  const tiny = tinyUrl(src);
+  const hasTiny = tiny !== src;
 
   return (
     <div className={`overflow-hidden bg-surface-container ${aspectClass} ${className}`}>
-      {!loaded && !error && (
+      {!loaded && !error && hasTiny && (
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 scale-110 blur-2xl"
+          style={{ backgroundImage: `url("${tiny}")`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+        />
+      )}
+      {!loaded && !error && !hasTiny && (
         <div className="absolute inset-0 animate-pulse bg-surface-container-high" />
       )}
       {error ? (
