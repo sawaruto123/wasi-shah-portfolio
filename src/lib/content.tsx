@@ -53,6 +53,7 @@ const mapProject = (r: any): Project => ({
   images: Array.isArray(r.images) && r.images.length ? r.images : (r.image ? [r.image] : []),
   imageRatios: Array.isArray(r.image_ratios) ? r.image_ratios : [],
   imagePositions: Array.isArray(r.image_positions) ? r.image_positions : [],
+  imageCaptions: Array.isArray(r.image_captions) ? r.image_captions : [],
   video: r.video ?? undefined,
   githubUrl: r.github_url ?? undefined,
   websiteUrl: r.website_url ?? undefined,

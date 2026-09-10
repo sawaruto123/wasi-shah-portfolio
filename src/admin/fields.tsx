@@ -115,6 +115,7 @@ export interface ManagedImage {
   url: string;
   ratio: string;
   pos: string;
+  caption: string;
 }
 
 const IMAGE_RATIOS = [
@@ -155,7 +156,7 @@ export const MultiImageField: React.FC<{ value: ManagedImage[]; onChange: (v: Ma
       const added: ManagedImage[] = [];
       for (const file of files) {
         const url = await uploadImage(file);
-        added.push({ url, ratio: 'auto', pos: 'center' });
+        added.push({ url, ratio: 'auto', pos: 'center', caption: '' });
       }
       onChange([...value, ...added]);
     } catch (err) {
@@ -172,6 +173,10 @@ export const MultiImageField: React.FC<{ value: ManagedImage[]; onChange: (v: Ma
 
   const setRatio = (index: number, ratio: string) => {
     onChange(value.map((img, i) => (i === index ? { ...img, ratio } : img)));
+  };
+
+  const setCaption = (index: number, caption: string) => {
+    onChange(value.map((img, i) => (i === index ? { ...img, caption } : img)));
   };
 
   const setPos = (index: number, pos: string) => {
@@ -225,7 +230,7 @@ export const MultiImageField: React.FC<{ value: ManagedImage[]; onChange: (v: Ma
                 ✕
               </button>
             </div>
-            <div className="p-2">
+            <div className="p-2 space-y-2">
               <select
                 value={img.ratio}
                 onChange={(e) => setRatio(i, e.target.value)}
@@ -237,6 +242,12 @@ export const MultiImageField: React.FC<{ value: ManagedImage[]; onChange: (v: Ma
                   </option>
                 ))}
               </select>
+              <input
+                value={img.caption ?? ''}
+                onChange={(e) => setCaption(i, e.target.value)}
+                placeholder="Caption (optional)"
+                className="w-full px-2 py-1 rounded-md border border-border-crisp bg-white text-xs text-ink"
+              />
             </div>
           </div>
         ))}

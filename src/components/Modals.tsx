@@ -6,6 +6,7 @@ import { thumbUrl } from '../lib/image';
 import { SmartImage } from './SmartImage';
 import { VideoPlayer } from './VideoPlayer';
 import { ProjectDetails } from './ProjectDetails';
+import { ImageLightbox } from './ImageLightbox';
 
 interface ModalsProps {
   activeProject: Project | null;
@@ -35,6 +36,7 @@ export const Modals: React.FC<ModalsProps> = ({
   onShowToast,
 }) => {
   const [dir, setDir] = useState(0);
+  const [lightbox, setLightbox] = useState<number | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
   // 目前開啟的列表與索引（關閉時為空，安全）
@@ -102,6 +104,11 @@ export const Modals: React.FC<ModalsProps> = ({
       };
     }
   }, [activeProject, activeFilm, activeStill]);
+
+  // reset the image lightbox when switching projects
+  useEffect(() => {
+    setLightbox(null);
+  }, [currentId]);
 
   if (!activeProject && !activeFilm && !activeStill) return null;
 
@@ -182,16 +189,35 @@ export const Modals: React.FC<ModalsProps> = ({
               )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start mb-6">
-                {projImages.map((img, i) => (
-                  <SmartImage
-                    key={i}
-                    src={thumbUrl(img, 1000)}
-                    alt={activeProject.title}
-                    ratio={activeProject.imageRatios?.[i] ?? 'auto'}
-                    position={activeProject.imagePositions?.[i] ?? 'center'}
-                    className={`relative w-full rounded-2xl border border-border-crisp ${projImages.length === 1 ? 'sm:col-span-2' : ''}`}
-                  />
-                ))}
+                {projImages.map((img, i) => {
+                  const caption = activeProject.imageCaptions?.[i];
+                  return (
+                    <div key={i} className={projImages.length === 1 ? 'sm:col-span-2' : ''}>
+                      <button
+                        type="button"
+                        onClick={() => setLightbox(i)}
+                        className="group relative block w-full cursor-zoom-in border-none bg-transparent p-0"
+                      >
+                        <SmartImage
+                          src={thumbUrl(img, 1000)}
+                          alt={activeProject.title}
+                          ratio={activeProject.imageRatios?.[i] ?? 'auto'}
+                          position={activeProject.imagePositions?.[i] ?? 'center'}
+                          className="relative w-full rounded-2xl border border-border-crisp"
+                          imgClassName="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                        />
+                        <span className="absolute right-3 top-3 px-2 py-1 rounded-full bg-black/60 text-white font-mono text-[9px] font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                          View
+                        </span>
+                      </button>
+                      {caption && (
+                        <p className="mt-2 font-mono text-[10px] uppercase tracking-wider text-ink-muted">
+                          {caption}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
               <p className="font-body text-base text-ink-muted leading-relaxed mb-5 whitespace-pre-line">
@@ -237,6 +263,17 @@ export const Modals: React.FC<ModalsProps> = ({
               )}
             </div>
           </div>
+
+          {lightbox !== null && (
+            <ImageLightbox
+              images={projImages}
+              captions={activeProject.imageCaptions}
+              index={lightbox}
+              onIndex={setLightbox}
+              onClose={() => setLightbox(null)}
+              alt={activeProject.title}
+            />
+          )}
         </div>
       </div>
     );

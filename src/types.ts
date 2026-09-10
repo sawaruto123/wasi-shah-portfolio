@@ -18,6 +18,7 @@ export interface Project {
   images?: string[];
   imageRatios?: string[];
   imagePositions?: string[];
+  imageCaptions?: string[];
   video?: string;
   githubUrl?: string;
   websiteUrl?: string;

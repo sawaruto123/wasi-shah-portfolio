@@ -48,6 +48,7 @@ export const ProjectsManager: React.FC = () => {
           url: u,
           ratio: (row.image_ratios ?? [])[idx] ?? 'auto',
           pos: (row.image_positions ?? [])[idx] ?? 'center',
+          caption: (row.image_captions ?? [])[idx] ?? '',
         }))
         .filter((m: ManagedImage) => m.url && m.url !== row.image)
     );
@@ -57,7 +58,7 @@ export const ProjectsManager: React.FC = () => {
     if (!editing || !supabase) return;
     setSaving(true);
     const tech = techText.split(',').map((s) => s.trim()).filter(Boolean);
-    const allImages: ManagedImage[] = [{ url: editing.image, ratio: 'auto', pos: 'center' }, ...imagesList].filter((m) => m.url);
+    const allImages: ManagedImage[] = [{ url: editing.image, ratio: 'auto', pos: 'center', caption: '' }, ...imagesList].filter((m) => m.url);
     const row = {
       ...editing,
       id: editing.id || slugify(editing.title || 'project'),
@@ -66,6 +67,7 @@ export const ProjectsManager: React.FC = () => {
       images: allImages.map((m) => m.url),
       image_ratios: allImages.map((m) => m.ratio),
       image_positions: allImages.map((m) => m.pos),
+      image_captions: allImages.map((m) => m.caption),
       github_url: editing.github_url || null,
       website_url: editing.website_url || null,
     };
