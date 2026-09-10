@@ -45,7 +45,7 @@ const PC_STEPS: Step[] = [
     place: 'bottom',
     icon: <SlidersHorizontal className="w-5 h-5" />,
     title: 'Dim the background',
-    desc: 'Drag this to fade the 3D world back (default 75%) whenever the text behind it feels busy.',
+    desc: 'Drag this to bring the 3D world back (default 25%) whenever you want more of it behind the text.',
   },
   {
     target: '[data-tour="theme"]',
@@ -115,7 +115,7 @@ const MOBILE_STEPS: Step[] = [
     place: 'bottom',
     icon: <SlidersHorizontal className="w-5 h-5" />,
     title: 'Dim the background',
-    desc: 'Drag this to fade the 3D world back (default 75%) when the text feels busy.',
+    desc: 'Drag this to bring the 3D world back (default 25%) when you want more of it.',
   },
   {
     target: '[data-tour="theme"]',

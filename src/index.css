@@ -411,7 +411,7 @@ html.dark .film-grain { opacity: 0.03; }
 .opacity-slider::-webkit-slider-runnable-track {
   height: 8px;
   border-radius: 9999px;
-  background: linear-gradient(to right, #4C9FFF 0%, #4C9FFF var(--fill, 75%), #48607F var(--fill, 75%), #48607F 100%);
+  background: linear-gradient(to right, #4C9FFF 0%, #4C9FFF var(--fill, 25%), #48607F var(--fill, 25%), #48607F 100%);
 }
 .opacity-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -447,7 +447,7 @@ html.dark .film-grain { opacity: 0.03; }
 }
 
 html.dark .opacity-slider::-webkit-slider-runnable-track {
-  background: linear-gradient(to right, #55A6FF 0%, #55A6FF var(--fill, 75%), #3D5678 var(--fill, 75%), #3D5678 100%);
+  background: linear-gradient(to right, #55A6FF 0%, #55A6FF var(--fill, 25%), #3D5678 var(--fill, 25%), #3D5678 100%);
 }
 html.dark .opacity-slider::-webkit-slider-thumb {
   border-color: #55A6FF;

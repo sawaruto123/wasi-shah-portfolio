@@ -2,8 +2,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { SlidersHorizontal } from 'lucide-react';
 
 const STORAGE_KEY = 'ws-bg-opacity';
-/** 預設背景不透明度（3D 世界預設透出 75%） */
-export const DEFAULT_BG_OPACITY = 0.75;
+/** 預設背景不透明度（3D 世界預設只透出 25%，讓內容更清楚） */
+export const DEFAULT_BG_OPACITY = 0.25;
 
 let current = DEFAULT_BG_OPACITY;
 try {
