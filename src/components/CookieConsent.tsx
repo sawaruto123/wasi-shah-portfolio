@@ -28,8 +28,9 @@ export const CookieConsent: React.FC = () => {
     <div className="fixed bottom-20 left-4 right-4 md:bottom-4 md:right-auto md:max-w-md z-[60]">
       <div className="glass-card rounded-2xl border border-border-crisp shadow-xl p-5">
         <p className="font-mono text-xs text-ink leading-relaxed">
-          This site uses <strong>no tracking cookies</strong>. We only store a small local preference to
-          remember this choice (and a session if you log in to the admin area). See our{' '}
+          This site sets <strong>no first-party tracking cookies</strong>. We store only small local
+          preferences (this choice, theme, background opacity) and an admin session if you log in. Embedded
+          YouTube/Vimeo videos may set their own cookies. See our{' '}
           <a href="/privacy" className="text-primary underline underline-offset-2">
             privacy policy
           </a>

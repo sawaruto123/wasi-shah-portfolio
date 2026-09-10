@@ -7,7 +7,7 @@ export function getVideoEmbed(
 ): { type: 'youtube' | 'vimeo' | 'file'; src: string } | null {
   if (!url) return null;
   const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
-  if (yt) return { type: 'youtube', src: `https://www.youtube.com/embed/${yt[1]}` };
+  if (yt) return { type: 'youtube', src: `https://www.youtube-nocookie.com/embed/${yt[1]}` };
   const vimeo = url.match(/vimeo\.com\/(\d+)/);
   if (vimeo) return { type: 'vimeo', src: `https://player.vimeo.com/video/${vimeo[1]}` };
   return { type: 'file', src: url };
