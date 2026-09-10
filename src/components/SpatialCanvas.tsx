@@ -425,27 +425,42 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
 
     // ── 滾動：房間進度 + 房內內容捲動（讓 3D 隨時跟著動）──
     let scrollProgress = 0;
-    const handleScroll = () => {
+    let scrollRaf = 0;
+    let roomScrollEl: HTMLElement | null = null;
+    const isActiveRoom = (el: HTMLElement) => {
+      const wrapper = el.parentElement?.parentElement;
+      return !!wrapper && wrapper.classList.contains('opacity-100');
+    };
+    const readScroll = () => {
+      scrollRaf = 0;
       const total = document.documentElement.scrollHeight - window.innerHeight;
       const roomProgress = total > 0 ? Math.min(Math.max(window.scrollY / total, 0), 1) : 0;
 
       // 目前房間的內部捲動進度（房內內容多時，捲動也讓 3D 產生視差）
+      // 快取房間元素，避免每個 scroll event 都 querySelectorAll + 讀 layout。
+      if (!roomScrollEl || !roomScrollEl.isConnected || !isActiveRoom(roomScrollEl)) {
+        roomScrollEl = null;
+        document.querySelectorAll('[data-room-scroll]').forEach((node) => {
+          const el = node as HTMLElement;
+          if (!roomScrollEl && isActiveRoom(el)) roomScrollEl = el;
+        });
+      }
       let innerProgress = 0;
-      document.querySelectorAll('[data-room-scroll]').forEach((node) => {
-        const el = node as HTMLElement;
-        const wrapper = el.parentElement?.parentElement;
-        if (wrapper && wrapper.classList.contains('opacity-100')) {
-          const max = el.scrollHeight - el.clientHeight;
-          if (max > 0) innerProgress = Math.min(Math.max(el.scrollTop / max, 0), 1);
-        }
-      });
+      if (roomScrollEl) {
+        const max = roomScrollEl.scrollHeight - roomScrollEl.clientHeight;
+        if (max > 0) innerProgress = Math.min(Math.max(roomScrollEl.scrollTop / max, 0), 1);
+      }
 
       scrollProgress = Math.min(Math.max(roomProgress + innerProgress * 0.1, 0), 1);
       onScrollProgress?.(roomProgress);
     };
+    // 每個 scroll event 都跑一次太浪費，合併成每 frame 最多一次。
+    const handleScroll = () => {
+      if (!scrollRaf) scrollRaf = requestAnimationFrame(readScroll);
+    };
     window.addEventListener('scroll', handleScroll, { passive: true });
     document.addEventListener('scroll', handleScroll, { capture: true, passive: true });
-    handleScroll();
+    readScroll();
 
     const handleResize = () => {
       const w = container.clientWidth || window.innerWidth;
@@ -535,6 +550,7 @@ export const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
 
     return () => {
       cancelAnimationFrame(animId);
+      cancelAnimationFrame(scrollRaf);
       if (hasFinePointer) window.removeEventListener('mousemove', handleMouseMove);
       else window.removeEventListener('deviceorientation', handleOrientation);
       window.removeEventListener('click', handleClick);

@@ -8,13 +8,13 @@ import { Room } from '../types';
 
 interface NavigationHUDProps {
   currentRoom: Room;
-  zCoord: string;
+  zRef: React.RefObject<HTMLSpanElement | null>;
   onNavigate: (roomId: string) => void;
 }
 
 export const NavigationHUD: React.FC<NavigationHUDProps> = ({
   currentRoom,
-  zCoord,
+  zRef,
   onNavigate,
 }) => {
   const { settings } = useContent();
@@ -50,7 +50,7 @@ export const NavigationHUD: React.FC<NavigationHUDProps> = ({
           <span className="text-ink-muted">ROOM:</span>
           <span className="text-primary font-bold tracking-wider">{currentRoom.name}</span>
           <span className="text-black/20">|</span>
-          <span className="text-ink font-semibold">{zCoord}</span>
+          <span ref={zRef} className="text-ink font-semibold">Z: +8.00m</span>
         </div>
 
         {/* Quick Navigation Links */}

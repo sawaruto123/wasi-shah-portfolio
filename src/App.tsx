@@ -32,8 +32,7 @@ export default function App() {
   const { projects, films, stills } = useContent();
   const [currentRoom, setCurrentRoom] = useState<Room>(ROOMS[0]);
   const [activeIndex, setActiveIndex] = useState<number>(0);
-  const [zCoord, setZCoord] = useState<string>('Z: +8.00m');
-  const [warpKey, setWarpKey] = useState<number>(0);
+  const zRef = useRef<HTMLSpanElement | null>(null);  const [warpKey, setWarpKey] = useState<number>(0);
   const [worldOnly, setWorldOnly] = useState<boolean>(false);
   const [lightAngle, setLightAngle] = useState<number>(135);
   const [loading, setLoading] = useState<boolean>(true);
@@ -183,9 +182,15 @@ export default function App() {
       setCurrentRoom(ROOMS[idx]);
       setWarpKey((k) => k + 1); // 觸發飛越光效
     }
+    // 座標讀數直接寫進 DOM ref，不走 React state—
+    // 否則每個 scroll event 都會讓整棵樹 re-render（圖片多的房間特別卡）。
     const z = 8 - progress * 56;
     const sign = z >= 0 ? '+' : '';
-    setZCoord(`Z: ${sign}${z.toFixed(2)}m`);
+    const el = zRef.current;
+    if (el) {
+      const text = `Z: ${sign}${z.toFixed(2)}m`;
+      if (el.textContent !== text) el.textContent = text;
+    }
   }, []);
 
   // 滾輪在房間底部／頂部時，飛到下一／上一間世界位置
@@ -362,7 +367,7 @@ export default function App() {
       <div className="film-grain fixed inset-0 z-20 pointer-events-none" aria-hidden="true" />
 
       {!worldOnly && (
-        <NavigationHUD currentRoom={currentRoom} zCoord={zCoord} onNavigate={handleNavigate} />
+        <NavigationHUD currentRoom={currentRoom} zRef={zRef} onNavigate={handleNavigate} />
       )}
 
       {/* 只顯示 3D 世界的開關 */}
