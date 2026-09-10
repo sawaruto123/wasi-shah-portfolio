@@ -6,6 +6,11 @@
  */
 export function thumbUrl(url: string, width = 800, height?: number): string {
   if (!url) return url;
+  // ImageKit (new CMS media): on-the-fly resize + auto format/quality
+  if (url.includes('ik.imagekit.io')) {
+    const tr = height ? `tr=w-${width},h-${height},fo-auto` : `tr=w-${width}`;
+    return `${url}${url.includes('?') ? '&' : '?'}${tr}`;
+  }
   if (url.includes('supabase.co/storage/v1/object/public/')) {
     const size = height
       ? `width=${width}&height=${height}&resize=cover`

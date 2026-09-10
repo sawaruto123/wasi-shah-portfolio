@@ -1,36 +1,38 @@
-import { supabase } from '../lib/supabase';
+// CMS media uploads now go to ImageKit (free tier, no card) via /api/upload.
+// The ImageKit private key stays on the server (Vercel function).
 
-/** Uploads a blob (e.g. a cropped canvas) to the public Supabase Storage bucket. */
+/** Uploads a blob to ImageKit through the /api/upload function; returns its public URL. */
 export async function uploadBlob(blob: Blob, ext: string): Promise<string> {
-  if (!supabase) throw new Error('Supabase is not configured');
-  const name = `cms/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext.toLowerCase()}`;
-  const { error } = await supabase.storage.from('images').upload(name, blob, {
-    cacheControl: '3600',
-    upsert: false,
+  const name = `asset-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext.toLowerCase()}`;
+  const res = await fetch('/api/upload', {
+    method: 'POST',
+    headers: { 'x-file-name': name },
+    body: blob,
   });
-  if (error) throw new Error(error.message);
-  const { data } = supabase.storage.from('images').getPublicUrl(name);
-  return data.publicUrl;
+  if (!res.ok) {
+    let msg = 'Upload failed';
+    try {
+      const e = await res.json();
+      msg = e.error || msg;
+    } catch {
+      /* ignore */
+    }
+    throw new Error(msg);
+  }
+  const data = await res.json();
+  return data.url as string;
 }
 
-/** Uploads an image file to the public Supabase Storage bucket, returns its public URL. */
+/** Uploads an image file to ImageKit, returns its public URL. */
 export function uploadImage(file: File): Promise<string> {
   const ext = file.name.split('.').pop() || 'jpg';
   return uploadBlob(file, ext);
 }
 
-/** Uploads a video file to the public Supabase Storage bucket, returns its public URL. */
-export async function uploadVideo(file: File): Promise<string> {
-  if (!supabase) throw new Error('Supabase is not configured');
+/** Uploads a video file to ImageKit, returns its public URL. */
+export function uploadVideo(file: File): Promise<string> {
   const ext = file.name.split('.').pop() || 'mp4';
-  const name = `cms/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext.toLowerCase()}`;
-  const { error } = await supabase.storage.from('videos').upload(name, file, {
-    cacheControl: '3600',
-    upsert: false,
-  });
-  if (error) throw new Error(error.message);
-  const { data } = supabase.storage.from('videos').getPublicUrl(name);
-  return data.publicUrl;
+  return uploadBlob(file, ext);
 }
 
 /** Generates a URL-safe id from a title. */
