@@ -5,6 +5,7 @@ import { BeforeAfter } from './BeforeAfter';
 import { thumbUrl } from '../lib/image';
 import { SmartImage } from './SmartImage';
 import { VideoPlayer } from './VideoPlayer';
+import { ProjectDetails } from './ProjectDetails';
 
 interface ModalsProps {
   activeProject: Project | null;
@@ -197,12 +198,7 @@ export const Modals: React.FC<ModalsProps> = ({
                 {activeProject.description}
               </p>
 
-              {activeProject.detailedDescription && (
-                <div className="p-5 rounded-2xl bg-surface-warm border border-border-crisp mb-5">
-                  <span className="font-mono text-xs uppercase tracking-widest text-primary font-bold block mb-2">Details</span>
-                  <p className="font-body text-sm text-ink-muted leading-relaxed whitespace-pre-line">{activeProject.detailedDescription}</p>
-                </div>
-              )}
+              {activeProject.detailedDescription && <ProjectDetails text={activeProject.detailedDescription} />}
 
               {activeProject.tech.length > 0 && (
                 <div className="mb-5">
