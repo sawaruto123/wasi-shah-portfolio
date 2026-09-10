@@ -11,7 +11,7 @@ interface ImageLightboxProps {
   alt?: string;
 }
 
-/** Full-screen image viewer with prev/next, keyboard + caption. */
+/** Full-screen image viewer: near-full-bleed image, arrows, keyboard + overlaid caption. */
 export const ImageLightbox: React.FC<ImageLightboxProps> = ({
   images,
   captions,
@@ -36,13 +36,24 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[120] bg-black/95 backdrop-blur-sm flex flex-col animate-fade-in"
+      className="fixed inset-0 z-[120] bg-black/95 backdrop-blur-sm animate-fade-in"
       onClick={onClose}
     >
+      {/* image fills the whole screen (tiny padding only) */}
+      <div className="absolute inset-0 flex items-center justify-center p-1.5 sm:p-3">
+        <img
+          key={index}
+          src={thumbUrl(images[index], 2400)}
+          alt={alt}
+          referrerPolicy="no-referrer"
+          className="max-h-full max-w-full object-contain"
+        />
+      </div>
+
       <button
         onClick={onClose}
         aria-label="Close"
-        className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-white/10 text-white hover:bg-white/25 flex items-center justify-center cursor-pointer border-none transition-colors"
+        className="absolute top-3 right-3 z-20 w-10 h-10 rounded-full bg-black/60 text-white hover:bg-white/25 flex items-center justify-center cursor-pointer border-none transition-colors"
       >
         <X className="w-5 h-5" />
       </button>
@@ -55,9 +66,9 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
               prev();
             }}
             aria-label="Previous image"
-            className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/10 text-white hover:bg-white/25 flex items-center justify-center cursor-pointer border-none transition-colors"
+            className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-black/60 text-white hover:bg-white/25 flex items-center justify-center cursor-pointer border-none transition-colors"
           >
-            <ChevronLeft className="w-6 h-6" />
+            <ChevronLeft className="w-7 h-7" />
           </button>
           <button
             onClick={(e) => {
@@ -65,33 +76,26 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
               next();
             }}
             aria-label="Next image"
-            className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/10 text-white hover:bg-white/25 flex items-center justify-center cursor-pointer border-none transition-colors"
+            className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-black/60 text-white hover:bg-white/25 flex items-center justify-center cursor-pointer border-none transition-colors"
           >
-            <ChevronRight className="w-6 h-6" />
+            <ChevronRight className="w-7 h-7" />
           </button>
         </>
       )}
 
+      {/* overlaid caption so it never steals image space */}
       <div
-        className="flex-1 min-h-0 flex items-center justify-center p-4 sm:p-12"
+        className="absolute bottom-3 inset-x-0 z-20 flex flex-col items-center gap-1.5 px-4 pointer-events-none"
         onClick={(e) => e.stopPropagation()}
       >
-        <img
-          key={index}
-          src={thumbUrl(images[index], 1800)}
-          alt={alt}
-          referrerPolicy="no-referrer"
-          className="max-h-full max-w-full object-contain rounded-xl animate-fade-in"
-        />
-      </div>
-
-      <div className="shrink-0 px-6 pb-6 text-center" onClick={(e) => e.stopPropagation()}>
         {captions?.[index] && (
-          <p className="font-mono text-xs text-white/85">{captions[index]}</p>
+          <span className="px-3.5 py-1.5 rounded-full bg-black/70 backdrop-blur-sm font-mono text-xs text-white/90 text-center max-w-[92vw]">
+            {captions[index]}
+          </span>
         )}
-        <p className="font-mono text-[10px] text-white/40 mt-1">
+        <span className="font-mono text-[10px] text-white/50">
           {index + 1} / {n}
-        </p>
+        </span>
       </div>
     </div>
   );
