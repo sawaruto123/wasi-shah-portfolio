@@ -5,50 +5,54 @@ type Block =
   | { type: 'pre'; content: string }
   | { type: 'bullets'; items: string[] };
 
-// Lines containing box-drawing characters (or heavy indentation) are treated
-// as a structure diagram and rendered verbatim in a monospace <pre>.
-const DIAGRAM = /[│─┌┐└┘├┤┬┴┼▼▲◀▶→←↓↑╭╮╯╰═║]/;
-
+// Structure diagrams are wrapped in ``` fences in the source and rendered
+// verbatim in a monospace <pre> so the columns line up.
 function parse(text: string): Block[] {
   const blocks: Block[] = [];
   let pre: string[] = [];
   let bullets: string[] = [];
-  const flushPre = () => {
-    if (pre.length) {
-      blocks.push({ type: 'pre', content: pre.join('\n') });
-      pre = [];
-    }
-  };
+  let inFence = false;
   const flushBullets = () => {
     if (bullets.length) {
       blocks.push({ type: 'bullets', items: bullets });
       bullets = [];
     }
   };
-  const flush = () => {
-    flushPre();
-    flushBullets();
+  const flushPre = () => {
+    if (pre.length) {
+      blocks.push({ type: 'pre', content: pre.join('\n') });
+      pre = [];
+    }
   };
 
   for (const raw of text.split('\n')) {
-    const line = raw.replace(/\s+$/, '');
-    if (!line.trim()) {
-      flush();
+    if (raw.trim().startsWith('```')) {
+      if (inFence) {
+        inFence = false;
+        flushPre();
+      } else {
+        flushBullets();
+        inFence = true;
+      }
       continue;
     }
-    if (DIAGRAM.test(line) || /^\s{2,}\S/.test(raw)) {
-      flushBullets();
+    if (inFence) {
       pre.push(raw);
       continue;
     }
-    flushPre();
+    const line = raw.replace(/\s+$/, '');
+    if (!line.trim()) {
+      flushBullets();
+      continue;
+    }
     if (/^[-•*]\s+/.test(line)) bullets.push(line.replace(/^[-•*]\s+/, ''));
     else {
       flushBullets();
       blocks.push({ type: 'heading', content: line });
     }
   }
-  flush();
+  flushPre();
+  flushBullets();
   return blocks;
 }
 
