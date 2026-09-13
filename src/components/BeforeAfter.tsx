@@ -1,13 +1,14 @@
 import React, { useRef, useState } from 'react';
-import { thumbUrl } from '../lib/image';
+import { thumbUrl, tinyUrl } from '../lib/image';
+import { useNaturalAspect, naturalBoxStyle } from '../lib/useNaturalAspect';
 
 interface BeforeAfterProps {
   before: string;
   after: string;
   alt?: string;
   className?: string;
-  /** Tailwind class limiting image height (keeps its own aspect ratio). */
-  maxHeightClass?: string;
+  /** Max height of the comparison area (vh). */
+  maxHeightVh?: number;
   beforeLabel?: string;
   afterLabel?: string;
 }
@@ -17,21 +18,25 @@ interface BeforeAfterProps {
  * - 底層放 after（完成品），上層用 clipPath 裁切出 before（原圖）
  * - 拖曳中間 bar 或直接點擊圖片即可切換分割位置
  *
- * 重要：容器高度由圖片本身的比例決定（不強制 aspect-ratio），
- * 所以直幅照片也能完整顯示，不會被裁掉。
+ * 版面：容器比例由原圖決定（不強制 aspect-ratio），載入前先用極小縮圖
+ * 撐出正確形狀並顯示模糊預覽，所以不會只看到文字列。
  */
 export const BeforeAfter: React.FC<BeforeAfterProps> = ({
   before,
   after,
   alt = '',
   className = '',
-  maxHeightClass = 'max-h-[65vh]',
+  maxHeightVh = 68,
   beforeLabel = 'Before',
   afterLabel = 'After',
 }) => {
   const [pos, setPos] = useState(50);
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
+
+  const ar = useNaturalAspect(after, true);
 
   const update = (clientX: number) => {
     const el = containerRef.current;
@@ -41,11 +46,14 @@ export const BeforeAfter: React.FC<BeforeAfterProps> = ({
     setPos(Math.max(0, Math.min(100, p)));
   };
 
+  const tiny = tinyUrl(after, 24);
+
   return (
     <div className={`flex items-center justify-center ${className}`}>
       <div
         ref={containerRef}
-        className="relative inline-block max-w-full overflow-hidden select-none touch-none"
+        className="relative mx-auto overflow-hidden select-none touch-none bg-surface-container"
+        style={naturalBoxStyle(ar, maxHeightVh)}
         onPointerDown={(e) => {
           draggingRef.current = true;
           (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -61,29 +69,50 @@ export const BeforeAfter: React.FC<BeforeAfterProps> = ({
           draggingRef.current = false;
         }}
       >
-        {/* After（底層，完成品）— 決定容器尺寸，保持原圖比例 */}
-        <img
-          src={thumbUrl(after, 1600)}
-          alt={alt}
-          draggable={false}
-          className={`block w-auto h-auto max-w-full ${maxHeightClass} pointer-events-none select-none`}
-        />
-
-        {/* Before（上層，依分隔線裁切）— 與 after 同比例，所以 object-cover 不會裁到 */}
-        <div className="absolute inset-0" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
-          <img
-            src={thumbUrl(before, 1600)}
-            alt=""
-            draggable={false}
-            className="block w-full h-full object-cover pointer-events-none select-none"
+        {/* 載入中的佔位：極小縮圖模糊放大 + 脈動底色 */}
+        {!loaded && !error && <div className="absolute inset-0 animate-pulse bg-surface-container-high" />}
+        {!loaded && !error && tiny !== after && (
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 scale-110 blur-xl"
+            style={{ backgroundImage: `url("${tiny}")`, backgroundSize: 'cover', backgroundPosition: 'center' }}
           />
-        </div>
+        )}
+        {error && (
+          <div className="absolute inset-0 flex items-center justify-center text-ink-muted font-mono text-[10px] uppercase tracking-wider">
+            No image
+          </div>
+        )}
+
+        {/* After（底層，完成品） */}
+        {!error && (
+          <img
+            src={thumbUrl(after, 1600)}
+            alt={alt}
+            draggable={false}
+            onLoad={() => setLoaded(true)}
+            onError={() => setError(true)}
+            className={`absolute inset-0 w-full h-full object-cover pointer-events-none select-none transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+          />
+        )}
+
+        {/* Before（上層，依分隔線裁切） */}
+        {!error && (
+          <div className="absolute inset-0" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
+            <img
+              src={thumbUrl(before, 1600)}
+              alt=""
+              draggable={false}
+              className="block w-full h-full object-cover pointer-events-none select-none"
+            />
+          </div>
+        )}
 
         {/* 標籤 */}
-        <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/60 text-white font-mono text-[10px] font-bold uppercase tracking-wider pointer-events-none">
+        <span className="absolute bottom-3 left-3 px-2.5 py-1 rounded-full bg-black/60 text-white font-mono text-[10px] font-bold uppercase tracking-wider pointer-events-none">
           {beforeLabel}
         </span>
-        <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/60 text-white font-mono text-[10px] font-bold uppercase tracking-wider pointer-events-none">
+        <span className="absolute bottom-3 right-3 px-2.5 py-1 rounded-full bg-black/60 text-white font-mono text-[10px] font-bold uppercase tracking-wider pointer-events-none">
           {afterLabel}
         </span>
 
