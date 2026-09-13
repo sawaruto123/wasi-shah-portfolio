@@ -49,7 +49,9 @@ export const BeforeAfter: React.FC<BeforeAfterProps> = ({
   const tiny = tinyUrl(after, 24);
 
   return (
-    <div className={`flex items-center justify-center ${className}`}>
+    // full-width block wrapper: the box below uses width:100% + maxWidth, so it
+    // must NOT be a shrink-to-fit flex item (that collapsed it to 0x0)
+    <div className={`w-full ${className}`}>
       <div
         ref={containerRef}
         className="relative mx-auto overflow-hidden select-none touch-none bg-surface-container"
