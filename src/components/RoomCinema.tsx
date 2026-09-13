@@ -117,7 +117,7 @@ export const RoomCinema: React.FC<RoomCinemaProps> = ({ onSelectFilm, onSelectSt
       <div className="mb-12">
         <h3 className="font-display text-xl font-bold uppercase text-ink mb-1">Daily</h3>
         <p className="font-mono text-[11px] text-ink-muted mb-4">Random shots from everyday life.</p>
-        <div className="columns-2 sm:columns-3 lg:columns-5 gap-3">
+        <div className="columns-2 sm:columns-3 lg:columns-4 gap-3">
           {dailyStills.map(renderStill)}
         </div>
         {dailyStills.length === 0 && (
@@ -142,7 +142,7 @@ export const RoomCinema: React.FC<RoomCinemaProps> = ({ onSelectFilm, onSelectSt
               {ev.description && (
                 <p className="font-body text-sm text-ink-muted mb-4">{ev.description}</p>
               )}
-              <div className="columns-2 sm:columns-3 lg:columns-5 gap-3">
+              <div className="columns-2 sm:columns-3 lg:columns-4 gap-3">
                 {images.map(renderStill)}
               </div>
             </div>
@@ -152,7 +152,7 @@ export const RoomCinema: React.FC<RoomCinemaProps> = ({ onSelectFilm, onSelectSt
         {unassignedEventStills.length > 0 && (
           <div className="mb-10">
             <h4 className="font-display text-lg font-bold uppercase text-ink mb-4">Other</h4>
-            <div className="columns-2 sm:columns-3 lg:columns-5 gap-3">
+            <div className="columns-2 sm:columns-3 lg:columns-4 gap-3">
               {unassignedEventStills.map(renderStill)}
             </div>
           </div>
