@@ -64,7 +64,10 @@ Instead of one long page, the site is a **corridor through space**. Scrolling mo
 <img src="docs/project.jpg" alt="Project detail modal with gallery and diagrams" width="900">
 
 ### 04 · Films
-<img src="docs/films.jpg" alt="Films room — short films and commercial work" width="900">
+<img src="docs/films.jpg" alt="Films room — short films and the commercial client list" width="900">
+
+### 04 · Photography
+<img src="docs/films-photography.jpg" alt="Films room — daily and event photography, each with a before/after badge" width="900">
 
 ### 05 · Connect
 <img src="docs/connect.jpg" alt="Connect room — contact and socials" width="900">
