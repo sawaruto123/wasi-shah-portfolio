@@ -381,23 +381,23 @@ export const Modals: React.FC<ModalsProps> = ({
           </div>
         )}
 
-        {/* Still Photo Lightbox */}
+        {/* Still Photo — 依原圖比例顯示，不強制裁成 4:3 */}
         {activeStill && (
           <div key={currentId} className={`overflow-y-auto ${slideClass}`}>
-            <div className="relative w-full max-h-[65vh] bg-black flex items-center justify-center">
+            <div className="relative w-full bg-black flex items-center justify-center">
               {activeStill.beforeImage ? (
                 <BeforeAfter
-                  before={thumbUrl(activeStill.beforeImage, 1400, 1050)}
-                  after={thumbUrl(activeStill.image, 1400, 1050)}
+                  before={activeStill.beforeImage}
+                  after={activeStill.image}
                   alt={activeStill.title}
-                  className="w-full max-h-[65vh] aspect-[4/3]"
+                  maxHeightClass="max-h-[68vh]"
                 />
               ) : (
-                <SmartImage
+                <img
                   src={thumbUrl(activeStill.image, 1600)}
                   alt={activeStill.title}
-                  className="w-full max-h-[65vh] aspect-[4/3]"
-                  imgClassName="w-full h-full object-contain"
+                  referrerPolicy="no-referrer"
+                  className="block w-auto h-auto max-w-full max-h-[68vh] object-contain"
                 />
               )}
             </div>
