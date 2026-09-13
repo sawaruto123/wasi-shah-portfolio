@@ -390,14 +390,15 @@ export const Modals: React.FC<ModalsProps> = ({
                   before={activeStill.beforeImage}
                   after={activeStill.image}
                   alt={activeStill.title}
-                  maxHeightClass="max-h-[68vh]"
+                  maxHeightVh={68}
                 />
               ) : (
-                <img
-                  src={thumbUrl(activeStill.image, 1600)}
+                <SmartImage
+                  src={activeStill.image}
                   alt={activeStill.title}
-                  referrerPolicy="no-referrer"
-                  className="block w-auto h-auto max-w-full max-h-[68vh] object-contain"
+                  ratio="natural"
+                  naturalMaxHeightVh={68}
+                  className="mx-auto"
                 />
               )}
             </div>

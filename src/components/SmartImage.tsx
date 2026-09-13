@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { RATIO_CLASS, POS_CLASS } from '../lib/aspect';
 import { tinyUrl } from '../lib/image';
+import { useNaturalAspect, naturalBoxStyle } from '../lib/useNaturalAspect';
 
 interface SmartImageProps {
   src: string;
@@ -13,6 +14,8 @@ interface SmartImageProps {
   ratio?: string;
   /** 裁切焦點：'center' | 'top' | 'bottom' | 'left' | 'right' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' */
   position?: string;
+  /** ratio='natural' 時的最大高度（vh） */
+  naturalMaxHeightVh?: number;
   loading?: 'lazy' | 'eager';
 }
 
@@ -29,11 +32,14 @@ export const SmartImage: React.FC<SmartImageProps> = ({
   imgClassName = 'w-full h-full object-cover',
   ratio,
   position = 'center',
+  naturalMaxHeightVh = 68,
   loading = 'lazy',
 }) => {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
   const [detected, setDetected] = useState('aspect-video');
+  const isNaturalMode = ratio === 'natural';
+  const naturalAr = useNaturalAspect(src, isNaturalMode);
 
   // 載入時先探測原圖方向，讓骨架比例一開始就正確（避免 16:9 → 3:4 跳動）
   useEffect(() => {
@@ -53,7 +59,6 @@ export const SmartImage: React.FC<SmartImageProps> = ({
   }, [ratio, src]);
 
   const hasAspect = ratio !== undefined && ratio !== '' && ratio !== 'none' && ratio !== 'natural';
-  const isNatural = ratio === 'natural';
   const aspectClass = hasAspect
     ? ratio === 'auto'
       ? detected
@@ -63,15 +68,21 @@ export const SmartImage: React.FC<SmartImageProps> = ({
   const tiny = tinyUrl(src);
   const hasTiny = tiny !== src;
 
-  // 自然比例模式：不裁切。用極小的縮圖當「比例佔位」，載入前就先撐出
-  // 正確高度，所以圖會完整顯示、版面也不會跳動。
-  if (isNatural) {
+  // 自然比例模式：不裁切。先用極小縮圖測出比例，載入前就撐出正確形狀
+  // 並顯示模糊預覽，所以圖會完整顯示、也不會只看到空白。
+  if (isNaturalMode) {
     return (
-      <div className={`relative overflow-hidden bg-surface-container ${className}`}>
-        {hasTiny ? (
-          <img src={tiny} alt="" aria-hidden="true" decoding="async" className="w-full h-auto" />
-        ) : (
-          <div className="aspect-[3/4] animate-pulse bg-surface-container-high" />
+      <div
+        className={`relative overflow-hidden bg-surface-container ${className}`}
+        style={naturalBoxStyle(naturalAr, naturalMaxHeightVh)}
+      >
+        {!loaded && !error && <div className="absolute inset-0 animate-pulse bg-surface-container-high" />}
+        {!loaded && !error && hasTiny && (
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 scale-110 blur-xl"
+            style={{ backgroundImage: `url("${tiny}")`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+          />
         )}
         {error ? (
           <div className="absolute inset-0 flex items-center justify-center text-ink-muted font-mono text-[10px] uppercase tracking-wider">
