@@ -9,7 +9,7 @@ interface SmartImageProps {
   className?: string;
   /** 圖片本身的尺寸與效果（預設填滿容器） */
   imgClassName?: string;
-  /** 傳入時才套用裁切比例：'auto'（依原圖方向自動 16:9 / 3:4）或 '16:9' | '9:16' | '4:3' | '3:4' | '1:1'。不傳＝不套用，適合卡片用 absolute inset-0 填滿。 */
+  /** 傳入時才套用裁切比例：'auto'（依原圖方向自動 16:9 / 3:4）、'natural'（完全依原圖比例，不裁切）或 '16:9' | '9:16' | '4:3' | '3:4' | '1:1'。不傳＝不套用，適合卡片用 absolute inset-0 填滿。 */
   ratio?: string;
   /** 裁切焦點：'center' | 'top' | 'bottom' | 'left' | 'right' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' */
   position?: string;
@@ -52,7 +52,8 @@ export const SmartImage: React.FC<SmartImageProps> = ({
     };
   }, [ratio, src]);
 
-  const hasAspect = ratio !== undefined && ratio !== '' && ratio !== 'none';
+  const hasAspect = ratio !== undefined && ratio !== '' && ratio !== 'none' && ratio !== 'natural';
+  const isNatural = ratio === 'natural';
   const aspectClass = hasAspect
     ? ratio === 'auto'
       ? detected
@@ -61,6 +62,36 @@ export const SmartImage: React.FC<SmartImageProps> = ({
   const posClass = POS_CLASS[position] ?? 'object-center';
   const tiny = tinyUrl(src);
   const hasTiny = tiny !== src;
+
+  // 自然比例模式：不裁切。用極小的縮圖當「比例佔位」，載入前就先撐出
+  // 正確高度，所以圖會完整顯示、版面也不會跳動。
+  if (isNatural) {
+    return (
+      <div className={`relative overflow-hidden bg-surface-container ${className}`}>
+        {hasTiny ? (
+          <img src={tiny} alt="" aria-hidden="true" decoding="async" className="w-full h-auto" />
+        ) : (
+          <div className="aspect-[3/4] animate-pulse bg-surface-container-high" />
+        )}
+        {error ? (
+          <div className="absolute inset-0 flex items-center justify-center text-ink-muted font-mono text-[10px] uppercase tracking-wider">
+            No image
+          </div>
+        ) : (
+          <img
+            src={src}
+            alt={alt}
+            referrerPolicy="no-referrer"
+            loading={loading}
+            decoding="async"
+            onLoad={() => setLoaded(true)}
+            onError={() => setError(true)}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'} ${posClass} ${imgClassName}`}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className={`overflow-hidden bg-surface-container ${aspectClass} ${className}`}>

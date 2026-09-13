@@ -20,13 +20,13 @@ export const RoomCinema: React.FC<RoomCinemaProps> = ({ onSelectFilm, onSelectSt
     <button
       key={still.id}
       onClick={() => onSelectStill(still)}
-      className="group relative aspect-square rounded-2xl overflow-hidden cursor-pointer border-none p-0 cv-auto"
+      className="group relative block w-full mb-3 break-inside-avoid rounded-2xl overflow-hidden cursor-pointer border-none p-0"
     >
       <SmartImage
-        src={thumbUrl(still.image, 300, 300)}
+        src={thumbUrl(still.image, 520)}
         alt={still.title || 'Photo'}
-        className="absolute inset-0"
-        imgClassName="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
+        ratio="natural"
+        imgClassName="group-hover:scale-[1.03] transition-transform duration-500"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       {still.beforeImage && (
@@ -117,7 +117,7 @@ export const RoomCinema: React.FC<RoomCinemaProps> = ({ onSelectFilm, onSelectSt
       <div className="mb-12">
         <h3 className="font-display text-xl font-bold uppercase text-ink mb-1">Daily</h3>
         <p className="font-mono text-[11px] text-ink-muted mb-4">Random shots from everyday life.</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="columns-2 sm:columns-3 lg:columns-5 gap-3">
           {dailyStills.map(renderStill)}
         </div>
         {dailyStills.length === 0 && (
@@ -142,7 +142,7 @@ export const RoomCinema: React.FC<RoomCinemaProps> = ({ onSelectFilm, onSelectSt
               {ev.description && (
                 <p className="font-body text-sm text-ink-muted mb-4">{ev.description}</p>
               )}
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              <div className="columns-2 sm:columns-3 lg:columns-5 gap-3">
                 {images.map(renderStill)}
               </div>
             </div>
@@ -152,7 +152,7 @@ export const RoomCinema: React.FC<RoomCinemaProps> = ({ onSelectFilm, onSelectSt
         {unassignedEventStills.length > 0 && (
           <div className="mb-10">
             <h4 className="font-display text-lg font-bold uppercase text-ink mb-4">Other</h4>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div className="columns-2 sm:columns-3 lg:columns-5 gap-3">
               {unassignedEventStills.map(renderStill)}
             </div>
           </div>
