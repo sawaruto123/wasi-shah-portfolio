@@ -3,6 +3,7 @@ import { ArrowRight } from 'lucide-react';
 import { useContent } from '../lib/content';
 import { ThemeToggle } from '../lib/theme';
 import { BgOpacityControl } from '../lib/bgOpacity';
+import { thumbUrl } from '../lib/image';
 import { SmartImage } from './SmartImage';
 import { Room } from '../types';
 
@@ -30,7 +31,7 @@ export const NavigationHUD: React.FC<NavigationHUDProps> = ({
           <div className="w-9 h-9 rounded-xl overflow-hidden bg-ink text-white flex items-center justify-center font-mono font-bold text-xs tracking-wider group-hover:bg-primary transition-colors">
             {settings.profile.logo_image ? (
               <SmartImage
-                src={settings.profile.logo_image}
+                src={thumbUrl(settings.profile.logo_image, 72)}
                 alt="Logo"
                 className="w-full h-full"
               />

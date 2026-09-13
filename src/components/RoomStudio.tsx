@@ -1,5 +1,6 @@
 import React from 'react';
 import { useContent } from '../lib/content';
+import { thumbUrl } from '../lib/image';
 import { AsciiPortrait } from './AsciiPortrait';
 
 export const RoomStudio: React.FC = () => {
@@ -23,7 +24,7 @@ export const RoomStudio: React.FC = () => {
         {/* 左：肖像（無框） + 語言 */}
         <div className="lg:col-span-5">
           <div className="relative rounded-3xl overflow-hidden float-slow">
-            <AsciiPortrait src={profile.portrait} className="w-full h-[440px]" />
+            <AsciiPortrait src={thumbUrl(profile.portrait, 900)} className="w-full h-[440px]" />
             <div className="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-[#11263F]/85 to-transparent text-white">
               <div className="flex items-center justify-between">
                 <span className="font-display text-2xl font-bold">{profile.name}</span>
