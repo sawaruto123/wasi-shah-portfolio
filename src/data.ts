@@ -118,22 +118,28 @@ export const PROJECTS: Project[] = [
 
 export const COMMERCIAL_ENGAGEMENTS: CommercialEngagement[] = [
   {
-    id: 'tribeonone',
-    category: 'Decentralized Web3',
-    client: 'TribeOnOne',
-    description: 'Brand system re-architecture and motion launch collateral for crypto protocols.'
+    id: 'behance-adobe-ambassador',
+    category: 'Adobe Creative Community',
+    client: 'Behance Co Limited',
+    description: 'Live YouTube streams, workshops, and an After Effects course for the Adobe creative community.'
   },
   {
-    id: 'pixelcap',
-    category: 'Venture Capital',
-    client: 'PixelCap',
-    description: 'Complete corporate identity, keynote pitch design, and media portal.'
+    id: 'vai-marketing-teacher',
+    category: 'Education & Marketing',
+    client: 'Virtual Academy International',
+    description: 'Campaigns, print collateral, and an internal debit-note billing system.'
   },
   {
-    id: 'viral-reels',
-    category: 'High-Velocity Motion',
-    client: 'Viral Reels (40M+ Imp)',
-    description: 'Kinetic video reels and retention editing frameworks across YouTube and TikTok.'
+    id: 'moji-creative-apac',
+    category: 'Creative Agency · APAC',
+    client: 'moji Corporation Limited',
+    description: 'Campaign concepts, video and photo editing for APAC clients.'
+  },
+  {
+    id: 'seaman-paper-graphic',
+    category: 'Print & Packaging',
+    client: 'Seaman Paper Asia',
+    description: 'Production artwork and day-to-day marketing collateral.'
   }
 ];
 
