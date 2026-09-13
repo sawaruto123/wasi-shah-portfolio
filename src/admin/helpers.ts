@@ -20,18 +20,27 @@ export async function uploadBlob(blob: Blob, ext: string): Promise<string> {
   if (token) headers.Authorization = `Bearer ${token}`;
 
   const res = await fetch('/api/upload', { method: 'POST', headers, body: blob });
-  if (!res.ok) {
-    let msg = res.status === 401 ? 'Sign in required to upload' : 'Upload failed';
-    try {
-      const e = await res.json();
-      msg = e.error || msg;
-    } catch {
-      /* ignore */
-    }
-    throw new Error(msg);
+  const contentType = res.headers.get('content-type') || '';
+
+  // A non-JSON reply means we never reached the upload function at all. In
+  // `npm run dev` there is no serverless runtime, so the route 404s and Vite
+  // answers with HTML — which used to surface as an opaque "Upload failed".
+  if (!contentType.includes('application/json')) {
+    throw new Error(
+      res.status === 404
+        ? 'Upload endpoint not available here. It exists on the deployed site only — use the live /admin, or run `npx vercel dev`.'
+        : `Upload failed (HTTP ${res.status}) — unexpected non-JSON response.`,
+    );
   }
-  const data = await res.json();
-  return data.url as string;
+
+  const data = await res.json().catch(() => ({}) as { url?: string; error?: string });
+  if (!res.ok) {
+    throw new Error(
+      data.error || (res.status === 401 ? 'Sign in required to upload' : `Upload failed (HTTP ${res.status})`),
+    );
+  }
+  if (!data.url) throw new Error('Upload succeeded but no URL was returned.');
+  return data.url;
 }
 
 /** Uploads an image file to ImageKit, returns its public URL. */

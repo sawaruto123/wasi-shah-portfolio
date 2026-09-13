@@ -35,7 +35,7 @@ export const SettingsManager: React.FC = () => {
 
   const patchNested = <K extends keyof SiteSettings>(key: K, nested: Partial<SiteSettings[K]>) => {
     setSettings((s) => {
-      const current = s[key] as Record<string, unknown>;
+      const current = s[key] as unknown as Record<string, unknown>;
       return { ...s, [key]: { ...current, ...nested } } as SiteSettings;
     });
   };

@@ -163,18 +163,18 @@ export const FILM_RECORDS: FilmRecord[] = [
 ];
 
 export const STILL_CAPTURES: StillCapture[] = [
-  { id: 'merc-studio', title: 'Mercedes-Benz Studio', focalLength: '16mm', image: '/images/photo-01.jpg', accentColor: '#0047ff' },
-  { id: 'city-plaza', title: 'City Plaza — Woman in Grid', focalLength: '35mm', image: '/images/photo-02.jpg' },
-  { id: 'macao-granny', title: 'Macao Granny', focalLength: '50mm', image: '/images/photo-03.jpg', accentColor: '#ff6b35' },
-  { id: 'ocean-park', title: 'Ocean Park Streetsnap', focalLength: '35mm', image: '/images/photo-04.jpg' },
-  { id: 'central-granny', title: 'Central Granny', focalLength: '50mm', image: '/images/photo-05.jpg', accentColor: '#ff6b35' },
-  { id: 'dingding', title: 'DingDing Handle', focalLength: '24mm', image: '/images/photo-06.jpg' },
-  { id: 'classroom', title: 'Classroom', focalLength: '35mm', image: '/images/photo-07.jpg' },
-  { id: 'building-hole', title: 'Building with a Hole', focalLength: '24mm', image: '/images/photo-08.jpg', accentColor: '#ffb800' },
-  { id: 'worker', title: 'Worker', focalLength: '85mm', image: '/images/photo-09.jpg', accentColor: '#ffb800' },
-  { id: 'dancing-light', title: 'Dancing with Light', focalLength: '35mm', image: '/images/photo-10.jpg' },
-  { id: 'vibe-bw', title: 'Vibe', focalLength: '50mm', image: '/images/photo-11.jpg' },
-  { id: 'composition-bw', title: 'Composition', focalLength: '35mm', image: '/images/photo-12.jpg', accentColor: '#0047ff' },
+  { id: 'merc-studio', title: 'Mercedes-Benz Studio', focalLength: '16mm', image: '/images/photo-01.jpg', category: 'daily', accentColor: '#0047ff' },
+  { id: 'city-plaza', title: 'City Plaza — Woman in Grid', focalLength: '35mm', image: '/images/photo-02.jpg', category: 'daily' },
+  { id: 'macao-granny', title: 'Macao Granny', focalLength: '50mm', image: '/images/photo-03.jpg', category: 'daily', accentColor: '#ff6b35' },
+  { id: 'ocean-park', title: 'Ocean Park Streetsnap', focalLength: '35mm', image: '/images/photo-04.jpg', category: 'daily' },
+  { id: 'central-granny', title: 'Central Granny', focalLength: '50mm', image: '/images/photo-05.jpg', category: 'daily', accentColor: '#ff6b35' },
+  { id: 'dingding', title: 'DingDing Handle', focalLength: '24mm', image: '/images/photo-06.jpg', category: 'daily' },
+  { id: 'classroom', title: 'Classroom', focalLength: '35mm', image: '/images/photo-07.jpg', category: 'daily' },
+  { id: 'building-hole', title: 'Building with a Hole', focalLength: '24mm', image: '/images/photo-08.jpg', category: 'daily', accentColor: '#ffb800' },
+  { id: 'worker', title: 'Worker', focalLength: '85mm', image: '/images/photo-09.jpg', category: 'daily', accentColor: '#ffb800' },
+  { id: 'dancing-light', title: 'Dancing with Light', focalLength: '35mm', image: '/images/photo-10.jpg', category: 'daily' },
+  { id: 'vibe-bw', title: 'Vibe', focalLength: '50mm', image: '/images/photo-11.jpg', category: 'daily' },
+  { id: 'composition-bw', title: 'Composition', focalLength: '35mm', image: '/images/photo-12.jpg', category: 'daily', accentColor: '#0047ff' },
 ];
 
 // 預設網站內容（Supabase 未連線或無資料時的 fallback）

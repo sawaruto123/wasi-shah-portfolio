@@ -148,7 +148,9 @@ export const MultiImageField: React.FC<{ value: ManagedImage[]; onChange: (v: Ma
   const [error, setError] = useState<string | null>(null);
 
   const handleFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? []);
+    // FileList 在部分 TS DOM 版本不會被推斷成 File[]，明確指定避免 unknown[]
+    const list = e.target.files as ArrayLike<File> | null;
+    const files: File[] = list ? Array.from(list) : [];
     if (!files.length) return;
     setUploading(true);
     setError(null);
