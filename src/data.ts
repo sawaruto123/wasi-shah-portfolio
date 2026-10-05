@@ -140,6 +140,12 @@ export const COMMERCIAL_ENGAGEMENTS: CommercialEngagement[] = [
     category: 'Print & Packaging',
     client: 'Seaman Paper Asia',
     description: 'Production artwork and day-to-day marketing collateral.'
+  },
+  {
+    id: 'tribeonone',
+    category: 'Web & Community',
+    client: 'TribeOnOne',
+    description: 'Landing site, brand identity and a Telegram bot for a global electric unicycle community.'
   }
 ];
 
