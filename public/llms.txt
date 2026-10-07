@@ -1,6 +1,6 @@
 # WASI SHAH / 峻山 — Digital World Portfolio
 
-> Filmmaker, motion designer, graphic designer and creative developer based in Hong Kong. Film, motion, design, 3D and AI.
+> Hong Kong web developer, web designer and filmmaker. Hand-coded websites, product dashboards, editorial and graphic design, motion graphics, video editing, 3D and AI.
 
 ## Pages
 - [Home / World](https://wasi-shah-portfolio.vercel.app/): A 3D spatial portfolio with an interactive space world, blackhole, and five rooms (World, Lab, Archive, Films, Connect).
@@ -8,11 +8,31 @@
 - [Admin CMS](https://wasi-shah-portfolio.vercel.app/admin): Content management (login required).
 
 ## About
-Syed Wasi Shah (峻山) is a video editor, motion designer and graphic designer based in Hong Kong, studying Computer Science at Hong Kong Metropolitan University (HKMU). He cuts films, designs brand systems, and builds interactive tools.
+Syed Wasi Shah (峻山) is a web developer, web designer and filmmaker based in Hong Kong, studying Computer Science at Hong Kong Metropolitan University (HKMU). He builds websites and product interfaces by hand rather than from templates, works as a designer across brand, editorial and motion work, and edits and shoots film and video.
 
-Skills: Premiere Pro, After Effects, Photoshop, Illustrator, Python, Blender, ComfyUI, CrewAI, Three.js, React.
+## Work
+Eight projects in the archive, including:
+- **TribeOnOne** — a live community website for an EUC riding community. Client work; brand identity, site and a Telegram bot.
+- **VAI Academy OS** — a multi-role dashboard built for Virtual Academy International, covering salary, debit notes and class records.
+- **An Xin (安心)** — an Android companion app for elder care, pairing an elder's device with a family carer's. One APK, two roles.
+- **Personal Ops Suite** — a set of Windows desktop tools (task widget, expense tracker, power monitor, app hub).
+- **Portfolio World** — this site: a 3D spatial portfolio built with React and Three.js.
 
-Experience: Adobe Ambassador (Behance Co), Marketing & Teacher (Virtual Academy International), Creative Intern APAC (moji Corporation), Graphic Trainee (Seaman Paper Asia).
+## Services
+Available for freelance work: hand-coded websites (landing pages, multi-page sites, e-commerce), CMS integration, SEO and AEO, email setup, chat and notification bots, logo and brand systems, and short-form video. Also available for product and UI design, motion graphics and video editing work.
+
+## Roles
+Web developer · Web designer · Product and UI designer · Graphic designer · Motion designer · Video editor · Filmmaker · Photographer
+
+## Skills
+- **Web:** HTML, CSS, JavaScript, TypeScript, React, Tailwind CSS, Vite, Three.js
+- **Backend:** Python, FastAPI, Flask, Django, Supabase, PostgreSQL, Redis, Docker, Nginx
+- **Design:** Photoshop, Illustrator, Framer
+- **Motion and video:** After Effects, Premiere Pro, DaVinci Resolve, Blender, Remotion
+- **AI:** ComfyUI, Midjourney, local LLM tooling, RAG and agent frameworks
+
+## Experience
+Adobe Ambassador (Behance Co), Marketing & Teacher (Virtual Academy International), Creative Intern APAC (moji Corporation), Graphic Trainee (Seaman Paper Asia).
 
 ## Contact
 - Email: syedwasi983@gmail.com
