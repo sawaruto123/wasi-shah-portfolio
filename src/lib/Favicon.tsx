@@ -25,13 +25,18 @@ export const Favicon: React.FC = () => {
       link.type = ext === 'svg' ? 'image/svg+xml' : 'image/png';
     };
 
-    supabase
-      .from('site_settings')
-      .select('value')
-      .eq('key', 'profile')
-      .maybeSingle()
-      .then(({ data }) => apply((data?.value as { favicon?: string } | null)?.favicon))
-      .catch(() => {});
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('site_settings')
+          .select('value')
+          .eq('key', 'profile')
+          .maybeSingle();
+        apply((data?.value as { favicon?: string } | null)?.favicon);
+      } catch {
+        // 抓不到 favicon 就保留 index.html 的預設
+      }
+    })();
 
     return () => {
       cancelled = true;
