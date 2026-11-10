@@ -199,6 +199,9 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
       document.head.appendChild(link);
     }
     link.href = favicon;
+    // index.html 預設是 svg，但 CMS 上傳的是 png；別讓 type 對不上導致瀏覽器忽略。
+    const ext = favicon.split('?')[0].split('.').pop()?.toLowerCase();
+    link.type = ext === 'svg' ? 'image/svg+xml' : 'image/png';
   }, [settings.profile.favicon]);
 
   const value = useMemo<ContentValue>(
