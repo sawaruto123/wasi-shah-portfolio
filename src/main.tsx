@@ -6,6 +6,7 @@ import { NotFound } from './components/NotFound.tsx';
 import { PrivacyPolicy } from './components/PrivacyPolicy.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 import { reportError } from './lib/errorLog';
+import { Favicon } from './lib/Favicon';
 import './index.css';
 
 // Capture uncaught errors so they land in the client_errors table, not just the console.
@@ -63,4 +64,9 @@ function render() {
   );
 }
 
-createRoot(document.getElementById('root')!).render(<ErrorBoundary>{render()}</ErrorBoundary>);
+createRoot(document.getElementById('root')!).render(
+  <ErrorBoundary>
+    <Favicon />
+    {render()}
+  </ErrorBoundary>
+);
