@@ -35,6 +35,8 @@ export const Modals: React.FC<ModalsProps> = ({
   onClose,
   onShowToast,
 }) => {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const isOpen = !!(activeProject || activeFilm || activeStill);
   const [dir, setDir] = useState(0);
   const [lightbox, setLightbox] = useState<number | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -110,18 +112,55 @@ export const Modals: React.FC<ModalsProps> = ({
     setLightbox(null);
   }, [currentId]);
 
+  // 對話框開啟時移入焦點，關閉後回到原本的作品卡片。
+  useEffect(() => {
+    if (!isOpen) return;
+    const opener = document.activeElement as HTMLElement | null;
+    return () => {
+      if (opener?.isConnected) opener.focus({ preventScroll: true });
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const dialog = dialogRef.current;
+    const focusable = () => Array.from(dialog?.querySelectorAll<HTMLElement>(
+      'button:not(:disabled), a[href], input, textarea, select, iframe, [tabindex="0"]'
+    ) ?? []).filter((element) => element.getClientRects().length > 0);
+    focusable()[0]?.focus({ preventScroll: true });
+    const keepFocus = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab' || !dialog?.contains(document.activeElement)) return;
+      const elements = focusable();
+      const first = elements[0];
+      const last = elements[elements.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault(); last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault(); first?.focus();
+      }
+    };
+    document.addEventListener('keydown', keepFocus);
+    return () => {
+      document.removeEventListener('keydown', keepFocus);
+    };
+  }, [isOpen, currentId]);
+
   if (!activeProject && !activeFilm && !activeStill) return null;
 
   // 專案：卡片檢視（置中卡片，所有圖片 + 資訊）
   if (activeProject) {
     return (
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in"
+        className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in"
         onClick={onClose}
       >
         <div
           key={currentId}
-          className="modal-enter relative w-full max-w-6xl bg-surface-pure rounded-3xl border border-border-crisp overflow-hidden spatial-card max-h-[92vh] flex flex-col"
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label={activeProject.title}
+          className="modal-enter relative w-full max-w-6xl bg-surface-pure rounded-3xl border border-border-crisp overflow-hidden max-h-[92vh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
@@ -281,11 +320,15 @@ export const Modals: React.FC<ModalsProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="modal-enter relative w-full max-w-4xl bg-surface-pure rounded-3xl border border-border-crisp overflow-hidden spatial-card max-h-[90vh] flex flex-col"
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={activeFilm?.title || activeStill?.title || 'Photograph'}
+        className="modal-enter relative w-full max-w-4xl bg-surface-pure rounded-3xl border border-border-crisp overflow-hidden max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
@@ -294,6 +337,7 @@ export const Modals: React.FC<ModalsProps> = ({
         <button
           onClick={onClose}
           className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-black/60 text-white hover:bg-ink flex items-center justify-center transition-colors cursor-pointer border-none shadow-md"
+          aria-label="Close"
           title="Close Modal"
         >
           <X className="w-5 h-5" />

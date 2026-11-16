@@ -323,7 +323,7 @@ export default function App() {
   };
 
   return (
-    <div className="relative min-h-screen text-ink selection:bg-primary selection:text-white">
+    <div className="portfolio-shell relative min-h-screen text-ink selection:bg-primary selection:text-white">
       {/* 世界背景：網格 + 3D 走廊 */}
       <div className="fixed inset-0 z-0 hairline-grid pointer-events-none" />
       <SpatialCanvas onScrollProgress={handleScrollProgress} lightAngle={lightAngle} darkMode={dark} bgOpacity={bgOpacity} paused={!!(activeProject || activeFilm || activeStill)} onReady={handleWorldReady} />
@@ -338,6 +338,8 @@ export default function App() {
           return (
             <div
               key={room.id}
+              inert={!isActive || worldOnly}
+              aria-hidden={!isActive || worldOnly}
               className={`absolute inset-0 transition-all duration-700 ease-out ${
                 isActive ? 'opacity-100 pointer-events-auto room-enter' : 'opacity-0 pointer-events-none'
               }`}
@@ -345,7 +347,7 @@ export default function App() {
                 transform: `translateY(${isActive ? 0 : 48}px) scale(${isActive ? 1 : 0.96})`,
               }}
             >
-              <div className="tilt-3d h-full">
+              <div className="h-full">
                 <div
                   data-room-scroll={i}
                   className="room-scroll h-full overflow-y-auto overflow-x-hidden overscroll-contain"
@@ -378,7 +380,7 @@ export default function App() {
       <button
         onClick={() => setWorldOnly((v) => !v)}
         data-tour="world"
-        className="fixed bottom-5 right-5 z-50 hidden md:inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-ink text-white font-mono text-xs font-bold uppercase tracking-wider shadow-lg hover:bg-primary transition-colors cursor-pointer border-none"
+        className="world-toggle fixed bottom-5 right-5 z-40 hidden md:inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-ink text-white font-mono text-xs font-bold uppercase tracking-wider shadow-lg hover:bg-primary transition-colors cursor-pointer border-none"
         title={worldOnly ? '回到網站' : '只顯示 3D 世界'}
       >
         {worldOnly ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -389,18 +391,18 @@ export default function App() {
       <button
         onClick={() => scrollToRoom(activeIndex - 1)}
         disabled={activeIndex <= 0}
-        aria-label="上一段"
+        aria-label="Previous room"
         data-tour="arrow-prev"
-        className="fixed left-4 top-1/2 -translate-y-1/2 z-40 w-11 h-11 rounded-full bg-white/85 backdrop-blur-md border border-border-crisp shadow-lg text-ink hover:bg-primary hover:text-white transition-colors cursor-pointer border-none flex items-center justify-center disabled:opacity-30 disabled:cursor-default"
+        className="room-step room-step-prev"
       >
         <ArrowLeft className="w-5 h-5" />
       </button>
       <button
         onClick={() => scrollToRoom(activeIndex + 1)}
         disabled={activeIndex >= ROOM_COUNT - 1}
-        aria-label="下一段"
+        aria-label="Next room"
         data-tour="arrow-next"
-        className="fixed right-4 top-1/2 -translate-y-1/2 z-40 w-11 h-11 rounded-full bg-white/85 backdrop-blur-md border border-border-crisp shadow-lg text-ink hover:bg-primary hover:text-white transition-colors cursor-pointer border-none flex items-center justify-center disabled:opacity-30 disabled:cursor-default"
+        className="room-step room-step-next"
       >
         <ArrowRight className="w-5 h-5" />
       </button>
@@ -429,7 +431,7 @@ export default function App() {
       {/* 手機底部導覽列：點擊直接切換房間（最可靠的到達方式） */}
       <nav
         data-tour="bottom-nav"
-        className="fixed bottom-0 inset-x-0 z-40 md:hidden flex items-stretch bg-white/90 border-t border-border-crisp shadow-[0_-4px_20px_rgba(0,0,0,0.10)]"
+        className="mobile-nav fixed bottom-0 inset-x-0 z-40 md:hidden flex items-stretch"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         {ROOMS.map((room, i) => {

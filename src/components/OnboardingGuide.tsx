@@ -107,7 +107,7 @@ const MOBILE_STEPS: Step[] = [
     place: 'top',
     icon: <Compass className="w-5 h-5" />,
     title: 'Switch sections',
-    desc: 'Tap any section down here to jump straight to it: World, Work, Shots, Films, Connect.',
+    desc: 'Tap any section down here to jump straight to it: World, Lab, Archive, Films, Connect.',
   },
   {
     target: '[data-tour="bg"]',

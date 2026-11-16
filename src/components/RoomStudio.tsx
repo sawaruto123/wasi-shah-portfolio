@@ -1,3 +1,4 @@
+import { RoomHeading } from './RoomHeading';
 import React from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import { useContent } from '../lib/content';
@@ -59,25 +60,19 @@ export const RoomStudio: React.FC = () => {
   return (
     <section
       id="room-studio"
-      className="room-anchor min-h-screen flex flex-col justify-start px-5 sm:px-8 lg:px-12 max-w-[1440px] mx-auto pt-24 pb-28 md:pb-20"
+      className="room-anchor"
     >
-      <div className="flex items-center gap-3 mb-10">
-        <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/70 border border-border-crisp font-mono text-[11px] font-bold text-ink">
-          <span className="w-2 h-2 rounded-full bg-accent-lime" />
-          02 · LAB
-        </span>
-        <div className="h-px flex-1 bg-border-crisp" />
-      </div>
+      <RoomHeading number="02" label="Lab" />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
-        {/* 左：肖像（無框） + 語言 */}
+        {/* 左：肖像 + 語言 */}
         <div className="lg:col-span-4 min-w-0">
           <div className="relative rounded-3xl overflow-hidden border border-border-crisp bg-surface-pure">
             <AsciiPortrait src={thumbUrl(profile.portrait, 900)} className="w-full h-[360px] sm:h-[440px] lg:h-[380px]" />
             <div className="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-[#11263F]/85 to-transparent text-white">
               <div className="flex items-center justify-between">
-                <span className="font-display text-2xl font-bold">{profile.name}</span>
-                <span className="font-chinese text-2xl font-bold text-[#FFB15E]">{profile.name_cn}</span>
+                <span className="font-display text-lg sm:text-2xl font-bold">{profile.name}</span>
+                <span className="font-chinese text-xl sm:text-2xl font-bold text-[#FFB15E]">{profile.name_cn}</span>
               </div>
               <p className="font-mono text-xs text-white/70 uppercase tracking-widest mt-1">
                 {profile.location} · Multidisciplinary

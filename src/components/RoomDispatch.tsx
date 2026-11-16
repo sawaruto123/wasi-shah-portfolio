@@ -1,3 +1,4 @@
+import { RoomHeading } from './RoomHeading';
 import React, { useState } from 'react';
 import { Mail, MessageCircle, MapPin, Copy, ExternalLink, Send } from 'lucide-react';
 import { useContent } from '../lib/content';
@@ -58,20 +59,14 @@ export const RoomDispatch: React.FC<RoomDispatchProps> = ({ onShowToast }) => {
   return (
     <section
       id="room-dispatch"
-      className="room-anchor min-h-[120vh] flex flex-col justify-start px-5 sm:px-8 lg:px-12 max-w-[1720px] mx-auto pt-24 pb-28 md:pb-20"
+      className="room-anchor"
     >
-      <div className="flex items-center gap-3 mb-8">
-        <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/70 border border-border-crisp font-mono text-[11px] font-bold text-ink">
-          <span className="w-2 h-2 rounded-full bg-accent-yellow" />
-          05 · CONNECT
-        </span>
-        <div className="h-px flex-1 bg-border-crisp" />
-      </div>
+      <RoomHeading number="05" label="Connect" />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
         {/* 左：聯絡方式（無框） */}
-        <div className="lg:col-span-5">
-          <h2 className="font-display text-4xl sm:text-5xl font-bold text-ink tracking-tight leading-[1.02] mb-5">
+        <div className="lg:col-span-5 min-w-0">
+          <h2 className="section-heading mb-5">
             {contact.headline}
           </h2>
           <p className="font-body text-base text-ink-muted leading-relaxed mb-10">
@@ -83,19 +78,19 @@ export const RoomDispatch: React.FC<RoomDispatchProps> = ({ onShowToast }) => {
               <Mail className="w-5 h-5 text-primary shrink-0" />
               <button
                 onClick={() => copyToClipboard(contact.email, 'Email')}
-                className="font-mono text-sm text-ink font-bold hover:text-primary transition-colors cursor-pointer bg-transparent border-none p-0 text-left"
+                className="min-w-0 break-all font-body text-sm text-ink font-semibold hover:text-primary transition-colors cursor-pointer bg-transparent border-none p-0 text-left"
               >
                 {contact.email}
               </button>
-              <Copy
-                className="w-4 h-4 text-ink-muted ml-auto cursor-pointer hover:text-primary"
-                onClick={() => copyToClipboard(contact.email, 'Email')}
-              />
+              <button type="button" aria-label="Copy email address" className="ml-auto shrink-0 text-ink-muted hover:text-primary p-2" onClick={() => copyToClipboard(contact.email, 'Email')}>
+                <Copy className="w-4 h-4" aria-hidden="true" />
+              </button>
             </div>
             <div className="flex items-center gap-4 py-3 border-b border-border-crisp">
               <MessageCircle className="w-5 h-5 text-[#FFB15E] shrink-0" />
               <span className="font-mono text-sm text-ink font-bold">{contact.phone}</span>
               <a
+                aria-label="Open WhatsApp (opens in a new tab)"
                 href={`https://wa.me/${contact.whatsapp}`}
                 target="_blank"
                 rel="noreferrer"
@@ -129,14 +124,14 @@ export const RoomDispatch: React.FC<RoomDispatchProps> = ({ onShowToast }) => {
         </div>
 
         {/* 右：表單（柔軟無框容器） */}
-        <div className="lg:col-span-7">
-          <div className="p-8 sm:p-10 rounded-3xl bg-white/60">
+        <div className="lg:col-span-7 min-w-0">
+          <div className="contact-panel p-5 sm:p-8 lg:p-10 rounded-2xl">
             <div className="flex items-center justify-between mb-8 pb-5 border-b border-border-crisp">
               <div>
-                <h3 className="font-display text-2xl font-black uppercase text-ink">Send a Message</h3>
+                <h3 className="font-display text-2xl font-semibold tracking-tight text-ink">Send a Message</h3>
                 <p className="font-mono text-xs text-ink-muted mt-1">Usually replies within 6 hours</p>
               </div>
-              <span className="w-3 h-3 rounded-full bg-primary animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-primary shrink-0" aria-hidden="true" />
             </div>
 
             <form className="space-y-5" onSubmit={handleSubmit}>
@@ -150,15 +145,14 @@ export const RoomDispatch: React.FC<RoomDispatchProps> = ({ onShowToast }) => {
                 aria-hidden="true"
                 className="hidden"
               />
-              <div>
-                <label className="font-mono text-xs uppercase tracking-wider text-ink font-bold block mb-2.5">
-                  What do you need?
-                </label>
+              <fieldset>
+                <legend className="form-label">What do you need?</legend>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {(['motion', 'code', 'ai', 'brand'] as const).map((scope) => (
                     <button
                       key={scope}
                       type="button"
+                      aria-pressed={domainScope === scope}
                       onClick={() => setDomainScope(scope)}
                       className={`p-3 rounded-xl border font-mono text-xs text-center transition-all cursor-pointer ${
                         domainScope === scope
@@ -170,14 +164,17 @@ export const RoomDispatch: React.FC<RoomDispatchProps> = ({ onShowToast }) => {
                     </button>
                   ))}
                 </div>
-              </div>
+              </fieldset>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="font-mono text-xs uppercase tracking-wider text-ink font-bold block mb-2">
+                  <label htmlFor="contact-name" className="form-label">
                     Name
                   </label>
                   <input
+                    id="contact-name"
+                    name="name"
+                    autoComplete="name"
                     type="text"
                     required
                     value={clientName}
@@ -187,10 +184,13 @@ export const RoomDispatch: React.FC<RoomDispatchProps> = ({ onShowToast }) => {
                   />
                 </div>
                 <div>
-                  <label className="font-mono text-xs uppercase tracking-wider text-ink font-bold block mb-2">
+                  <label htmlFor="contact-email" className="form-label">
                     Email
                   </label>
                   <input
+                    id="contact-email"
+                    name="email"
+                    autoComplete="email"
                     type="email"
                     required
                     value={clientEmail}
@@ -202,10 +202,12 @@ export const RoomDispatch: React.FC<RoomDispatchProps> = ({ onShowToast }) => {
               </div>
 
               <div>
-                <label className="font-mono text-xs uppercase tracking-wider text-ink font-bold block mb-2">
+                <label htmlFor="contact-details" className="form-label">
                   Project details
                 </label>
                 <textarea
+                  id="contact-details"
+                  name="details"
                   rows={4}
                   required
                   value={parameters}
@@ -216,7 +218,7 @@ export const RoomDispatch: React.FC<RoomDispatchProps> = ({ onShowToast }) => {
               </div>
 
               {submitError && (
-                <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+                <p role="alert" className="text-sm text-red-200 bg-red-950/60 border border-red-400/30 rounded-xl px-4 py-3">
                   {submitError}
                 </p>
               )}
@@ -224,7 +226,7 @@ export const RoomDispatch: React.FC<RoomDispatchProps> = ({ onShowToast }) => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-4 px-6 rounded-2xl bg-ink text-white font-mono text-xs font-bold uppercase tracking-widest hover:bg-primary transition-colors flex items-center justify-center gap-2 cursor-pointer border-none disabled:opacity-50"
+                className="button-primary w-full disabled:opacity-50"
               >
                 <Send className="w-4 h-4" />
                 <span>{isSubmitting ? 'Sending...' : 'Send Message'}</span>

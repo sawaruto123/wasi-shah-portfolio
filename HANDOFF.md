@@ -228,3 +228,14 @@ node scripts/perf.mjs http://localhost:4173/ 3   # 3 = Films room
   misaligns. Wrap them in fenced ``` blocks for the `<pre>` renderer.
 - Don't commit throwaway scripts or screenshots; `scripts/` should stay just the
   documented tools.
+
+
+## 11. Portfolio UI conventions (November 2026)
+
+- Public rooms share `RoomHeading.tsx` and `.room-anchor` in `src/index.css` (1380px max width, common gutters and header clearance).
+- `.portfolio-shell` scopes the public UI refinements. The admin UI keeps its own layout.
+- Content has a dark gradient layer over the WebGL world for readability. World Only hides that layer with the content; background opacity and the manual night toggle still work.
+- Archive and film cards are native buttons, with imagery above the caption. Use `thumbUrl` for all thumbnails. Keep focus outlines and dialog focus/restore behavior.
+- Room navigation arrows live at the bottom on desktop; mobile uses the bottom nav. Keep the `data-tour` anchors when changing controls.
+- Inactive rooms are `inert` and `aria-hidden` so keyboard focus stays in the current room. Avoid bringing back whole-page tilt or floating content chips.
+- The Lab groups CMS skills without modifying saved content; credentials remain local official images linked to Credly.
