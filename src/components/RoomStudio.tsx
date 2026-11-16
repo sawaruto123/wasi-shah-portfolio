@@ -3,6 +3,39 @@ import { useContent } from '../lib/content';
 import { thumbUrl } from '../lib/image';
 import { AsciiPortrait } from './AsciiPortrait';
 
+/**
+ * Adobe Certified Professional credentials (issued to Syed Shah via Credly).
+ * Rendered as static badge images linked to the Credly verification page —
+ * the official embed uses third-party <script> + <iframe>, which the site's
+ * Content-Security-Policy blocks, and would add ~4 script downloads.
+ */
+const CERTIFICATIONS = [
+  {
+    tool: 'Adobe Photoshop',
+    name: 'Adobe Certified Professional in Visual Design Using Adobe Photoshop',
+    image: 'https://images.credly.com/images/162c92e8-c60c-4c89-87c7-2a5fd9ed318a/linkedin_thumb_Adobe_Certified_Professional_Adobe_Photoshop_digital_badge.png',
+    url: 'https://www.credly.com/badges/de2bd27f-fb7e-424e-844a-b1261543d224',
+  },
+  {
+    tool: 'Adobe Express',
+    name: 'Adobe Certified Professional in Content Creation and Marketing Using Adobe Express',
+    image: 'https://images.credly.com/images/46939579-e0ba-47ec-ba66-11e6a5103f70/linkedin_thumb_image.png',
+    url: 'https://www.credly.com/badges/0ba6a6d5-5142-4af2-aee0-8988e095a4a8',
+  },
+  {
+    tool: 'Adobe Acrobat Pro',
+    name: 'Adobe Certified Professional in Document Creation and Management Using Adobe Acrobat Pro',
+    image: 'https://images.credly.com/images/84996984-f87f-4229-8d3c-dd29b4716231/linkedin_thumb_image.png',
+    url: 'https://www.credly.com/badges/f2f2d28b-f242-4d62-8a56-6684ad767408',
+  },
+  {
+    tool: 'Marketing Design',
+    name: 'Adobe Certified Professional in Marketing Design',
+    image: 'https://images.credly.com/images/54d59f4a-0bad-4fcd-b68b-556ef2ef3011/linkedin_thumb_blob',
+    url: 'https://www.credly.com/badges/e315ce93-5ddf-403d-bb67-cb3c2fc3e986',
+  },
+];
+
 export const RoomStudio: React.FC = () => {
   const { settings } = useContent();
   const { profile, about, experience, skills, languages } = settings;
@@ -55,6 +88,38 @@ export const RoomStudio: React.FC = () => {
                     />
                   </div>
                 </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 認證：Adobe Certified Professional（點擊至 Credly 驗證） */}
+          <div className="mt-8">
+            <span className="font-mono text-xs uppercase tracking-widest text-primary font-bold">
+              Certifications
+            </span>
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              {CERTIFICATIONS.map((cert) => (
+                <a
+                  key={cert.url}
+                  href={cert.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  title={`Verify: ${cert.name}`}
+                  aria-label={`Verify ${cert.name} on Credly (opens in a new tab)`}
+                  className="group block rounded-2xl overflow-hidden bg-white/60 border border-border-crisp p-3 hover:border-primary/60 hover:-translate-y-0.5 transition-all no-underline"
+                >
+                  <img
+                    src={cert.image}
+                    alt={cert.name}
+                    loading="lazy"
+                    decoding="async"
+                    referrerPolicy="no-referrer"
+                    className="w-full h-auto block"
+                  />
+                  <span className="block mt-2.5 text-center font-mono text-[10px] font-bold uppercase tracking-wide text-ink group-hover:text-primary transition-colors">
+                    {cert.tool}
+                  </span>
+                </a>
               ))}
             </div>
           </div>
