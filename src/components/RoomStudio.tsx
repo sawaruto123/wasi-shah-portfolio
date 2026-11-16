@@ -1,4 +1,5 @@
 import React from 'react';
+import { ArrowUpRight, BadgeCheck } from 'lucide-react';
 import { useContent } from '../lib/content';
 import { thumbUrl } from '../lib/image';
 import { AsciiPortrait } from './AsciiPortrait';
@@ -44,7 +45,7 @@ export const RoomStudio: React.FC = () => {
   return (
     <section
       id="room-studio"
-      className="room-anchor min-h-[120vh] flex flex-col justify-start px-5 sm:px-8 lg:px-12 max-w-[1720px] mx-auto pt-24 pb-28 md:pb-20"
+      className="room-anchor min-h-screen flex flex-col justify-start px-5 sm:px-8 lg:px-12 max-w-[1440px] mx-auto pt-24 pb-28 md:pb-20"
     >
       <div className="flex items-center gap-3 mb-10">
         <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/70 border border-border-crisp font-mono text-[11px] font-bold text-ink">
@@ -54,11 +55,11 @@ export const RoomStudio: React.FC = () => {
         <div className="h-px flex-1 bg-border-crisp" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
         {/* 左：肖像（無框） + 語言 */}
-        <div className="lg:col-span-5">
-          <div className="relative rounded-3xl overflow-hidden float-slow">
-            <AsciiPortrait src={thumbUrl(profile.portrait, 900)} className="w-full h-[440px]" />
+        <div className="lg:col-span-4 min-w-0">
+          <div className="relative rounded-3xl overflow-hidden border border-border-crisp bg-surface-pure">
+            <AsciiPortrait src={thumbUrl(profile.portrait, 900)} className="w-full h-[360px] sm:h-[440px] lg:h-[380px]" />
             <div className="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-[#11263F]/85 to-transparent text-white">
               <div className="flex items-center justify-between">
                 <span className="font-display text-2xl font-bold">{profile.name}</span>
@@ -93,85 +94,100 @@ export const RoomStudio: React.FC = () => {
             </div>
           </div>
 
-          {/* 認證：Adobe Certified Professional（點擊至 Credly 驗證） */}
-          <div className="mt-8">
-            <span className="font-mono text-xs uppercase tracking-widest text-primary font-bold">
-              Certifications
-            </span>
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              {CERTIFICATIONS.map((cert) => (
-                <a
-                  key={cert.url}
-                  href={cert.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  title={`Verify: ${cert.name}`}
-                  aria-label={`Verify ${cert.name} on Credly (opens in a new tab)`}
-                  className="group block rounded-2xl overflow-hidden bg-white/60 border border-border-crisp p-3 hover:border-primary/60 hover:-translate-y-0.5 transition-all no-underline"
-                >
-                  <img
-                    src={cert.image}
-                    alt={cert.name}
-                    loading="lazy"
-                    decoding="async"
-                    referrerPolicy="no-referrer"
-                    className="w-full h-auto block"
-                  />
-                  <span className="block mt-2.5 text-center font-mono text-[10px] font-bold uppercase tracking-wide text-ink group-hover:text-primary transition-colors">
-                    {cert.tool}
-                  </span>
-                </a>
-              ))}
-            </div>
-          </div>
+
         </div>
 
         {/* 右：敘述 + 經歷 + 技能（無框） */}
-        <div className="lg:col-span-7">
-          <h2 className="font-display text-3xl sm:text-5xl font-bold text-ink tracking-tight leading-[1.05] mb-5">
+        <div className="lg:col-span-8 min-w-0">
+          <h2 className="font-display text-3xl sm:text-4xl xl:text-5xl font-bold text-ink tracking-tight leading-[1.05] mb-5">
             {about.headline}
           </h2>
-          <p className="font-body text-base text-ink font-medium leading-relaxed mb-4">
+          <p className="font-body text-base text-ink font-medium leading-relaxed max-w-[65ch] mb-4">
             {about.bio_1}
           </p>
-          <p className="font-body text-sm text-ink-muted leading-relaxed mb-10">
+          <p className="font-body text-sm text-ink-muted leading-relaxed max-w-[70ch] mb-9">
             {about.bio_2}
           </p>
 
           {/* 經歷列表 */}
-          <span className="font-mono text-xs uppercase tracking-widest text-primary font-bold">
+          <h3 className="font-mono text-xs uppercase tracking-widest text-primary font-bold">
             Experience
-          </span>
+          </h3>
           <div className="flex flex-col mt-3 mb-10">
             {experience.map((exp) => (
               <div
                 key={`${exp.role}-${exp.company}`}
-                className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-5 py-3 border-b border-border-crisp"
+                className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-2 sm:gap-x-6 py-5 border-b border-border-crisp"
               >
-                <span className="font-display text-lg font-bold text-ink">{exp.role}</span>
-                <span className="font-mono text-[10px] uppercase tracking-wider text-ink-muted">
-                  {exp.company} · {exp.date}
-                </span>
-                <span className="text-xs text-ink-muted sm:ml-auto sm:text-right">{exp.desc}</span>
+                <div>
+                  <h4 className="font-display text-lg font-bold text-ink leading-snug">{exp.role}</h4>
+                  <p className="font-mono text-[11px] text-primary mt-1">{exp.company}</p>
+                </div>
+                <div className="sm:text-right">
+                  <p className="font-mono text-[10px] uppercase tracking-wider text-ink-muted">{exp.date}</p>
+                  <p className="text-xs leading-relaxed text-ink-muted mt-1.5">{exp.desc}</p>
+                </div>
               </div>
             ))}
           </div>
 
           {/* 技能 chips */}
-          <span className="font-mono text-xs uppercase tracking-widest text-primary font-bold">
+          <h3 className="font-mono text-xs uppercase tracking-widest text-primary font-bold">
             Skills
-          </span>
+          </h3>
           <div className="flex flex-wrap gap-2 mt-3">
-            {skills.map((skill, i) => (
+            {skills.map((skill) => (
               <span
                 key={skill}
-                className="float-chip px-3.5 py-1.5 rounded-full bg-white/60 border border-border-crisp font-mono text-xs font-bold text-ink"
-                style={{ animationDelay: `${(i % 4) * 0.2}s` }}
+                className="px-3.5 py-2 rounded-lg bg-surface-warm/80 border border-border-crisp font-mono text-xs font-bold text-ink"
               >
                 {skill}
               </span>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* 認證獨立成列；保留官方圖像，深色卡片融入太空主題。 */}
+      <div className="mt-12 pt-8 border-t border-border-crisp">
+        <div className="flex flex-wrap items-end justify-between gap-3 mb-5">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary mb-2">Credentials</p>
+            <h3 className="font-display text-2xl font-bold text-ink">Adobe Certified Professional</h3>
+          </div>
+          <span className="inline-flex items-center gap-1.5 font-mono text-[10px] text-ink-muted">
+            <BadgeCheck size={14} className="text-primary" aria-hidden="true" />
+            Verify on Credly
+          </span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+          {CERTIFICATIONS.map((cert) => (
+            <a
+              key={cert.url}
+              href={cert.url}
+              target="_blank"
+              rel="noreferrer"
+              title={cert.name}
+              aria-label={`Verify ${cert.name} on Credly (opens in a new tab)`}
+              className="certification-card group flex items-center gap-4 rounded-2xl border border-border-crisp bg-surface-pure/90 p-4 no-underline transition-colors hover:border-primary/60 hover:bg-surface-warm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+            >
+              <img
+                src={thumbUrl(cert.image, 160)}
+                alt={cert.name}
+                width={80}
+                height={80}
+                loading="lazy"
+                decoding="async"
+                className="certification-badge w-20 h-20 shrink-0 object-contain"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="font-display text-sm font-bold text-ink leading-snug">{cert.tool}</p>
+                <span className="inline-flex items-center gap-1 mt-2 font-mono text-[10px] text-ink-muted group-hover:text-primary transition-colors">
+                  View credential <ArrowUpRight size={12} aria-hidden="true" />
+                </span>
+              </div>
+            </a>
+          ))}
         </div>
       </div>
     </section>
