@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowUpRight, BadgeCheck } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import { useContent } from '../lib/content';
 import { thumbUrl } from '../lib/image';
 import { AsciiPortrait } from './AsciiPortrait';
@@ -41,6 +41,20 @@ const CERTIFICATIONS = [
 export const RoomStudio: React.FC = () => {
   const { settings } = useContent();
   const { profile, about, experience, skills, languages } = settings;
+
+  // CMS 中的技能保留原文；依用途分組，避免整面 chips 難以閱讀。
+  const skillCategories = [
+    { name: 'Creative', match: /photoshop|illustrator|after effects|premiere|davinci|blender|remotion|suno|higgsfield|pixellab|godot/i },
+    { name: 'AI & workflows', match: /langchain|llamaindex|crewai|rag|vector|prompt|tool calling|llm|ollama|comfyui|claude|chatgpt|codex|pi agent/i },
+    { name: 'Development', match: /python|flask|fastapi|postgresql|redis|docker|nginx|git|react|typescript|linux|fish|powershell|workflow|obsidian/i },
+    { name: 'Hardware & vision', match: /arduino|raspberry|esp-idf|opencv|tensorflow/i },
+  ];
+  const skillGroups = skillCategories.map((category, index) => ({
+    name: category.name,
+    items: skills.filter((skill) => skillCategories.findIndex((group) => group.match.test(skill)) === index),
+  }));
+  const otherSkills = skills.filter((skill) => !skillCategories.some((group) => group.match.test(skill)));
+  if (otherSkills.length) skillGroups.push({ name: 'Other tools', items: otherSkills });
 
   return (
     <section
@@ -93,8 +107,6 @@ export const RoomStudio: React.FC = () => {
               ))}
             </div>
           </div>
-
-
         </div>
 
         {/* 右：敘述 + 經歷 + 技能（無框） */}
@@ -113,7 +125,7 @@ export const RoomStudio: React.FC = () => {
           <h3 className="font-mono text-xs uppercase tracking-widest text-primary font-bold">
             Experience
           </h3>
-          <div className="flex flex-col mt-3 mb-10">
+          <div className="flex flex-col mt-3">
             {experience.map((exp) => (
               <div
                 key={`${exp.role}-${exp.company}`}
@@ -131,63 +143,57 @@ export const RoomStudio: React.FC = () => {
             ))}
           </div>
 
-          {/* 技能 chips */}
-          <h3 className="font-mono text-xs uppercase tracking-widest text-primary font-bold">
-            Skills
-          </h3>
-          <div className="flex flex-wrap gap-2 mt-3">
-            {skills.map((skill) => (
-              <span
-                key={skill}
-                className="px-3.5 py-2 rounded-lg bg-surface-warm/80 border border-border-crisp font-mono text-xs font-bold text-ink"
-              >
-                {skill}
-              </span>
-            ))}
-          </div>
         </div>
       </div>
 
-      {/* 認證獨立成列；保留官方圖像，深色卡片融入太空主題。 */}
-      <div className="mt-12 pt-8 border-t border-border-crisp">
-        <div className="flex flex-wrap items-end justify-between gap-3 mb-5">
-          <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary mb-2">Credentials</p>
-            <h3 className="font-display text-2xl font-bold text-ink">Adobe Certified Professional</h3>
-          </div>
-          <span className="inline-flex items-center gap-1.5 font-mono text-[10px] text-ink-muted">
-            <BadgeCheck size={14} className="text-primary" aria-hidden="true" />
-            Verify on Credly
-          </span>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
-          {CERTIFICATIONS.map((cert) => (
-            <a
-              key={cert.url}
-              href={cert.url}
-              target="_blank"
-              rel="noreferrer"
-              title={cert.name}
-              aria-label={`Verify ${cert.name} on Credly (opens in a new tab)`}
-              className="certification-card group flex items-center gap-4 rounded-2xl border border-border-crisp bg-surface-pure/90 p-4 no-underline transition-colors hover:border-primary/60 hover:bg-surface-warm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
-            >
-              <img
-                src={thumbUrl(cert.image, 160)}
-                alt={cert.name}
-                width={80}
-                height={80}
-                loading="lazy"
-                decoding="async"
-                className="certification-badge w-20 h-20 shrink-0 object-contain"
-              />
-              <div className="min-w-0 flex-1">
-                <p className="font-display text-sm font-bold text-ink leading-snug">{cert.tool}</p>
-                <span className="inline-flex items-center gap-1 mt-2 font-mono text-[10px] text-ink-muted group-hover:text-primary transition-colors">
-                  View credential <ArrowUpRight size={12} aria-hidden="true" />
+      {/* 下半部共用基線：認證與技能並排，避免左側留白。 */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 mt-10 pt-8 border-t border-border-crisp">
+        <div className="lg:col-span-4 min-w-0">
+          <h3 className="font-mono text-xs uppercase tracking-widest text-primary font-bold">Certifications</h3>
+          <p className="text-sm text-ink-muted mt-2 mb-5">Adobe Certified Professional</p>
+          <div className="grid grid-cols-2 gap-3">
+            {CERTIFICATIONS.map((cert) => (
+              <a
+                key={cert.url}
+                href={cert.url}
+                target="_blank"
+                rel="noreferrer"
+                title={cert.name}
+                aria-label={`Verify ${cert.name} on Credly (opens in a new tab)`}
+                className="certification-card group flex flex-col items-center text-center gap-3 rounded-xl border border-border-crisp bg-surface-pure/90 px-3 py-5 no-underline transition-colors hover:border-primary/60 hover:bg-surface-warm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+              >
+                <img
+                  src={thumbUrl(cert.image, 160)}
+                  alt={cert.name}
+                  width={72}
+                  height={72}
+                  loading="lazy"
+                  decoding="async"
+                  className="certification-badge w-[72px] h-[72px] object-contain"
+                />
+                <span className="font-display text-xs font-bold text-ink leading-snug">{cert.tool}</span>
+                <span className="inline-flex items-center gap-1 font-mono text-[9px] text-ink-muted group-hover:text-primary transition-colors">
+                  Credly <ArrowUpRight size={11} aria-hidden="true" />
                 </span>
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <div className="lg:col-span-8 min-w-0">
+          <h3 className="font-mono text-xs uppercase tracking-widest text-primary font-bold">Skills & tools</h3>
+          <div className="mt-5 divide-y divide-border-crisp">
+            {skillGroups.filter((group) => group.items.length).map((group) => (
+              <div key={group.name} className="py-4 first:pt-0 grid grid-cols-1 sm:grid-cols-[120px_minmax(0,1fr)] gap-3 sm:gap-5">
+                <h4 className="font-display text-sm font-semibold text-ink sm:pt-1">{group.name}</h4>
+                <ul className="flex flex-wrap gap-x-2 gap-y-2">
+                  {group.items.map((skill) => (
+                    <li key={skill} className="px-2.5 py-1 rounded-md bg-surface-warm/70 font-body text-xs leading-relaxed text-ink-muted">{skill}</li>
+                  ))}
+                </ul>
               </div>
-            </a>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>
