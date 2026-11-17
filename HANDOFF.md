@@ -117,7 +117,6 @@ otherwise (this bit us once: stale fake "clients" in the fallback).
 ### Editing content — the quick paths
 
 - **Text / projects / films / stills / events / engagements / settings** → do it in the CMS at `/admin`. No code, no deploy.
-- **New cert badges** → edit the `CERTIFICATIONS` array at the top of `src/components/RoomStudio.tsx` (self-hosted images in `public/images/badges/`).
 - **Schema change** → write a numbered migration in `supabase/migrations/`, run it with `run-sql.ps1`, then commit both.
 - **Adding a room** → touch `src/data.ts` (ROOMS), `src/App.tsx` (renderRoom + ROOM_COUNT), a new `Room*.tsx`, and the tour/`NavigationHUD` if relevant.
 
